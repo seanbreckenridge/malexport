@@ -110,5 +110,5 @@ def _iterate_local_identifiers() -> List[str]:
     return [
         p
         for p in os.listdir(default_data_dir)
-        if os.path.isdir(os.path.join(default_data_dir, p))
+        if os.path.isdir(os.path.join(default_data_dir, p)) and not p.startswith(".")
     ]
