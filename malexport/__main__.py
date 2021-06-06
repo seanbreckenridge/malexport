@@ -70,28 +70,36 @@ def info(username: Optional[str], print_credentials: bool) -> None:
     """
     username = _handle_username(username)
     ldir = LocalDir.from_username(username=username)
-    assert (
-        ldir.credential_path.exists()
-    ), f"Expected credential file at {ldir.credential_path}. Run the 'setup' command"
     click.echo(f"Data Directory: {ldir.data_dir}")
-    click.echo(f"Credential File: {ldir.credential_path}")
-    if print_credentials:
-        click.echo(ldir.credential_path.read_text().strip())
+    if ldir.credential_path.exists():
+        click.echo(f"Credential File: {ldir.credential_path}")
+        if print_credentials:
+            click.echo(ldir.credential_path.read_text().strip())
+    else:
+        if print_credentials:
+            click.echo(f"Error: Expected credential file at {ldir.credential_path}", err=True)
+            sys.exit(1)
 
 
 @main.command(short_help="initial setup")
 @click.option(
-    "--username",
-    help="Username/Identifier for this account",
-    prompt="Enter a username for this account",
-    type=str,
+    "-n",
+    "--no-auth",
+    default=False,
+    is_flag=True,
+    help="Skip authentication -- limits access to data this can download",
 )
-def setup(username: str) -> None:
+@shared
+def setup(username: Optional[str], no_auth: bool) -> None:
     """
     Setup an account/data directory
     """
+    if username is None:
+        username = click.prompt("Enter username")
     ldir = LocalDir.from_username(username=username)
-    ldir.load_or_prompt_credentials()
+    if no_auth is False:
+        ldir.load_or_prompt_credentials()
+    click.echo(f"Setup data directory in {ldir.data_dir}")
     click.secho("Done! Run 'malexport update' to update your local data", fg="green")
 
 

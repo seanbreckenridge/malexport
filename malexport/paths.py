@@ -33,9 +33,13 @@ class Credentials(NamedTuple):
     password: str
 
 
-def _expand_and_mkdir(pathish: Union[str, Path]) -> Path:
+def _expand_path(pathish: Union[str, Path], is_dir: bool = True) -> Path:
     """
-    given some path-like input, make sure that directory exists and return a Path
+    given some path-like input, expand the path
+    if is_dir:
+        make that directory if it doesnt exist
+    else:
+        make the parent directory, assuming this is a file
     """
     p: Path
     if isinstance(pathish, str):
@@ -43,7 +47,10 @@ def _expand_and_mkdir(pathish: Union[str, Path]) -> Path:
     else:
         p = pathish
     p = p.expanduser().absolute()
-    p.mkdir(parents=True, exist_ok=True)
+    if is_dir:
+        p.mkdir(parents=True, exist_ok=True)
+    else:
+        p.parent.mkdir(parents=True, exist_ok=True)
     return p
 
 
@@ -80,7 +87,7 @@ class LocalDir(NamedTuple):
 
     @property
     def data_dir(self) -> Path:
-        return _expand_and_mkdir(self.application_base / self.username / "data")
+        return _expand_path(self.application_base / self.username / "data")
 
     @staticmethod
     def from_username(
@@ -90,8 +97,8 @@ class LocalDir(NamedTuple):
         conf_dir: Path = default_conf_dir,
     ) -> "LocalDir":
         return LocalDir(
-            application_base=_expand_and_mkdir(data_dir),
-            config_base=_expand_and_mkdir(conf_dir),
+            application_base=_expand_path(data_dir),
+            config_base=_expand_path(conf_dir),
             username=username,
         )
 
@@ -100,4 +107,8 @@ def _iterate_local_identifiers() -> List[str]:
     """
     Loop through all local account identifiers
     """
-    return [p.stem for p in default_conf_dir.glob("*.yaml")]
+    return [
+        p
+        for p in os.listdir(default_data_dir)
+        if os.path.isdir(os.path.join(default_data_dir, p))
+    ]
