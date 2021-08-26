@@ -15,16 +15,12 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="MIT",
-    packages=find_packages(include=[pkg]),
+    packages=find_packages(),
     install_requires=reqs,
     package_data={pkg: ["py.typed"]},
     zip_safe=False,
     keywords="",
-    entry_points={
-        "console_scripts": [
-            "malexport = malexport.__main__:main"
-        ]
-    },
+    entry_points={"console_scripts": ["malexport = malexport.__main__:main"]},
     extras_require={
         "testing": [
             "mypy",

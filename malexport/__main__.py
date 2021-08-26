@@ -4,6 +4,7 @@ from typing import Callable, Optional
 import click
 
 from .paths import LocalDir, _iterate_local_identifiers
+from .mal.account import Account
 
 
 @click.group()
@@ -50,7 +51,7 @@ def _handle_username(username: Optional[str]) -> str:
         return ids[0]
     else:
         click.echo(
-            f"Found multiple identifiers '{ids}', specify one with the --username flag"
+            f"Found multiple identifiers '{ids}', specify one with the (-u, --username) flag"
         )
         sys.exit(1)
 
@@ -77,7 +78,9 @@ def info(username: Optional[str], print_credentials: bool) -> None:
             click.echo(ldir.credential_path.read_text().strip())
     else:
         if print_credentials:
-            click.echo(f"Error: Expected credential file at {ldir.credential_path}", err=True)
+            click.echo(
+                f"Error: Expected credential file at {ldir.credential_path}", err=True
+            )
             sys.exit(1)
 
 
@@ -101,6 +104,26 @@ def setup(username: Optional[str], no_auth: bool) -> None:
         ldir.load_or_prompt_credentials()
     click.echo(f"Setup data directory in {ldir.data_dir}")
     click.secho("Done! Run 'malexport update' to update your local data", fg="green")
+
+
+@main.command(short_help="update a list")
+@click.option(
+    "--skip-lists",
+    default=False,
+    is_flag=True,
+    help="Don't update anime/manga-lists",
+)
+@shared
+def update(username: Optional[str], skip_lists: bool) -> None:
+    """
+    Update the data for an account
+    """
+    username = _handle_username(username)
+    ldir = LocalDir.from_username(username=username)
+    acc = Account(localdir=ldir)
+    if not skip_lists:
+        acc.update_lists()
+    click.secho("Done updating!", fg="green")
 
 
 if __name__ == "__main__":
