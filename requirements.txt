@@ -1,5 +1,8 @@
 click>=7.0
 logzero
-PyYAML
 requests
 backoff
+PyYaml
+selenium
+lxml
+cssselect

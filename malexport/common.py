@@ -1,7 +1,7 @@
 import os
 import time
 import warnings
-from typing import Any, Iterator, Dict, Optional
+from typing import Any, Iterator, Dict, Optional, Callable
 
 import requests
 import backoff  # type: ignore[import]
@@ -10,7 +10,7 @@ Json = Any
 
 from malexport.log import logger
 
-REQUEST_WAIT_TIME: int = int(os.environ.get("MALEXPORT_REQUEST_WAIT_TIME", 8))
+REQUEST_WAIT_TIME: int = int(os.environ.get("MALEXPORT_REQUEST_WAIT_TIME", 10))
 
 
 def fibo_backoff() -> Iterator[int]:
@@ -19,7 +19,7 @@ def fibo_backoff() -> Iterator[int]:
     In other words, this starts at 13, 21, ....
     """
     fib = backoff.fibo()
-    for _ in range(6):
+    for _ in range(7):
         next(fib)
     yield from fib
 
@@ -35,15 +35,28 @@ def backoff_warn(details: Dict[str, Any]) -> None:
     fibo_backoff, requests.RequestException, max_tries=3, on_backoff=backoff_warn
 )
 def safe_request(
-    url: str, session: Optional[requests.Session] = None, **kwargs: Any
+    url: str,
+    method: str = "GET",
+    on_error: Optional[Callable[[requests.Response], Any]] = None,
+    wait_time: int = REQUEST_WAIT_TIME,
+    **kwargs: Any,
 ) -> requests.Response:
-    time.sleep(REQUEST_WAIT_TIME)
-    if session is None:
+    time.sleep(wait_time)
+    session: requests.Session
+    if "session" in kwargs:
+        session = kwargs.pop("session")
+    else:
         session = requests.Session()
     logger.info(f"Requesting {url}...")
-    resp = session.get(url, **kwargs)
-    resp.raise_for_status()
-    return resp
+    kwargs.setdefault("allow_redirects", True)
+    r = session.request(method, url, **kwargs)
+    try:
+        r.raise_for_status()
+    except requests.RequestException as e:
+        if on_error is not None:
+            on_error(r)  # do something, e.g. refresh a expired bearer token
+        raise e  # raise anyways, so this request retries
+    return r
 
 
 def safe_request_json(

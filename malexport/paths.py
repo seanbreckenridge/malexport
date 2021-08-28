@@ -3,11 +3,12 @@ Relating to storing credentials and handling location of the data/config directo
 """
 
 import os
+import json
 from pathlib import Path
-from typing import NamedTuple, List, Union
+from typing import NamedTuple, List, Union, Dict
 
-import click
 import yaml
+import click
 
 default_local_dir = os.path.join(Path.home(), ".local", "share")
 local_directory: str = os.environ.get("XDG_DATA_HOME", default_local_dir)
@@ -26,11 +27,6 @@ if "MALEXPORT_CFG" in os.environ:
 
 default_data_dir.mkdir(exist_ok=True, parents=True)
 default_conf_dir.mkdir(exist_ok=True, parents=True)
-
-
-class Credentials(NamedTuple):
-    username: str
-    password: str
 
 
 def _expand_path(pathish: Union[str, Path], is_dir: bool = True) -> Path:
@@ -54,20 +50,43 @@ def _expand_path(pathish: Union[str, Path], is_dir: bool = True) -> Path:
     return p
 
 
-class LocalDir(NamedTuple):
-    application_base: Path
-    config_base: Path
-    username: str
+class LocalDir:
+    def __init__(self, application_base: Path, config_base: Path, username: str):
+        self.application_base: Path = _expand_path(application_base)
+        self.config_base: Path = _expand_path(config_base)
+        self.username: str = username
 
-    @property
-    def credentials(self) -> Credentials:
-        return self.load_or_prompt_credentials()
+        # to save your personal Client ID from the MAL Dashboard
+        self.mal_client_info = self.config_base / "mal_client_id.json"
 
-    @property
-    def credential_path(self) -> Path:
-        return self.config_base / f"{self.username}.yaml"
+        # where to save oauth refresh info
+        self.refresh_info: Path = (
+            _expand_path(self.config_base / "accounts")
+            / f"{self.username}_refresh_info.json"
+        )
 
-    def load_or_prompt_credentials(self) -> Credentials:
+        # To save MAL Username/Password
+        self.credential_path: Path = (
+            _expand_path(self.config_base / "accounts")
+            / f"{self.username}_credentials.yaml"
+        )
+
+        # Base directory to store all data
+        self.data_dir = self.application_base / self.username
+
+    def load_or_prompt_mal_client_info(self) -> Dict[str, str]:
+        if not self.mal_client_info.exists():
+            click.echo(
+                "No MAL Client Id/Secret found, create an ID (other/hobbyist) at https://myanimelist.net/apiconfig"
+            )
+            client_id = click.prompt(text="Client ID")
+            with self.mal_client_info.open("w") as f:
+                json.dump({"client_id": client_id}, f)
+        with self.mal_client_info.open() as f:
+            data: Dict[str, str] = json.load(f)
+            return data
+
+    def load_or_prompt_credentials(self) -> Dict[str, str]:
         if not self.credential_path.exists():
             click.echo(
                 "No credentials found. Enter your username/password for MAL. These are stored locally and used to authenticate a session with MAL",
@@ -80,14 +99,10 @@ class LocalDir(NamedTuple):
                 click.echo("Saved to {}".format(self.credential_path))
         with open(self.credential_path) as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
-        return Credentials(
+        return dict(
             username=data["username"],
             password=data["password"],
         )
-
-    @property
-    def data_dir(self) -> Path:
-        return _expand_path(self.application_base / self.username / "data")
 
     @staticmethod
     def from_username(
