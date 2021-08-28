@@ -3,8 +3,9 @@
 This is still in development, but the majority of the exporters (saving data from MAL) are done.
 
 TODO:
- - write a submodule `malexport.parse` and the `malexport parse` command to parse the saved info into Python objects/JSON
- - Implement the other strategies for updating episode history
+
+- write a submodule `malexport.parse` and the `malexport parse` command to parse the saved info into Python objects/JSON
+- Implement the other strategies for updating episode history
 
 This uses multiple methods to extract info about my MAL (MyAnimeList) account, focused on my episode history/forum posts I've made.
 
@@ -52,3 +53,5 @@ malexport/paths.py:    default_conf_dir = Path(os.environ["MALEXPORT_CFG"])
 ```
 
 `malexport update all` can be run to run all the updaters or `malexport update [forum|history|lists|export]` can be run to update one of them. Each of those require you to pass a `-u malUsername`. This stores everything (except for the MAL API Client ID) on an account-by-account basis, so its possible to backup multiple accounts
+
+To show debug logs set `export MALEXPORT_LOGS=10` (uses [logging levels](https://docs.python.org/3/library/logging.html#logging-levels)).

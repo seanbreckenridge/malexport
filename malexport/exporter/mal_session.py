@@ -58,6 +58,7 @@ class MalSession:
         """
         refresh_info = self.refresh_info()
         access_token = refresh_info["access_token"]
+        logger.debug(f"Access Token: {access_token}")
         self.session.headers.update({"Authorization": f"Bearer {access_token}"})
 
     def refresh_info(self) -> Dict[str, str]:
@@ -121,6 +122,7 @@ class MalSession:
             auth=(self.client_id, ""),  # leave client secret empty
         )
         refresh_info: Dict[str, str] = refresh_req.json()
+        logger.debug(refresh_info)
         if refresh_req.status_code != 200:
             raise RuntimeError(f"Error: {refresh_info}")
         logger.info(f"Saving refresh information to {self.localdir.refresh_info}")
@@ -144,6 +146,7 @@ class MalSession:
             raise RuntimeError(f"Error: {refresh_req.json()}")
         refresh_req.raise_for_status()
         self.localdir.refresh_info.write_text(refresh_req.text)
+        logger.debug(refresh_req.json())
         self.authenticate()  # re-authenticate to attach the new access_token
 
     def refresh_token_if_expired(self, req: requests.Response) -> None:
@@ -152,6 +155,7 @@ class MalSession:
         if its expired. Currently that lasts for a month
         """
         if req.status_code == 401:
+            logger.info("Refreshing token...")
             self.refresh_token()
 
     def paginate_all_data(self, url: str) -> Iterator[Any]:

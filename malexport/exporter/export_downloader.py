@@ -61,6 +61,7 @@ class ExportDownloader:
         download_button_selector = tuple([By.CSS_SELECTOR, DOWNLOAD_BUTTON])
         WebDriverWait(d, 10).until(EC.element_to_be_clickable(download_button_selector))
         d.find_element_by_css_selector(DOWNLOAD_BUTTON).click()
+        logger.debug("Waiting for download...")
         wait()
 
     def _list_files(self, path: str = TEMP_DOWNLOAD_DIR) -> List[str]:
@@ -74,7 +75,9 @@ class ExportDownloader:
         for search_results in (animelist_gzs, mangalist_gzs):
             if len(search_results) != 1:
                 logger.warning(f"Found more than 1 matching file {search_results}")
-        return animelist_gzs + mangalist_gzs
+        archive_files = animelist_gzs + mangalist_gzs
+        logger.debug(archive_files)
+        return archive_files
 
     def extract_gz_files(self) -> None:
         """
