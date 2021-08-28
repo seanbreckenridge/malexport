@@ -19,7 +19,11 @@ from ..log import logger
 from ..paths import LocalDir
 
 
-def _create_pkce_challenge() -> str:
+def _create_pkce_verifier() -> str:
+    """
+    Creates a random PKCE compliant string. MAL uses a simple method,
+    we dont need to create a challenge string
+    """
     code_verifier = base64.urlsafe_b64encode(os.urandom(40)).decode("utf-8")
     code_verifier = re.sub("[^a-zA-Z0-9]+", "", code_verifier)
     return code_verifier
@@ -48,11 +52,18 @@ class MalSession:
     __str__ = __repr__
 
     def authenticate(self) -> None:
+        """
+        Update the request Session to include the Bearer token as a header.
+        If that doesn't exist, it starts the token auth flow to create one
+        """
         refresh_info = self.refresh_info()
         access_token = refresh_info["access_token"]
         self.session.headers.update({"Authorization": f"Bearer {access_token}"})
 
     def refresh_info(self) -> Dict[str, str]:
+        """
+        Load or run the OAuth flow to get an access_token for the MAL API
+        """
         refresh_info: Dict[str, str]
         if self.localdir.refresh_info.exists():
             try:
@@ -64,11 +75,14 @@ class MalSession:
         return self.oauth_flow()
 
     def oauth_flow(self) -> Dict[str, str]:
+        """
+        Run the OAuth flow for MALs API
+        """
         logger.info("Logging in to MAL...")
 
         # get a 'code', may need to open a URL to let the user login in the browser
         # and approve their application
-        code_verifier = _create_pkce_challenge()
+        code_verifier = _create_pkce_verifier()
         url = (
             LOGIN_BASE
             + "/oauth2/authorize?"
@@ -110,15 +124,33 @@ class MalSession:
         if refresh_req.status_code != 200:
             raise RuntimeError(f"Error: {refresh_info}")
         logger.info(f"Saving refresh information to {self.localdir.refresh_info}")
-        with self.localdir.refresh_info.open("w") as f:
-            json.dump(refresh_info, f)
+        self.localdir.refresh_info.write_text(refresh_req.text)
         return refresh_info
 
     def refresh_token(self) -> None:
-        # TODO: need this to actually expire for me to test this
-        raise NotImplementedError
+        old_refresh_info = json.loads(self.localdir.refresh_info.read_text())
+        refresh_req = self.session.post(
+            LOGIN_BASE + "/oauth2/token",
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data={
+                "refresh_token": old_refresh_info["refresh_token"],
+                "grant_type": "refresh_token",
+            },
+            auth=(self.client_id, ""),  # leave client secret empty
+        )
+        if refresh_req.status_code != 200:
+            raise RuntimeError(f"Error: {refresh_req.json()}")
+        refresh_req.raise_for_status()
+        self.localdir.refresh_info.write_text(refresh_req.text)
+        self.authenticate()  # re-authenticate to attach the new access_token
 
     def refresh_token_if_expired(self, req: requests.Response) -> None:
+        """
+        Passed to safe_json_request as the error handler, refreshes the token
+        if its expired. Currently that lasts for a month
+        """
         if req.status_code == 401:
             self.refresh_token()
 
@@ -137,7 +169,8 @@ class MalSession:
 
     def safe_request(self, url: str, **kwargs: Any) -> requests.Response:
         """
-        A wrapper for the safe_request function using this session
+        A wrapper for the safe_request function -- makes an authenticated request
+        to the MAL API
         """
         r: requests.Response = safe_request(
             url,
@@ -149,4 +182,8 @@ class MalSession:
         return r
 
     def safe_json_request(self, url: str, **kwargs: Any) -> Dict[str, Any]:
+        """
+        A wrapper for the safe_json_request -- makes an authenticated request
+        to the MAL API, waits a bit, parses it to JSON
+        """
         return cast(Dict[str, Any], self.safe_request(url, **kwargs).json())

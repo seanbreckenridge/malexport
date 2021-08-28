@@ -41,6 +41,10 @@ def safe_request(
     wait_time: int = REQUEST_WAIT_TIME,
     **kwargs: Any,
 ) -> requests.Response:
+    """
+    Sleep for a while, make a request, and retry 3 times if the request fails
+    Can supply an on_error function to do some custom behaviour if theres an HTTP error
+    """
     time.sleep(wait_time)
     session: requests.Session
     if "session" in kwargs:
@@ -62,4 +66,7 @@ def safe_request(
 def safe_request_json(
     url: str, session: Optional[requests.Session] = None, **kwargs: Any
 ) -> Any:
+    """
+    Run a safe_request, then parse the response to JSON
+    """
     return safe_request(url, session, **kwargs).json()

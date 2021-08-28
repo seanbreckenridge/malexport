@@ -16,6 +16,10 @@ FORUM_POST = "https://api.myanimelist.net/v2/forum/topic/{forum_id}?limit=100"
 
 
 class ForumManager:
+    """
+    Download any forum posts which you've created/commented on
+    """
+
     def __init__(self, localdir: LocalDir, mal_session: MalSession) -> None:
         self.localdir = localdir
         self.mal_session = mal_session
@@ -25,21 +29,35 @@ class ForumManager:
         )
 
     def download_forum_index(self) -> Iterator[Json]:
+        """
+        Download a 'forum index' (i.e., the IDs/modification time for any
+        post you've created/commented on) by paginating through the data
+        """
         for forum_base in FORUM_BASES:
             url = forum_base.format(mal_username=self.localdir.username)
             for data_response in self.mal_session.paginate_all_data(url):
                 yield from data_response
 
     def load_forum_index(self) -> Json:
+        """
+        Assuming the forum index exists, load the JSON file
+        """
         assert self.forum_index_path.exists(), "Forum index doesnt exist!"
         return json.loads(self.forum_index_path.read_text())
 
     def update_forum_index(self) -> None:
+        """
+        Download and save the forum index. This doesn't attempt to
+        do anything complicated, it just re-downloads the entire thing
+        """
         data = list(self.download_forum_index())
         data_json = json.dumps(data)
         self.forum_index_path.write_text(data_json)
 
     def update_changed_forum_posts(self) -> None:
+        """
+        Load the forum index, and call .update_if_changed on each forum post
+        """
         for forum_post in self.load_forum_index():
             forum = ForumPost(
                 localdir=self.localdir,
@@ -71,6 +89,10 @@ class ForumPost:
         )
 
     def forum_post_has_changed(self) -> bool:
+        """
+        Determine whether or not the forum post has new data, by looking at the last_post_created_at
+        (downloaded in the forum index)
+        """
         if self.forum_path.exists():
             data = json.loads(self.forum_path.read_text())
             if "last_post_created_at" in data:
@@ -84,6 +106,9 @@ class ForumPost:
             return True
 
     def download_forum_post(self) -> Json:
+        """
+        For a particular forum post, paginate through all the posts
+        """
         responses = list(
             self.mal_session.paginate_all_data(
                 FORUM_POST.format(forum_id=self.forum_id)
@@ -99,6 +124,9 @@ class ForumPost:
         return data
 
     def update_if_changed(self) -> None:
+        """
+        If the forum post has to be updated, update it
+        """
         if not self.forum_post_has_changed():
             return
         data_json = json.dumps(self.download_forum_post())

@@ -15,6 +15,7 @@ from .list_type import ListType
 from ..common import Json, safe_request_json
 from ..paths import LocalDir
 
+# this is order=5, which requests items that were edited by you recently
 BASE_URL = "https://myanimelist.net/{list_type}list/{username}/load.json?status=7&order=5&offset={offset}"
 
 
@@ -36,6 +37,11 @@ class MalList:
     __str__ = __repr__
 
     def offset_url(self, offset: int) -> str:
+        """
+        Creates the offset URL (ordered by most recently edited) for a particular type/username/offset
+        This is the same request that runs when you scroll down on a modern list and the next 300 chunks
+        of entries load in
+        """
         return BASE_URL.format(
             list_type=self.list_type.value,
             username=self.localdir.username,
@@ -47,6 +53,9 @@ class MalList:
         return self.localdir.data_dir / f"{self.list_type.value}list.json"
 
     def load_list(self) -> List[Json]:
+        """
+        Load the list from the JSON file
+        """
         if self.list_path.exists():
             try:
                 return list(json.loads(self.list_path.read_text()))
@@ -55,6 +64,10 @@ class MalList:
         raise FileNotFoundError(f"No file found at {self.list_type.value}")
 
     def update_list(self) -> None:
+        """
+        Paginate through all the data till you hit a chunk of data which has
+        less than OFFSET_CHUNK (300) items
+        """
         list_data: List[Json] = []
         # overwrite the list with new data
         offset = 0

@@ -11,8 +11,7 @@ from .export_downloader import ExportDownloader
 
 class Account:
     """
-    This encapsulates all interaction with this MAL library
-    to request/parse data from MAL
+    This encapsulates everything with regards to exporting data from MAL
     """
 
     def __init__(self, localdir: LocalDir):
@@ -25,7 +24,7 @@ class Account:
         self.forum_manager: Optional[ForumManager] = None
         self.export_downloader: Optional[ExportDownloader] = None
 
-    def authenticate(self) -> MalSession:
+    def mal_api_authenticate(self) -> MalSession:
         """
         This does the initial authentication with MyAnimeList using the API
         After a successful authentication, refresh should be called instead
@@ -44,17 +43,31 @@ class Account:
 
     @staticmethod
     def from_username(username: str) -> "Account":
+        """Alternate constructor to create an account from MAL username"""
         return Account(localdir=LocalDir.from_username(username=username))
 
     def update_lists(self) -> None:
+        """
+        Uses the load_json endpoint to request anime/manga lists.
+        Does not require any authentication
+        """
         self.animelist.update_list()
         self.mangalist.update_list()
 
     def update_exports(self) -> None:
+        """
+        Uses selenium to export/extract the XML files from MAL.
+        Requires authentication (MAL Username/Password)
+        """
         self.export_downloader = ExportDownloader(self.localdir)
         self.export_downloader.export_lists()
 
     def update_history(self) -> None:
+        """
+        Uses selenium to download episode/chapter history one entry at a time.
+
+        This takes quite a while, and requires authentication (MAL Username/Password)
+        """
         self.anime_episode_history = HistoryManager(
             list_type=ListType.ANIME, localdir=self.localdir
         )
@@ -65,7 +78,15 @@ class Account:
         self.manga_episode_history.update_history()
 
     def update_forum_posts(self) -> None:
-        self.authenticate()
+        """
+        Uses the MAL API to download any forum posts which you've created/commented on
+
+        Requires you to go to https://myanimelist.net/apiconfig and create a Client. You can
+        use any App Type other than Web, this doesn't use a Client Secret
+
+        You can use http://localhost as the App Redirect URL
+        """
+        self.mal_api_authenticate()
         assert self.mal_session is not None
         self.forum_manager = ForumManager(
             localdir=self.localdir, mal_session=self.mal_session

@@ -12,6 +12,9 @@ from selenium.webdriver import Chrome, ChromeOptions  # type: ignore[import]
 from ..paths import LocalDir, _expand_path
 from ..common import REQUEST_WAIT_TIME
 
+# environment variables to overwrite the location of the chromedriver
+# typically this just uses the 'chromedriver' binary,
+# as long as thats on your $PATH
 HIDDEN_CHROMEDRIVER = bool(int(os.environ.get("MALEXPORT_CHROMEDRIVER_HIDDEN", 0)))
 CHROME_LOCATION: Optional[str] = os.environ.get("MALEXPORT_CHROMEDRIVER_LOCATION")
 
@@ -45,6 +48,8 @@ def driver() -> Chrome:
     return driver
 
 
+# If the user has been logged in using the MAL Username/Password using selenium
+# This is set in driver_login
 IS_LOGGED_IN: bool = False
 LOGIN_PAGE = "https://myanimelist.net/login.php"
 
@@ -73,5 +78,6 @@ def driver_login(localdir: LocalDir) -> None:
     IS_LOGGED_IN = True
 
 
+# wait a random amount of time to be nice to MAL servers
 def wait() -> None:
     time.sleep(REQUEST_WAIT_TIME + random.random() * 4 - 1)

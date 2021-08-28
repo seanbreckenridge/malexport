@@ -29,15 +29,21 @@ class ExportDownloader:
         self.mangalist_path = self.localdir.data_dir / "mangalist.xml"
 
     def authenticate(self) -> None:
+        """Logs in to MAL using your MAL username/password"""
         driver_login(self.localdir)
 
     def export_lists(self) -> None:
+        """Exports the anime/manga lists, then extracts the gz files into the data dir"""
         self.authenticate()
         self.export_list(ListType.ANIME)
         self.export_list(ListType.MANGA)
         self.extract_gz_files()
 
     def export_list(self, list_type: ListType) -> None:
+        """
+        Exports a particular list types' XML file, waits a while so that it can finish downloading
+        The only difference between anime and manga is what is selected in the dialog
+        """
         d = driver()
         time.sleep(1)
         logger.info(f"Downloading {list_type.value} export")
@@ -58,6 +64,10 @@ class ExportDownloader:
         wait()
 
     def _list_files(self, path: str = TEMP_DOWNLOAD_DIR) -> List[str]:
+        """
+        List files in the temporary download directory, warn if there
+        are multiple files/partially downloaded files
+        """
         files = os.listdir(path)
         animelist_gzs = [f for f in files if f.startswith("animelist_")]
         mangalist_gzs = [f for f in files if f.startswith("mangalist_")]
@@ -67,6 +77,10 @@ class ExportDownloader:
         return animelist_gzs + mangalist_gzs
 
     def extract_gz_files(self) -> None:
+        """
+        Wait till two files (the anime/manga gz files) exist in the temporary download
+        directory, then extract them to the data directory
+        """
         while len(self._list_files()) != 2:
             logger.info(
                 f"Waiting till 2 list files exist, currently {os.listdir(TEMP_DOWNLOAD_DIR)}"

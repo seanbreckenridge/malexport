@@ -31,6 +31,9 @@ EPDETAILS_ID = "epdetails"
 
 
 def history_url(list_type: ListType, entry_id: int) -> str:
+    """
+    Creates the History URL for a particular type/ID
+    """
     return HISTORY_URL.format(
         list_type_letter=list_type.value[0].casefold(), entry_id=entry_id
     )
@@ -68,6 +71,14 @@ def _extract_episode_data(episode_col_text: str) -> Tuple[int, int]:
 
 
 def _extract_episode_history(episode_details: str) -> Json:
+    """
+    Given the HTML div which contains the episode details from the page,
+    extract the header (name of the entry) when each episode was watched
+
+    This uses a list instead of an episode -> datetime mapping
+    since its possible for you to mark episodes multiple times, e.g. if you're
+    rewatching entries
+    """
     x = ht.fromstring(episode_details)
     # parse the header
     header = x.xpath('.//div[contains(text(), "Episode Details")]')
@@ -87,16 +98,8 @@ def _extract_episode_history(episode_details: str) -> Json:
 
 class HistoryManager:
     """
-    Uses the MalList module to request/save recently
-    updated anime/manga entries
+    Uses multiple strategies to update history data (episode/chapter watch dates)
 
-    If data doesn't exist at all for an entry, this requests
-    info. Then, after that, this employs two strategies to update history data
-        - request items that were recently updated (using &order=5
-          on the [anime/manga]list) till we hit
-          some limit of unchanged data
-        - use the history page for the user to update
-          items that have been watched in the last 3 weeks
     """
 
     def __init__(
@@ -116,12 +119,17 @@ class HistoryManager:
         )
 
     def authenticate(self) -> None:
+        """Logs in to MAL using your MAL username/password"""
         driver_login(localdir=self.localdir)
 
     def entry_path(self, entry_id: int) -> Path:
+        """Location of the JSON file for this type/ID"""
         return self.history_base_path / f"{entry_id}.json"
 
-    def download_data(self, entry_id: int) -> Json:
+    def download_history_info(self, entry_id: int) -> Json:
+        """
+        Download the information for a particular type/ID
+        """
         d = driver()
         time.sleep(1)
         url: str = history_url(self.list_type, entry_id)
@@ -152,7 +160,7 @@ class HistoryManager:
         If data was the same as last time, it returns False
         """
         p = self.entry_path(entry_id)
-        new_data = self.download_data(entry_id)
+        new_data = self.download_history_info(entry_id)
         # assume this is new data
         has_new_data = True
         if p.exists():
@@ -165,6 +173,15 @@ class HistoryManager:
         return has_new_data
 
     def update_history(self) -> None:
+        """
+        If data doesn't exist at all for an entry, this requests
+        info. Then, after that, this employs two strategies to update history data
+            - request items that were recently updated (using &order=5
+              on the [anime/manga]list) till we hit
+              some limit of unchanged data
+            - use the history page (using Jikan) for the user to update
+              items that have been watched in the last 3 weeks
+        """
         self.authenticate()
         # this saves even if there is no episode history, so we can compare
         m = MalList(self.list_type, localdir=self.localdir)
