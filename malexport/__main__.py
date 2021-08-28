@@ -55,6 +55,7 @@ def _all(username: str) -> None:
     acc = _handle_account(username)
     acc.update_lists()
     acc.update_history()
+    acc.update_forum_posts()
     click.secho("Done updating!", fg="green")
 
 
