@@ -67,7 +67,7 @@ class ForumManager:
                 localdir=self.localdir,
                 mal_session=self.mal_session,
                 forum_id=int(forum_post["id"]),
-                last_post_created_at=forum_post["last_post_created_at"],
+                last_post_created_at=str(forum_post["last_post_created_at"]),
             )
             forum.update_if_changed()
 

@@ -15,7 +15,7 @@ REQUEST_WAIT_TIME: int = int(os.environ.get("MALEXPORT_REQUEST_WAIT_TIME", 10))
 
 def fibo_backoff() -> Iterator[int]:
     """
-    Fibonacci backoff, with the first 6 elements consumed.
+    Fibonacci backoff, with the first 7 elements consumed.
     In other words, this starts at 13, 21, ....
     """
     fib = backoff.fibo()
@@ -36,7 +36,9 @@ def backoff_warn(details: Dict[str, Any]) -> None:
 )
 def safe_request(
     url: str,
+    *,
     method: str = "GET",
+    session: Optional[requests.Session] = None,
     on_error: Optional[Callable[[requests.Response], Any]] = None,
     wait_time: int = REQUEST_WAIT_TIME,
     **kwargs: Any,
@@ -46,14 +48,14 @@ def safe_request(
     Can supply an on_error function to do some custom behaviour if theres an HTTP error
     """
     time.sleep(wait_time)
-    session: requests.Session
-    if "session" in kwargs:
-        session = kwargs.pop("session")
+    sess: requests.Session
+    if session is not None:
+        sess = session
     else:
-        session = requests.Session()
+        sess = requests.Session()
     logger.info(f"Requesting {url}...")
     kwargs.setdefault("allow_redirects", True)
-    r = session.request(method, url, **kwargs)
+    r = sess.request(method, url, **kwargs)
     try:
         r.raise_for_status()
     except requests.RequestException as e:
@@ -69,4 +71,4 @@ def safe_request_json(
     """
     Run a safe_request, then parse the response to JSON
     """
-    return safe_request(url, session, **kwargs).json()
+    return safe_request(url, session=session, **kwargs).json()
