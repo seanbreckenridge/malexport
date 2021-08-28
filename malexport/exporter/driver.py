@@ -48,6 +48,10 @@ def driver() -> Chrome:
 IS_LOGGED_IN: bool = False
 LOGIN_PAGE = "https://myanimelist.net/login.php"
 
+LOGIN_ID = "loginUserName"
+PASSWORD_ID = "login-password"
+LOGIN_BUTTON_CSS = ".inputButton.btn-form-submit[value='Login']"
+
 
 def driver_login(localdir: LocalDir) -> None:
     """
@@ -58,14 +62,14 @@ def driver_login(localdir: LocalDir) -> None:
     if IS_LOGGED_IN:
         return
     creds = localdir.load_or_prompt_credentials()
+    time.sleep(1)
     d.get(LOGIN_PAGE)
-    d.find_element_by_id("loginUserName").send_keys(creds["username"])
     time.sleep(1)
-    d.find_element_by_id("login-password").send_keys(creds["password"])
+    d.find_element_by_id(LOGIN_ID).send_keys(creds["username"])
     time.sleep(1)
-    d.find_element_by_css_selector(
-        ".inputButton.btn-form-submit[value='Login']"
-    ).click()
+    d.find_element_by_id(PASSWORD_ID).send_keys(creds["password"])
+    time.sleep(1)
+    d.find_element_by_css_selector(LOGIN_BUTTON_CSS).click()
     IS_LOGGED_IN = True
 
 
