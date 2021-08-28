@@ -27,8 +27,6 @@ from selenium.webdriver.support import expected_conditions as EC  # type: ignore
 
 HISTORY_URL = "https://myanimelist.net/ajaxtb.php?keepThis=true&detailed{list_type_letter}id={entry_id}&TB_iframe=true&height=420&width=390"
 
-EPDETAILS_ID = "epdetails"
-
 
 def history_url(list_type: ListType, entry_id: int) -> str:
     """
@@ -47,17 +45,24 @@ EPISODE_COL_REGEX = re.compile(
     "Ep (\d+), watched on (\d+)\/(\d+)\/(\d+) at (\d+):(\d+)"
 )
 
+CHAPTER_COL_REGEX = re.compile(
+    "Chapter (\d+), read on (\d+)\/(\d+)\/(\d+) at (\d+):(\d+)"
+)
 
-def _extract_episode_data(episode_col_text: str) -> Tuple[int, int]:
+
+def _extract_column_data(col_html: str, list_type: ListType) -> Tuple[int, int]:
     """
-    Returns the episode number and the date as epoch time
+    Returns the episode/chapter number and the date as epoch time
     """
-    m = EPISODE_COL_REGEX.match(episode_col_text)
+    chosen_regex = (
+        EPISODE_COL_REGEX if list_type == ListType.ANIME else CHAPTER_COL_REGEX
+    )
+    m = chosen_regex.match(col_html)
     if not m:
         raise RuntimeError(
-            f"Could not match episode/date of out text {episode_col_text}"
+            f"Could not match episode/chapter/date of out text {col_html}"
         )
-    (episode_count, month, day, year, hour, minute) = m.groups()
+    (count, month, day, year, hour, minute) = m.groups()
     # uses local time, so just create a naive datetime and convert
     when = datetime(
         year=int(year),
@@ -67,33 +72,7 @@ def _extract_episode_data(episode_col_text: str) -> Tuple[int, int]:
         minute=int(minute),
         second=0,
     )
-    return int(episode_count), int(when.timestamp())
-
-
-def _extract_episode_history(episode_details: str) -> Json:
-    """
-    Given the HTML div which contains the episode details from the page,
-    extract the header (name of the entry) when each episode was watched
-
-    This uses a list instead of an episode -> datetime mapping
-    since its possible for you to mark episodes multiple times, e.g. if you're
-    rewatching entries
-    """
-    x = ht.fromstring(episode_details)
-    # parse the header
-    header = x.xpath('.//div[contains(text(), "Episode Details")]')
-    assert (
-        len(header) == 1
-    ), "Found multiple elements while searching for header, expected 1"
-    # parse episodes
-    episode_elements = x.xpath('.//div[contains(text(), "watched on")]')
-    data = {"title": header[0].text.strip().replace("Episode Details", "").strip()}
-    # fine even if there are no episode elements
-    episodes = [_extract_episode_data(ep.text) for ep in episode_elements]
-    # sort by date, most recent first
-    episodes.sort(key=lambda tup: tup[1], reverse=True)
-    data["episodes"] = episodes
-    return data
+    return int(count), int(when.timestamp())
 
 
 class HistoryManager:
@@ -118,6 +97,11 @@ class HistoryManager:
             self.localdir.data_dir / "history" / self.list_type.value
         )
 
+        self.container_id = (
+            "chapdetails" if self.list_type == ListType.MANGA else "epdetails"
+        )
+        self.idprefix = "chaprow" if self.list_type == ListType.MANGA else "eprow"
+
     def authenticate(self) -> None:
         """Logs in to MAL using your MAL username/password"""
         driver_login(localdir=self.localdir)
@@ -125,6 +109,37 @@ class HistoryManager:
     def entry_path(self, entry_id: int) -> Path:
         """Location of the JSON file for this type/ID"""
         return self.history_base_path / f"{entry_id}.json"
+
+    def _extract_details(self, episode_details: str) -> Json:
+        """
+        Given the HTML div which contains the episode details from the page,
+        extract the header (name of the entry) when each episode was watched
+
+        This uses a list instead of an episode -> datetime mapping
+        since its possible for you to mark episodes multiple times, e.g. if you're
+        rewatching entries
+        """
+        x = ht.fromstring(episode_details)
+        # parse the header
+        header = x.xpath('.//div[contains(text(), "Details")]')
+        assert (
+            len(header) == 1
+        ), "Found multiple elements while searching for header, expected 1"
+        # parse episodes
+        episode_elements = x.xpath(f'.//div[starts-with(@id, "{self.idprefix}")]')
+        title = header[0].text.strip()
+        # split tokens and remove last two (Chapter Details or Episode Details)
+        title = " ".join(title.split(" ")[:-2]).strip()
+        data = {"title": title}
+        # fine even if there are no episode/chapter elements
+        episodes = [
+            _extract_column_data(ep.text, self.list_type) for ep in episode_elements
+        ]
+        # sort by date, most recent first
+        episodes.sort(key=lambda tup: tup[1], reverse=True)
+        data["episodes"] = episodes
+        logger.debug(data)
+        return data
 
     def download_history_info(self, entry_id: int) -> Json:
         """
@@ -141,16 +156,16 @@ class HistoryManager:
             EC.text_to_be_present_in_element(
                 (
                     By.ID,
-                    EPDETAILS_ID,
+                    self.container_id,
                 ),
-                "Episode Details",
+                "Details",
             )
         )
-        episode_details = d.find_element_by_id(EPDETAILS_ID)
+        details = d.find_element_by_id(self.container_id)
         assert (
-            episode_details is not None
-        ), f"Couldn't find episode details div for {self.list_type.value} {entry_id} {url}"
-        new_data = _extract_episode_history(episode_details.get_attribute("innerHTML"))
+            details is not None
+        ), f"Couldn't find details (header) div for {self.list_type.value} {entry_id} {url}"
+        new_data = self._extract_details(details.get_attribute("innerHTML"))
         return new_data
 
     def update_if_expired(self, entry_id: int) -> bool:
