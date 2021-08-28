@@ -194,3 +194,5 @@ class HistoryManager:
             # you first add an item or when this is first run and is caching your entire list
             if not p.exists():
                 self.update_if_expired(mal_id)
+
+            # TODO: implement other update strategies
