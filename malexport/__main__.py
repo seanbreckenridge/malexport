@@ -2,7 +2,6 @@ from typing import Callable
 
 import click
 
-from .paths import LocalDir
 from .exporter.account import Account
 
 
