@@ -9,12 +9,11 @@ import os
 import re
 import json
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Tuple
 from datetime import datetime
 
 from .list_type import ListType
 from .mal_list import MalList
-from .mal_session import MalSession
 from .driver import driver, driver_login, wait
 from ..log import logger
 from ..paths import LocalDir, _expand_path
@@ -105,10 +104,6 @@ class HistoryManager:
         localdir: LocalDir,
         till_same_limit: int = TILL_SAME_LIMIT,
     ):
-        """
-        Assumes the MalSession has already
-        been authenticated; is logged in
-        """
         self.list_type = list_type
         self.localdir = localdir
         # if we request this many items and there is no difference

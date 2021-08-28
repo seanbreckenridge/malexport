@@ -1,9 +1,9 @@
 import sys
-from typing import Callable, Optional
+from typing import Callable
 
 import click
 
-from .paths import LocalDir, _iterate_local_identifiers
+from .paths import LocalDir
 from .mal.account import Account
 
 

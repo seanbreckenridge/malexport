@@ -2,9 +2,6 @@ import json
 from typing import Iterator
 
 from .mal_session import MalSession
-from .list_type import ListType
-from .mal_list import MalList
-from .mal_session import MalSession
 from ..paths import LocalDir, _expand_path
 from ..common import Json
 

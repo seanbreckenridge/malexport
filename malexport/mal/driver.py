@@ -38,7 +38,8 @@ def driver() -> Chrome:
         "prefs", {"download.default_directory": str(TEMP_DOWNLOAD_DIR)}
     )
     driver = Chrome("chromedriver", chrome_options=options, **CHROME_KWARGS)
-    atexit.register(lambda: driver.quit())  # quit when python exits to avoid hanging browsers
+    # quit when python exits to avoid hanging browsers
+    atexit.register(lambda: driver.quit())
     return driver
 
 
@@ -55,14 +56,15 @@ def driver_login(localdir: LocalDir) -> None:
         return
     creds = localdir.load_or_prompt_credentials()
     d.get("https://myanimelist.net/login.php")
-    d.find_element_by_id('loginUserName').send_keys(creds["username"])
+    d.find_element_by_id("loginUserName").send_keys(creds["username"])
     time.sleep(2)
-    d.find_element_by_id('login-password').send_keys(creds["password"])
+    d.find_element_by_id("login-password").send_keys(creds["password"])
     time.sleep(2)
-    d.find_element_by_css_selector(".inputButton.btn-form-submit[value='Login']").click()
+    d.find_element_by_css_selector(
+        ".inputButton.btn-form-submit[value='Login']"
+    ).click()
     IS_LOGGED_IN = True
+
 
 def wait() -> None:
     time.sleep(REQUEST_WAIT_TIME + random.random() * 4 - 1)
-
-

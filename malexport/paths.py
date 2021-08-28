@@ -5,7 +5,7 @@ Relating to storing credentials and handling location of the data/config directo
 import os
 import json
 from pathlib import Path
-from typing import NamedTuple, List, Union, Dict
+from typing import List, Union, Dict
 
 import yaml
 import click
@@ -116,14 +116,3 @@ class LocalDir:
             config_base=_expand_path(conf_dir),
             username=username,
         )
-
-
-def _iterate_local_identifiers() -> List[str]:
-    """
-    Loop through all local account identifiers
-    """
-    return [
-        p
-        for p in os.listdir(default_data_dir)
-        if os.path.isdir(os.path.join(default_data_dir, p)) and not p.startswith(".")
-    ]
