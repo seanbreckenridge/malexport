@@ -11,7 +11,7 @@ setup(
     url="https://github.com/seanbreckenridge/malexport",
     author="Sean Breckenridge",
     author_email="seanbrecke@gmail.com",
-    description=("""An offline, updatable copy of your MAL account"""),
+    description=("""backs up info from your MAL account"""),
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="MIT",
