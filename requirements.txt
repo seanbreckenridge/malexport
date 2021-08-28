@@ -6,4 +6,3 @@ PyYaml
 selenium
 lxml
 cssselect
-pyunpack

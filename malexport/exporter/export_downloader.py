@@ -1,13 +1,12 @@
 import os
 import time
-import tempfile
 import shutil
+import gzip
 from typing import List
 
 from selenium.webdriver.support.ui import WebDriverWait  # type: ignore[import]
 from selenium.webdriver.common.by import By  # type: ignore[import]
 from selenium.webdriver.support import expected_conditions as EC  # type: ignore[import]
-from pyunpack import Archive  # type: ignore[import]
 
 from .driver import driver, driver_login, wait, TEMP_DOWNLOAD_DIR
 from .list_type import ListType
@@ -74,15 +73,11 @@ class ExportDownloader:
             )
             time.sleep(0.5)
 
-        with tempfile.TemporaryDirectory() as td:
-            # extract each file into the temporary directory
-            for archive_name in self._list_files():
-                Archive(os.path.join(TEMP_DOWNLOAD_DIR, archive_name)).extractall(td)
-            # list files in the temporary directory and move them
-            for (extracted_xml_name, target) in zip(
-                self._list_files(td), [self.animelist_path, self.mangalist_path]
-            ):
-                from_ = os.path.join(td, extracted_xml_name)
-                to_ = str(target)
-                logger.info(f"Moving extracted file {from_} to {to_}")
-                shutil.move(from_, to_)
+        for (archive_name, target) in zip(
+            self._list_files(), [self.animelist_path, self.mangalist_path]
+        ):
+            archive_path = os.path.join(TEMP_DOWNLOAD_DIR, archive_name)
+            logger.info(f"Extracting {archive_path} to {target}")
+            with gzip.open(archive_path, "rb") as gz_in:
+                with target.open("wb") as f:
+                    shutil.copyfileobj(gz_in, f)
