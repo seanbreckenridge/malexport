@@ -79,7 +79,7 @@ def driver_login(localdir: LocalDir) -> None:
     d.find_element_by_id(PASSWORD_ID).send_keys(creds["password"])
     time.sleep(1)
     # use script to login incase window is too small to be clickable
-    d.execute_script(f'''document.querySelector("{LOGIN_BUTTON_CSS}").click()''')
+    d.execute_script(f"""document.querySelector("{LOGIN_BUTTON_CSS}").click()""")
     IS_LOGGED_IN = True
 
 
