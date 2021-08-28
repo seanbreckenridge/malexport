@@ -28,7 +28,7 @@ For your [API Info](https://myanimelist.net/apiconfig), you can use 'other' as t
 
 ## Usage
 
-Credentials are asked for the first time they're needed, and then stored in `~/.config/malexport`. Data by default is stored in `~/.local/share/malexport`, but like dozens of other things here are configurable with environment variables:
+Credentials are asked for the first time they're needed, and then stored in `~/.config/malexport`. Data by default is stored in `~/.local/share/malexport`, but like lots of other things here are configurable with environment variables:
 
 ```
 $ fd '.py$' -X grep 'MALEXPORT_'
