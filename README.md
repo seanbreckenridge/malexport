@@ -2,7 +2,7 @@
 
 TODO: write a submodule `malexport.parse` to parse the saved info into Python objects/JSON
 
-This uses multiple methods to extract info about my MAL account, focused on my episode history/forum posts I've made.
+This uses multiple methods to extract info about my MAL (MyAnimeList) account, focused on my episode history/forum posts I've made.
 
 I wanted to use the API whenever possible here, but the information returned by the API is so scarce, or endpoints don't really exist at all, so you can't really get a lot of info out of it. As far as I could figure out, it doesn't have a history endpoint, or any way to retrieve how many times you've rewatched a show, so this uses:
 
