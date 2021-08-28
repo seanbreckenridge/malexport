@@ -5,7 +5,7 @@ Relating to storing credentials and handling location of the data/config directo
 import os
 import json
 from pathlib import Path
-from typing import List, Union, Dict
+from typing import Union, Dict
 
 import yaml
 import click

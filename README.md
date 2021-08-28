@@ -6,8 +6,8 @@ I wanted to use the API whenever possible here, but the information returned by 
 
 - The `load_json` endpoint (unauthenticated) to backup my `anime`/`manga` list (by most recently updated, as thats useful in many contexts)
 - Selenium to:
-    - Individually grab episode/chapter history data
-    - Download the MAL export (the giant XML files), since those have rewatch information, and better dates
+  - Individually grab episode/chapter history data
+  - Download the MAL export (the giant XML files), since those have rewatch information, and better dates
 - The MAL API ([docs](https://myanimelist.net/apiconfig/references/api/v2#operation/anime_get)) to grab forum posts
 - [Jikan](https://jikan.moe/) in some cases where the API doesn't provide the relevant data
 

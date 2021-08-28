@@ -6,6 +6,7 @@ from .mal_list import MalList
 from .mal_session import MalSession
 from .episode_history import HistoryManager
 from .forum import ForumManager
+from .export_downloader import ExportDownloader
 
 
 class Account:
@@ -19,16 +20,16 @@ class Account:
         self.animelist = MalList(list_type=ListType.ANIME, localdir=self.localdir)
         self.mangalist = MalList(list_type=ListType.MANGA, localdir=self.localdir)
         self.mal_session: Optional[MalSession] = None
-
-        self.forum_parser: Optional[ForumManager] = None
+        self.anime_episode_history: Optional[HistoryManager] = None
+        self.manga_episode_history: Optional[HistoryManager] = None
+        self.forum_manager: Optional[ForumManager] = None
+        self.export_downloader: Optional[ExportDownloader] = None
 
     def authenticate(self) -> MalSession:
         """
         This does the initial authentication with MyAnimeList using the API
         After a successful authentication, refresh should be called instead
         """
-        if self.mal_session is not None:
-            return self.mal_session
         client_info = self.localdir.load_or_prompt_mal_client_info()
         self.mal_session = MalSession(
             client_id=client_info["client_id"], localdir=self.localdir
@@ -49,9 +50,11 @@ class Account:
         self.animelist.update_list()
         self.mangalist.update_list()
 
-    def update_history(self) -> None:
-        self.authenticate()
+    def update_exports(self) -> None:
+        self.export_downloader = ExportDownloader(self.localdir)
+        self.export_downloader.export_lists()
 
+    def update_history(self) -> None:
         self.anime_episode_history = HistoryManager(
             list_type=ListType.ANIME, localdir=self.localdir
         )

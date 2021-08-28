@@ -8,6 +8,7 @@ this info isn't accessible from the API
 import os
 import re
 import json
+import time
 from pathlib import Path
 from typing import Tuple
 from datetime import datetime
@@ -113,10 +114,8 @@ class HistoryManager:
         self.history_base_path: Path = _expand_path(
             self.localdir.data_dir / "history" / self.list_type.value
         )
-        self.driver = None
 
     def authenticate(self) -> None:
-        self.driver = driver()
         driver_login(localdir=self.localdir)
 
     def entry_path(self, entry_id: int) -> Path:
@@ -124,10 +123,11 @@ class HistoryManager:
 
     def download_data(self, entry_id: int) -> Json:
         d = driver()
+        time.sleep(1)
         url: str = history_url(self.list_type, entry_id)
-        wait()
         logger.info(f"Requesting history data for {self.list_type.value} {entry_id}")
         d.get(url)
+        wait()
         # sanity check to make sure data is present on the page
         WebDriverWait(d, 10).until(
             EC.text_to_be_present_in_element(

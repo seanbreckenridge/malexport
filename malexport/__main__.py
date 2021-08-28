@@ -1,10 +1,9 @@
-import sys
 from typing import Callable
 
 import click
 
 from .paths import LocalDir
-from .mal.account import Account
+from .exporter.account import Account
 
 
 @click.group()
@@ -46,7 +45,7 @@ def _handle_account(username: str) -> Account:
     return Account(localdir=LocalDir.from_username(username=username))
 
 
-@update.command(name="all")
+@update.command(name="all", short_help="update all data")
 @shared
 def _all(username: str) -> None:
     """
@@ -54,6 +53,7 @@ def _all(username: str) -> None:
     """
     acc = _handle_account(username)
     acc.update_lists()
+    acc.update_exports()
     acc.update_history()
     acc.update_forum_posts()
     click.secho("Done updating!", fg="green")
@@ -64,6 +64,13 @@ def _all(username: str) -> None:
 def _lists(username: str) -> None:
     acc = _handle_account(username)
     acc.update_lists()
+
+
+@update.command(name="export", short_help="export xml lists")
+@shared
+def _export(username: str) -> None:
+    acc = _handle_account(username)
+    acc.update_exports()
 
 
 @update.command(name="history", short_help="update episode history")

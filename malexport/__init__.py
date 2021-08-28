@@ -1,1 +1,1 @@
-from .mal import Account, MalSession
+from .exporter import Account, MalSession

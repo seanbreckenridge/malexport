@@ -17,8 +17,10 @@ CHROME_LOCATION: Optional[str] = os.environ.get("MALEXPORT_CHROMEDRIVER_LOCATION
 
 # location for chromedriver to download files to
 TEMP_DOWNLOAD_BASE = os.environ.get("MALEXPORT_TEMPDIR", tempfile.gettempdir())
-TEMP_DOWNLOAD_DIR = _expand_path(
-    Path(TEMP_DOWNLOAD_BASE) / "malexport_driver_downloads"
+
+# unique location so we don't use old data
+TEMP_DOWNLOAD_DIR = tempfile.mkdtemp(
+    dir=_expand_path(Path(TEMP_DOWNLOAD_BASE) / "malexport_driver_downloads")
 )
 
 # global so user can edit before a driver is created if they want
@@ -44,6 +46,7 @@ def driver() -> Chrome:
 
 
 IS_LOGGED_IN: bool = False
+LOGIN_PAGE = "https://myanimelist.net/login.php"
 
 
 def driver_login(localdir: LocalDir) -> None:
@@ -55,11 +58,11 @@ def driver_login(localdir: LocalDir) -> None:
     if IS_LOGGED_IN:
         return
     creds = localdir.load_or_prompt_credentials()
-    d.get("https://myanimelist.net/login.php")
+    d.get(LOGIN_PAGE)
     d.find_element_by_id("loginUserName").send_keys(creds["username"])
-    time.sleep(2)
+    time.sleep(1)
     d.find_element_by_id("login-password").send_keys(creds["password"])
-    time.sleep(2)
+    time.sleep(1)
     d.find_element_by_css_selector(
         ".inputButton.btn-form-submit[value='Login']"
     ).click()
