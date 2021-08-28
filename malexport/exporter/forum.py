@@ -1,3 +1,7 @@
+"""
+Uses MALs API to download forum posts
+"""
+
 import json
 from typing import Iterator
 

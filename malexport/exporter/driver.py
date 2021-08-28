@@ -1,3 +1,7 @@
+"""
+Selenium singleton and functionality to login to MAL using a chromedriver
+"""
+
 import os
 import time
 import tempfile

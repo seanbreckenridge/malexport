@@ -1,3 +1,7 @@
+"""
+Exports your list as XML from MAL using Selenium
+"""
+
 import os
 import time
 import shutil

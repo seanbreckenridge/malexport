@@ -1,6 +1,5 @@
 """
-This maintains an authenticated session with MAL, so that I can grab
-episode history for each entry individually
+Maintains an authenticated session with MAL
 """
 
 import os
