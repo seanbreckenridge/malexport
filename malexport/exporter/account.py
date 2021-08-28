@@ -4,7 +4,7 @@ from ..paths import LocalDir
 from .list_type import ListType
 from .mal_list import MalList
 from .mal_session import MalSession
-from .episode_history import HistoryManager
+from .history import HistoryManager
 from .forum import ForumManager
 from .export_downloader import ExportDownloader
 
@@ -20,7 +20,7 @@ class Account:
         self.mangalist = MalList(list_type=ListType.MANGA, localdir=self.localdir)
         self.mal_session: Optional[MalSession] = None
         self.anime_episode_history: Optional[HistoryManager] = None
-        self.manga_episode_history: Optional[HistoryManager] = None
+        self.manga_chapter_history: Optional[HistoryManager] = None
         self.forum_manager: Optional[ForumManager] = None
         self.export_downloader: Optional[ExportDownloader] = None
 
@@ -63,7 +63,7 @@ class Account:
         self.export_downloader = ExportDownloader(self.localdir)
         self.export_downloader.export_lists()
 
-    def update_history(self) -> None:
+    def update_history(self, only: Optional[ListType] = None) -> None:
         """
         Uses selenium to download episode/chapter history one entry at a time.
 
@@ -72,11 +72,18 @@ class Account:
         self.anime_episode_history = HistoryManager(
             list_type=ListType.ANIME, localdir=self.localdir
         )
-        self.manga_episode_history = HistoryManager(
+        self.manga_chapter_history = HistoryManager(
             list_type=ListType.MANGA, localdir=self.localdir
         )
+        if only is not None:
+            if only == ListType.ANIME:
+                self.anime_episode_history.update_history()
+                return
+            elif only == ListType.MANGA:
+                self.manga_chapter_history.update_history()
+                return
         self.anime_episode_history.update_history()
-        self.manga_episode_history.update_history()
+        self.manga_chapter_history.update_history()
 
     def update_forum_posts(self) -> None:
         """

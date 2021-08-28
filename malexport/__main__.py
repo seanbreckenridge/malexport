@@ -1,8 +1,8 @@
-from typing import Callable
+from typing import Callable, Optional
 
 import click
 
-from .exporter.account import Account
+from .exporter.account import Account, ListType
 
 
 @click.group()
@@ -69,10 +69,20 @@ def _export(username: str) -> None:
 
 
 @update.command(name="history", short_help="update episode history")
+@click.option(
+    "-o",
+    "--only",
+    type=click.Choice(["anime", "manga"], case_sensitive=False),
+    required=False,
+    help="Only update anime or manga history specifically",
+)
 @shared
-def _history(username: str) -> None:
+def _history(username: str, only: Optional[str]) -> None:
     acc = Account.from_username(username)
-    acc.update_history()
+    only_update: Optional[ListType] = None
+    if only is not None:
+        only_update = ListType.__members__[only.upper()]
+    acc.update_history(only=only_update)
 
 
 @update.command(name="forum", short_help="update forum posts")

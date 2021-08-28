@@ -110,7 +110,7 @@ class HistoryManager:
         """Location of the JSON file for this type/ID"""
         return self.history_base_path / f"{entry_id}.json"
 
-    def _extract_details(self, episode_details: str) -> Json:
+    def _extract_details(self, html_details: str) -> Json:
         """
         Given the HTML div which contains the episode details from the page,
         extract the header (name of the entry) when each episode was watched
@@ -119,7 +119,7 @@ class HistoryManager:
         since its possible for you to mark episodes multiple times, e.g. if you're
         rewatching entries
         """
-        x = ht.fromstring(episode_details)
+        x = ht.fromstring(html_details)
         # parse the header
         header = x.xpath('.//div[contains(text(), "Details")]')
         assert (
