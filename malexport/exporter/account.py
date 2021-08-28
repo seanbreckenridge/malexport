@@ -26,8 +26,9 @@ class Account:
 
     def mal_api_authenticate(self) -> MalSession:
         """
-        This does the initial authentication with MyAnimeList using the API
-        After a successful authentication, refresh should be called instead
+        This authenticates the mal_session using the API
+        If never done before, runs the OAuth flow. Else loads
+        the access token from the config file
         """
         client_info = self.localdir.load_or_prompt_mal_client_info()
         self.mal_session = MalSession(

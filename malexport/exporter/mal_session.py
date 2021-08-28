@@ -100,7 +100,7 @@ class MalSession:
         webbrowser.open_new_tab(url)
         click.echo(f"If the URL didn't open automatically, go to\n\n{url}\n")
         redirected_uri = click.prompt(
-            "Approve the application, and paste the URL it redirects you back here"
+            "Approve the application, and paste the whole URL it redirects you back here"
         )
         code: str = parse_qs(urlparse(redirected_uri).query)["code"][0]
         logger.debug(f"parsed code: {code}")
