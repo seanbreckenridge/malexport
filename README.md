@@ -1,11 +1,6 @@
 # malexport
 
-This is still in development, but the majority of the exporters (saving data from MAL) are done.
-
-TODO:
-
-- write a submodule `malexport.parse` and the `malexport parse` command to parse the saved info into Python objects/JSON
-- Implement the other strategies for updating episode history
+This is still in development, but the exporters (saving data from MAL) are done.
 
 This uses multiple methods to extract info about my MAL (MyAnimeList) account, focused on my episode history/forum posts I've made.
 
@@ -17,7 +12,7 @@ I wanted to use the API whenever possible here, but the information returned by 
   - `malexport update export` - Download the MAL export (the giant XML files), since those have rewatch information, and better dates
 - `malexport update forum` - Uses the MAL API ([docs](https://myanimelist.net/apiconfig/references/api/v2)) to grab forum posts
 
-I attempted to make this as minimal as possible -- saving timestamps to optimize forum posts, using the [Jikan /history](https://jikan.moe/) endpoint to find episode data to update, but the defaults here are far more on the safe side when scraping. If data fails to download you may have been flagged as a bot and may need to open MAL in your browser to solve a captcha.
+The defaults here are far more on the safe side when scraping. If data fails to download you may have been flagged as a bot and may need to open MAL in your browser to solve a captcha.
 
 For my list (which is pretty big), this takes a few days to download all of my data, and then a few minutes every few days to update it.
 
@@ -34,6 +29,10 @@ For your [API Info](https://myanimelist.net/apiconfig), you can use 'other' as t
 Since this uses selenium, that requires a `chromedriver` binary somewhere on your system. Thats typically available in package repositories, else see [here](https://gist.github.com/seanbreckenridge/709a824b8c56ea22dbf4e86a7804287d). If this isn't able to find the file, set the `MALEXPORT_CHROMEDRIVER_LOCATION` environment variable, like: `MALEXPORT_CHROMEDRIVER_LOCATION=C:\\Downloads\\chromedriver.exe malexport ...`
 
 ## Usage
+
+### update
+
+`malexport update all` can be run to run all the updaters or `malexport update [forum|history|lists|export]` can be run to update one of them. Each of those require you to pass a `-u malUsername`. This stores everything (except for the MAL API Client ID) on an account-by-account basis, so its possible to backup multiple accounts
 
 For the `update lists` command, this uses `load_json`, which is what is used on modern lists as MAL. Therefore, its contents might be slightly different depending on your settings. To get the most info out of it, I'd recommend going to your [list preferences](https://myanimelist.net/editprofile.php?go=listpreferences) and enabling all of the columns so that metadata is returned
 
@@ -52,6 +51,39 @@ malexport/paths.py:    default_data_dir = Path(os.environ["MALEXPORT_DIR"])
 malexport/paths.py:    default_conf_dir = Path(os.environ["MALEXPORT_CFG"])
 ```
 
-`malexport update all` can be run to run all the updaters or `malexport update [forum|history|lists|export]` can be run to update one of them. Each of those require you to pass a `-u malUsername`. This stores everything (except for the MAL API Client ID) on an account-by-account basis, so its possible to backup multiple accounts
-
 To show debug logs set `export MALEXPORT_LOGS=10` (uses [logging levels](https://docs.python.org/3/library/logging.html#logging-levels)).
+
+### parse
+
+Note: Still in development
+
+`malexport parse xml XML_FILE` can be used to convert the information from the XML exports to JSON. Like:
+
+```
+$ malexport parse xml ./animelist.xml | jq '.entries[106]'
+{
+  "anime_id": 31646,
+  "title": "3-gatsu no Lion",
+  "media_type": "TV",
+  "episodes": 22,
+  "my_id": 0,
+  "watched_episodes": 22,
+  "start_date": "2020-07-01",
+  "finish_date": "2020-08-09",
+  "rated": null,
+  "score": 9,
+  "storage": null,
+  "storage_value": 0,
+  "status": "Completed",
+  "comments": "",
+  "times_watched": 0,
+  "rewatch_value": null,
+  "priority": "LOW",
+  "tags": "Drama, Game, Seinen, Slice of Life, sub",
+  "rewatching": false,
+  "rewatching_ep": 0,
+  "discuss": true,
+  "sns": "default",
+  "update_on_import": false
+}
+```

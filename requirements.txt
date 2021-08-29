@@ -6,3 +6,4 @@ PyYaml
 selenium
 lxml
 cssselect
+simplejson

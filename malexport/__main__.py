@@ -3,6 +3,8 @@ from typing import Callable, Optional
 import click
 
 from .exporter.account import Account, ListType
+from .parse import parse_xml
+from .common import serialize
 
 
 @click.group()
@@ -49,8 +51,8 @@ def _all(username: str) -> None:
     acc = Account.from_username(username)
     acc.update_lists()
     acc.update_exports()
-    acc.update_history()
     acc.update_forum_posts()
+    acc.update_history()
     click.secho("Done updating!", fg="green")
 
 
@@ -90,6 +92,18 @@ def _history(username: str, only: Optional[str]) -> None:
 def _forum(username: str) -> None:
     acc = Account.from_username(username)
     acc.update_forum_posts()
+
+
+@main.group(name="parse")
+def parse() -> None:
+    """parse the resulting exported files"""
+
+
+@parse.command(name="xml", short_help="parse the XML export files")
+@click.argument("XML_FILE")
+def _xml(xml_file: str) -> None:
+    xml_data = parse_xml(xml_file)
+    click.echo(serialize(xml_data))
 
 
 if __name__ == "__main__":

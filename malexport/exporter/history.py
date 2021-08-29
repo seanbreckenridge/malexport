@@ -9,16 +9,19 @@ import os
 import re
 import json
 import time
+from urllib.parse import urlparse, parse_qs
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, List, Set
 from datetime import datetime
 
 from .list_type import ListType
 from .mal_list import MalList
 from .driver import driver, driver_login, wait
+from .export_downloader import ExportDownloader
 from ..log import logger
 from ..paths import LocalDir, _expand_path
 from ..common import Json
+from ..parse.xml import parse_xml, AnimeEntry, MangaEntry
 
 from lxml import html as ht  # type: ignore[import]
 from selenium.webdriver.support.ui import WebDriverWait  # type: ignore[import]
@@ -141,7 +144,30 @@ class HistoryManager:
         logger.debug(data)
         return data
 
-    def download_history_info(self, entry_id: int) -> Json:
+    def download_recent_user_history(self) -> List[int]:
+        """
+        Goes to the history page in the authenticated browser
+        and grabs IDs for any items which were recently watched/read
+        """
+        logger.info(f"Downloading recent user {self.list_type.value} history")
+        d = driver()
+        time.sleep(1)
+        mal_username = self.localdir.load_or_prompt_credentials()["username"]
+        history_url = (
+            f"https://myanimelist.net/history/{mal_username}/{self.list_type.value}"
+        )
+        d.get(history_url)
+        wait()
+        content_div = d.find_element_by_css_selector("div#content")
+        x = ht.fromstring(content_div.get_attribute("innerHTML"))
+        found_ids: Set[int] = set()
+        for el in x.xpath(
+            f'.//a[starts-with(@href, "/{self.list_type.value}.php?id=")]'
+        ):
+            found_ids.add(int(parse_qs(urlparse(el.attrib["href"]).query)["id"][0]))
+        return list(found_ids)
+
+    def download_history_for_entry(self, entry_id: int) -> Json:
         """
         Download the information for a particular type/ID
         """
@@ -168,14 +194,14 @@ class HistoryManager:
         new_data = self._extract_details(details.get_attribute("innerHTML"))
         return new_data
 
-    def update_if_expired(self, entry_id: int) -> bool:
+    def update_entry_data(self, entry_id: int) -> bool:
         """
         This returns a bool which signifies if data was changed
         If any data was changed/this is new, this returns True
         If data was the same as last time, it returns False
         """
         p = self.entry_path(entry_id)
-        new_data = self.download_history_info(entry_id)
+        new_data = self.download_history_for_entry(entry_id)
         # assume this is new data
         has_new_data = True
         if p.exists():
@@ -184,6 +210,7 @@ class HistoryManager:
             # we should keep searching for new episode information
             has_new_data = old_data != new_data
         new_data_json = json.dumps(new_data)
+        # this saves even if there is no episode history, so we can compare when updating
         p.write_text(new_data_json)
         return has_new_data
 
@@ -198,16 +225,42 @@ class HistoryManager:
               items that have been watched in the last 3 weeks
         """
         self.authenticate()
-        # this saves even if there is no episode history, so we can compare
         m = MalList(self.list_type, localdir=self.localdir)
-        mlist = m.load_list()
-        for entry_data in mlist:
-            mal_id = entry_data[f"{self.list_type.value}_id"]
-            p = self.entry_path(mal_id)
-            # If data doesn't exist for an item, request it
-            # this doesn't impact the other strategies and will likely run when
-            # you first add an item or when this is first run and is caching your entire list
-            if not p.exists():
-                self.update_if_expired(mal_id)
+        exp = ExportDownloader(localdir=self.localdir)
+        export_file = (
+            exp.animelist_path
+            if self.list_type == ListType.ANIME
+            else exp.mangalist_path
+        )
+        mal_id: int
+        if m.list_path.exists():
+            mlist = m.load_list()
+            for entry_data in mlist:
+                mal_id = entry_data[f"{self.list_type.value}_id"]
+                p = self.entry_path(mal_id)
+                # If data doesn't exist for an item, request it
+                # this doesn't impact the other strategies and will likely run when
+                # you first add an item or when this is first run and is caching your entire list
+                if not p.exists():
+                    self.update_entry_data(mal_id)
+            # TODO: implement strategy to request recently updated items
+        elif export_file.exists():
+            # use the XML file if that exists
+            for el in parse_xml(str(export_file)).entries:
+                if self.list_type == ListType.ANIME:
+                    assert isinstance(el, AnimeEntry)
+                    mal_id = el.anime_id
+                else:
+                    assert isinstance(el, MangaEntry)
+                    mal_id = el.manga_id
+                p = self.entry_path(mal_id)
+                if not p.exists():
+                    self.update_entry_data(mal_id)
+        else:
+            raise RuntimeError(
+                f"Neither {m.list_path} (lists) or {export_file} (export) exist, need one to update history"
+            )
 
-            # TODO: implement other update strategies
+        # use selenium to go to users' history and update things watched within the last few weeks
+        for mal_id in self.download_recent_user_history():
+            self.update_entry_data(mal_id)

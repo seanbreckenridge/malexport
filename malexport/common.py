@@ -1,10 +1,12 @@
 import os
 import time
 import warnings
+import datetime
 from typing import Any, Iterator, Dict, Optional, Callable
 
 import requests
 import backoff  # type: ignore[import]
+import simplejson
 
 Json = Any
 
@@ -72,3 +74,19 @@ def safe_request_json(
     Run a safe_request, then parse the response to JSON
     """
     return safe_request(url, session=session, **kwargs).json()
+
+
+def default_encoder(o: Any) -> Any:
+    if isinstance(o, datetime.datetime):
+        return o.timestamp()
+    elif isinstance(o, datetime.date):
+        return str(o)
+    raise TypeError(f"{o} of type {type(o)} is not serializable")
+
+
+def serialize(data: Any) -> str:
+    return simplejson.dumps(
+        data,
+        default=default_encoder,
+        namedtuple_as_object=True,
+    )
