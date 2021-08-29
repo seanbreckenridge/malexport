@@ -128,18 +128,18 @@ class HistoryManager:
         assert (
             len(header) == 1
         ), "Found multiple elements while searching for header, expected 1"
-        # parse episodes
-        episode_elements = x.xpath(f'.//div[starts-with(@id, "{self.idprefix}")]')
-        title = header[0].text.strip()
         # split tokens and remove last two (Chapter Details or Episode Details)
+        title = header[0].text.strip()
         title = " ".join(title.split(" ")[:-2]).strip()
         data = {"title": title}
-        # fine even if there are no episode/chapter elements
+        # parse episodes/chapters; fine even if there are no episode/chapter elements
+        episode_elements = x.xpath(f'.//div[starts-with(@id, "{self.idprefix}")]')
         episodes = [
-            _extract_column_data(ep.text, self.list_type) for ep in episode_elements
+            list(_extract_column_data(ep.text, self.list_type))
+            for ep in episode_elements
         ]
         # sort by date, most recent first
-        episodes.sort(key=lambda tup: tup[1], reverse=True)
+        episodes.sort(key=lambda d: d[1], reverse=True)
         data["episodes"] = episodes
         logger.debug(data)
         return data
