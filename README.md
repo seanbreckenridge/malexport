@@ -6,9 +6,9 @@ This uses multiple methods to extract info about my MAL (MyAnimeList) account, f
 
 I wanted to use the API whenever possible here, but the information returned by the API is so scarce, or endpoints don't really exist at all, so you can't really get a lot of info out of it. As far as I could figure out, it doesn't have a history endpoint, or any way to retrieve how many times you've rewatched a show, so this uses:
 
-- `malexport update lists` - The `load_json` endpoint (unauthenticated) to backup my `anime`/`manga` list (by most recently updated, as thats useful in many contexts)
+- `malexport update lists` - The `load.json` endpoint (unauthenticated) to backup my `anime`/`manga` list (by most recently updated, as thats useful in many contexts)
 - Selenium (so requires your MAL Username/Password; stored locally) to:
-  - `malexport update history` - Individually grab episode/chapter history data
+  - `malexport update history` - Individually grab episode/chapter history data (i.e., [this](https://i.imgur.com/2h5ZFng.png))
   - `malexport update export` - Download the MAL export (the giant XML files), since those have rewatch information, and better dates
 - `malexport update forum` - Uses the MAL API ([docs](https://myanimelist.net/apiconfig/references/api/v2)) to grab forum posts
 
@@ -34,7 +34,7 @@ Since this uses selenium, that requires a `chromedriver` binary somewhere on you
 
 `malexport update all` can be run to run all the updaters or `malexport update [forum|history|lists|export]` can be run to update one of them. Each of those require you to pass a `-u malUsername`. This stores everything (except for the MAL API Client ID) on an account-by-account basis, so its possible to backup multiple accounts
 
-For the `update lists` command, this uses `load_json`, which is what is used on modern lists as MAL. Therefore, its contents might be slightly different depending on your settings. To get the most info out of it, I'd recommend going to your [list preferences](https://myanimelist.net/editprofile.php?go=listpreferences) and enabling all of the columns so that metadata is returned
+For the `update lists` command, this uses the unauthenticated `load.json` endpoint, which is what is used on modern lists as MAL. Therefore, its contents might be slightly different depending on your settings. To get the most info out of it, I'd recommend going to your [list preferences](https://myanimelist.net/editprofile.php?go=listpreferences) and enabling all of the columns so that metadata is returned
 
 Credentials are asked for the first time they're needed, and then stored in `~/.config/malexport`. Data by default is stored in `~/.local/share/malexport`, but like lots of other things here are configurable with environment variables:
 

@@ -2,7 +2,7 @@
 Requests MAL Lists (animelist/mangalist) for a user,
 doesn't require authentication
 
-This requests using the load_json endpoint, the same
+This requests using the load.json endpoint, the same
 mechanism that works on modern MAL lists
 """
 

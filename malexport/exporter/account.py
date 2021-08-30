@@ -49,7 +49,7 @@ class Account:
 
     def update_lists(self) -> None:
         """
-        Uses the load_json endpoint to request anime/manga lists.
+        Uses the load.json endpoint to request anime/manga lists.
         Does not require any authentication
         """
         self.animelist.update_list()
