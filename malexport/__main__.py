@@ -12,7 +12,7 @@ from .list_type import ListType
 @click.group()
 def main() -> None:
     """
-    malexport
+    exports your data from MyAnimeList
     """
 
 

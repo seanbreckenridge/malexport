@@ -93,7 +93,7 @@ class MangaEntry(NamedTuple):
     volumes: int
     publishing_status: str
     id: int
-    manga_magazines: list[Company]
+    manga_magazines: List[Company]
     url: str
     image_path: str
     is_added_to_list: bool
