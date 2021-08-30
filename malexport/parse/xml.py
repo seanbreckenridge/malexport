@@ -1,11 +1,11 @@
 from typing import NamedTuple, Optional, Union, Any, Dict, List
 from datetime import date
-from distutils.util import strtobool as strtoint
 
 
 import lxml.etree as ET  # type: ignore[import]
 
-from ..exporter.list_type import ListType
+from ..list_type import ListType
+from .common import parse_date_safe, strtobool
 
 # hmm.. cant figure out the types for this
 XMLElement = Any
@@ -102,17 +102,6 @@ def _parse_info(info: XMLElement) -> Info:
     return data
 
 
-def _parse_date(d: str) -> Optional[date]:
-    try:
-        return date.fromisoformat(d)
-    except ValueError:  # no date supplied, uses '0000-00-00'
-        return None
-
-
-def strtobool(val: str) -> bool:
-    return bool(strtoint(val.lower()))
-
-
 def _parse_anime(anime_el: XMLElement) -> AnimeEntry:
     return AnimeEntry(
         anime_id=int(anime_el.find("series_animedb_id").text),
@@ -121,8 +110,8 @@ def _parse_anime(anime_el: XMLElement) -> AnimeEntry:
         episodes=int(anime_el.find("series_episodes").text),
         my_id=int(anime_el.find("my_id").text),
         watched_episodes=int(anime_el.find("my_watched_episodes").text),
-        start_date=_parse_date(anime_el.find("my_start_date").text),
-        finish_date=_parse_date(anime_el.find("my_finish_date").text),
+        start_date=parse_date_safe(anime_el.find("my_start_date").text),
+        finish_date=parse_date_safe(anime_el.find("my_finish_date").text),
         rated=anime_el.find("my_rated").text,
         score=int(anime_el.find("my_score").text),
         storage=anime_el.find("my_storage").text,
@@ -150,8 +139,8 @@ def _parse_manga(manga_el: XMLElement) -> MangaEntry:
         my_id=int(manga_el.find("my_id").text),
         read_volumes=int(manga_el.find("my_read_volumes").text),
         read_chapters=int(manga_el.find("my_read_chapters").text),
-        start_date=_parse_date(manga_el.find("my_start_date").text),
-        finish_date=_parse_date(manga_el.find("my_finish_date").text),
+        start_date=parse_date_safe(manga_el.find("my_start_date").text),
+        finish_date=parse_date_safe(manga_el.find("my_finish_date").text),
         scanlation_group=manga_el.find("my_scanalation_group").text,
         score=int(manga_el.find("my_score").text),
         storage=manga_el.find("my_storage").text,

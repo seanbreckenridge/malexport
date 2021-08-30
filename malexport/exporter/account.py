@@ -1,7 +1,7 @@
 from typing import Optional
 
 from ..paths import LocalDir
-from .list_type import ListType
+from ..list_type import ListType
 from .mal_list import MalList
 from .mal_session import MalSession
 from .history import HistoryManager

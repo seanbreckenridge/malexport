@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Tuple, List, Set
 from datetime import datetime
 
-from .list_type import ListType
+from ..list_type import ListType
 from .mal_list import MalList
 from .driver import driver, driver_login, wait
 from .export_downloader import ExportDownloader

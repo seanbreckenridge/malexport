@@ -13,7 +13,7 @@ from selenium.webdriver.common.by import By  # type: ignore[import]
 from selenium.webdriver.support import expected_conditions as EC  # type: ignore[import]
 
 from .driver import driver, driver_login, wait, TEMP_DOWNLOAD_DIR
-from .list_type import ListType
+from ..list_type import ListType
 from ..paths import LocalDir
 from ..log import logger
 

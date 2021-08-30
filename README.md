@@ -55,12 +55,11 @@ To show debug logs set `export MALEXPORT_LOGS=10` (uses [logging levels](https:/
 
 ### parse
 
-Note: Still in development
+The `parse` subcommand includes lots of commands which take the saved data and clean it up a bit. Those each have python functions which can be imported from `malexport.parse`, or called from the CLI to produce JSON:
 
-`malexport parse xml XML_FILE` can be used to convert the information from the XML exports to JSON. Like:
+`$ malexport parse xml ./animelist.xml | jq '.entries[106]'`
 
-```
-$ malexport parse xml ./animelist.xml | jq '.entries[106]'
+```json
 {
   "anime_id": 31646,
   "title": "3-gatsu no Lion",
@@ -79,7 +78,7 @@ $ malexport parse xml ./animelist.xml | jq '.entries[106]'
   "times_watched": 0,
   "rewatch_value": null,
   "priority": "LOW",
-  "tags": "Drama, Game, Seinen, Slice of Life, sub",
+  "tags": "",
   "rewatching": false,
   "rewatching_ep": 0,
   "discuss": true,
@@ -87,3 +86,50 @@ $ malexport parse xml ./animelist.xml | jq '.entries[106]'
   "update_on_import": false
 }
 ```
+
+`parse list` converts some of the status int enumerations (status/airing status) into the corresponding string values, and parses date strings like '04-09-20' to '09-04-2020':
+
+`malexport parse list ./animelist.json | jq '.entries | .[0]'`:
+
+```json
+{
+  "status": "On Hold",
+  "score": 6,
+  "tags": "Slice of Life",
+  "rewatching": false,
+  "watched_episodes": 8,
+  "title": "Shiroi Suna no Aquatope",
+  "episodes": 24,
+  "airing_status": "Currently Airing",
+  "id": 46093,
+  "studios": [
+    {
+      "id": 132,
+      "name": "P.A. Works"
+    }
+  ],
+  "licensors": [],
+  "season": {
+    "year": 2021,
+    "season": "Summer"
+  },
+  "has_episode_video": true,
+  "has_promotion_video": true,
+  "has_video": true,
+  "video_url": "/anime/46093/Shiroi_Suna_no_Aquatope/video",
+  "url": "/anime/46093/Shiroi_Suna_no_Aquatope",
+  "image_path": "https://cdn.myanimelist.net/r/96x136/images/anime/1932/114952.jpg?s=12d30d08dd16eb006e02f73d9dc14a8f",
+  "is_added_to_list": false,
+  "media_type": "TV",
+  "rating": "PG-13",
+  "start_date": "2021-07-10",
+  "finish_date": null,
+  "air_start_date": "2021-07-09",
+  "air_end_date": null,
+  "days": 53,
+  "storage": "",
+  "priority": "Low"
+}
+```
+
+If you want exact dates, I'd recommend using the `xml` export, as theres some estimation that has to done for the `list` export since the dates aren't absolute (e.g. `04-09-20` could be `2020` or `1920`

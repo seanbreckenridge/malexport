@@ -1,10 +1,12 @@
+import os
 from typing import Callable, Optional
 
 import click
 
-from .exporter.account import Account, ListType
-from .parse import parse_xml
+from .exporter import Account
+from .parse import parse_xml, parse_list
 from .common import serialize
+from .list_type import ListType
 
 
 @click.group()
@@ -104,6 +106,27 @@ def parse() -> None:
 def _xml(xml_file: str) -> None:
     xml_data = parse_xml(xml_file)
     click.echo(serialize(xml_data))
+
+
+@parse.command(name="list", short_help="parse the list file")
+@click.option(
+    "--type",
+    "_type",
+    type=click.Choice(["anime", "manga"], case_sensitive=False),
+    required=False,
+    help="Specify type of list. If not supplied, this tries to guess based on the filename",
+)
+@click.argument("LIST_FILE")
+def _list(_type: Optional[str], list_file: str) -> None:
+    chosen_type: ListType
+    if _type is not None:
+        chosen_type = ListType.__members__[_type.upper()]
+    else:
+        chosen_type = (
+            ListType.ANIME if "anime" in os.path.basename(list_file) else ListType.MANGA
+        )
+    list_data = parse_list(list_file, list_type=chosen_type)
+    click.echo(serialize(list_data))
 
 
 if __name__ == "__main__":

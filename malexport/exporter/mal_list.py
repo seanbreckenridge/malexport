@@ -13,7 +13,7 @@ from pathlib import Path
 
 import requests
 
-from .list_type import ListType
+from ..list_type import ListType
 from ..common import Json, safe_request_json
 from ..paths import LocalDir
 
