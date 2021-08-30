@@ -42,7 +42,7 @@ def history_url(list_type: ListType, entry_id: int) -> str:
 
 # if we hit these many recently updated entries which
 # are the same as the previous then stop requesting
-TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_EPISODE_LIMIT", 15))
+TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_EPISODE_LIMIT", 10))
 
 EPISODE_COL_REGEX = re.compile(
     "Ep (\d+), watched on (\d+)\/(\d+)\/(\d+) at (\d+):(\d+)"
@@ -100,10 +100,15 @@ class HistoryManager:
             self.localdir.data_dir / "history" / self.list_type.value
         )
 
+        # a list of IDs already requested by this instance, to avoid
+        # duplicates across strategies
+        self.already_requested: Set[int] = set()
+
         self.container_id = (
             "chapdetails" if self.list_type == ListType.MANGA else "epdetails"
         )
         self.idprefix = "chaprow" if self.list_type == ListType.MANGA else "eprow"
+
 
     def authenticate(self) -> None:
         """Logs in to MAL using your MAL username/password"""
@@ -200,6 +205,9 @@ class HistoryManager:
         If any data was changed/this is new, this returns True
         If data was the same as last time, it returns False
         """
+        if entry_id in self.already_requested:
+            logger.info(f"{entry_id} has already been requested, skipping...")
+            return False
         p = self.entry_path(entry_id)
         new_data = self.download_history_for_entry(entry_id)
         # assume this is new data
@@ -212,6 +220,7 @@ class HistoryManager:
         new_data_json = json.dumps(new_data)
         # this saves even if there is no episode history, so we can compare when updating
         p.write_text(new_data_json)
+        self.already_requested.add(entry_id)
         return has_new_data
 
     def update_history(self) -> None:
@@ -225,6 +234,7 @@ class HistoryManager:
               items that have been watched in the last 3 weeks
         """
         self.authenticate()
+
         m = MalList(self.list_type, localdir=self.localdir)
         exp = ExportDownloader(localdir=self.localdir)
         export_file = (
@@ -234,6 +244,7 @@ class HistoryManager:
         )
         mal_id: int
         if m.list_path.exists():
+            logger.info("Requesting any items which don't exist in history...")
             mlist = m.load_list()
             for entry_data in mlist:
                 mal_id = entry_data[f"{self.list_type.value}_id"]
@@ -243,8 +254,24 @@ class HistoryManager:
                 # you first add an item or when this is first run and is caching your entire list
                 if not p.exists():
                     self.update_entry_data(mal_id)
-            # TODO: implement strategy to request recently updated items
+
+            logger.info("Requesting items till we hit some amount of unchanged data...")
+            # request some amount till we hit unchanged data
+            till = int(self.till_same_limit)
+            for entry_data in mlist:
+                logger.info(f"Requesting {till} more entries...")
+                mal_id = entry_data[f"{self.list_type.value}_id"]
+                if self.update_entry_data(mal_id):
+                    logger.info("{self.list_type.value} {mal_id} had new data, resetting...")
+                    till = int(self.till_same_limit)
+                else:
+                    logger.info(f"{self.list_type.value} {mal_id} matched old data, decrementing...")
+                    till -= 1
+                if till <= 0:
+                    break
+
         elif export_file.exists():
+            logger.info("Requesting any items which don't exist in history...")
             # use the XML file if that exists
             for el in parse_xml(str(export_file)).entries:
                 if self.list_type == ListType.ANIME:
