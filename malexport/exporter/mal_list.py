@@ -6,10 +6,12 @@ This requests using the load_json endpoint, the same
 mechanism that works on modern MAL lists
 """
 
+import os
 import json
-
 from typing import List
 from pathlib import Path
+
+import requests
 
 from .list_type import ListType
 from ..common import Json, safe_request_json
@@ -17,6 +19,11 @@ from ..paths import LocalDir
 
 # this is order=5, which requests items that were edited by you recently
 BASE_URL = "https://myanimelist.net/{list_type}list/{username}/load.json?status=7&order=5&offset={offset}"
+
+LIST_USER_AGENT = os.environ.get(
+    "MALEXPORT_LIST_USER_AGENT",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0",
+)
 
 
 OFFSET_CHUNK = 300
@@ -71,9 +78,11 @@ class MalList:
         list_data: List[Json] = []
         # overwrite the list with new data
         offset = 0
+        session = requests.Session()
+        session.headers.update({"User-Agent": LIST_USER_AGENT})
         while True:
             url = self.offset_url(offset)
-            new_data = safe_request_json(url)
+            new_data = safe_request_json(url, session=session)
             list_data.extend(new_data)
             if len(new_data) < OFFSET_CHUNK:
                 break
