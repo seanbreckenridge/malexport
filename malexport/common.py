@@ -78,7 +78,7 @@ def safe_request_json(
 
 def default_encoder(o: Any) -> Any:
     if isinstance(o, datetime.datetime):
-        return o.timestamp()
+        return str(o)
     elif isinstance(o, datetime.date):
         return str(o)
     raise TypeError(f"{o} of type {type(o)} is not serializable")

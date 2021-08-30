@@ -4,7 +4,7 @@ from typing import Callable, Optional
 import click
 
 from .exporter import Account
-from .parse import parse_xml, parse_list
+from .parse import parse_xml, parse_list, iter_forum_posts
 from .common import serialize
 from .list_type import ListType
 
@@ -60,7 +60,7 @@ def _all(username: str) -> None:
 
 @update.command(name="lists", short_help="update animelist and mangalists")
 @shared
-def _lists(username: str) -> None:
+def _lists_update(username: str) -> None:
     acc = Account.from_username(username)
     acc.update_lists()
 
@@ -117,7 +117,7 @@ def _xml(xml_file: str) -> None:
     help="Specify type of list. If not supplied, this tries to guess based on the filename",
 )
 @click.argument("LIST_FILE")
-def _list(_type: Optional[str], list_file: str) -> None:
+def _list_parse(_type: Optional[str], list_file: str) -> None:
     chosen_type: ListType
     if _type is not None:
         chosen_type = ListType.__members__[_type.upper()]
@@ -127,6 +127,12 @@ def _list(_type: Optional[str], list_file: str) -> None:
         )
     list_data = parse_list(list_file, list_type=chosen_type)
     click.echo(serialize(list_data))
+
+
+@parse.command(name="forum", short_help="extract forum posts by your user")
+@shared
+def _forum_parse(username: str) -> None:
+    click.echo(serialize(list(iter_forum_posts(username))))
 
 
 if __name__ == "__main__":

@@ -109,7 +109,6 @@ class HistoryManager:
         )
         self.idprefix = "chaprow" if self.list_type == ListType.MANGA else "eprow"
 
-
     def authenticate(self) -> None:
         """Logs in to MAL using your MAL username/password"""
         driver_login(localdir=self.localdir)
@@ -206,7 +205,7 @@ class HistoryManager:
         If data was the same as last time, it returns False
         """
         if entry_id in self.already_requested:
-            logger.info(f"{entry_id} has already been requested, skipping...")
+            logger.debug(f"{entry_id} has already been requested, skipping...")
             return False
         p = self.entry_path(entry_id)
         new_data = self.download_history_for_entry(entry_id)
@@ -262,10 +261,14 @@ class HistoryManager:
                 logger.info(f"Requesting {till} more entries...")
                 mal_id = entry_data[f"{self.list_type.value}_id"]
                 if self.update_entry_data(mal_id):
-                    logger.info("{self.list_type.value} {mal_id} had new data, resetting...")
+                    logger.debug(
+                        "{self.list_type.value} {mal_id} had new data, resetting..."
+                    )
                     till = int(self.till_same_limit)
                 else:
-                    logger.info(f"{self.list_type.value} {mal_id} matched old data, decrementing...")
+                    logger.debug(
+                        f"{self.list_type.value} {mal_id} matched old data, decrementing..."
+                    )
                     till -= 1
                 if till <= 0:
                     break

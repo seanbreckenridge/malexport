@@ -133,3 +133,5 @@ The `parse` subcommand includes lots of commands which take the saved data and c
 ```
 
 If you want exact dates, I'd recommend using the `xml` export, as theres some estimation that has to done for the `list` export since the dates aren't absolute (e.g. `04-09-20` could be `2020` or `1920`
+
+`malexport parse forum -u yourUsername` extracts posts made by your user to JSON
