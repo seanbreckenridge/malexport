@@ -4,7 +4,7 @@ from typing import Callable, Optional
 import click
 
 from .exporter import Account
-from .parse import parse_xml, parse_list, iter_forum_posts
+from .parse import parse_xml, parse_list, iter_forum_posts, iter_user_history
 from .common import serialize
 from .list_type import ListType
 
@@ -133,6 +133,12 @@ def _list_parse(_type: Optional[str], list_file: str) -> None:
 @shared
 def _forum_parse(username: str) -> None:
     click.echo(serialize(list(iter_forum_posts(username))))
+
+
+@parse.command(name="history", short_help="parse downloaded user history")
+@shared
+def _history_parse(username: str) -> None:
+    click.echo(serialize(list(iter_user_history(username))))
 
 
 if __name__ == "__main__":

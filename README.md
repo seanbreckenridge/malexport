@@ -1,7 +1,5 @@
 # malexport
 
-This is still in development, but the exporters (saving data from MAL) are done.
-
 This uses multiple methods to extract info about my MAL (MyAnimeList) account, focused on my episode history/forum posts I've made.
 
 I wanted to use the API whenever possible here, but the information returned by the API is so scarce, or endpoints don't really exist at all, so you can't really get a lot of info out of it. As far as I could figure out, it doesn't have a history endpoint, or any way to retrieve how many times you've rewatched a show, so this uses:
@@ -55,7 +53,7 @@ To show debug logs set `export MALEXPORT_LOGS=10` (uses [logging levels](https:/
 
 ### parse
 
-The `parse` subcommand includes lots of commands which take the saved data and clean it up a bit. Those each have python functions which can be imported from `malexport.parse`, or called from the CLI to produce JSON:
+The `parse` subcommand includes corresponding commands which take the saved data, clean it up a bit into easier to manipulate representations. Those each have python functions which can be imported from `malexport.parse`, or called from the CLI to produce JSON:
 
 `$ malexport parse xml ./animelist.xml | jq '.entries[106]'`
 
@@ -135,3 +133,48 @@ The `parse` subcommand includes lots of commands which take the saved data and c
 If you want exact dates, I'd recommend using the `xml` export, as theres some estimation that has to done for the `list` export since the dates aren't absolute (e.g. `04-09-20` could be `2020` or `1920`
 
 `malexport parse forum -u yourUsername` extracts posts made by your user to JSON
+
+`$ python3 -m malexport parse history -u yourUsername | jq '.[] | select(.title == "Akira")'`
+
+```json
+{
+  "mal_id": 47,
+  "list_type": "anime",
+  "title": "Akira",
+  "entries": [
+    {
+      "at": "2016-02-02 21:47:00",
+      "number": 1
+    }
+  ]
+}
+```
+
+'number' in this case refers to the chapter or episode number
+
+---
+
+As a random examples, this lets you query your information, either in python or from the CLI:
+
+_Which season do I have the most completed from?_
+
+```python
+>>> Counter([a.season for a in malexport.parse.parse_list("animelist.json", malexport.parse.ListType.ANIME).entries if a.score is not None and a.status == "Completed" if a.season is not None]).most_common(1)
+[(Season(year=2016, season='Spring'), 73)]
+```
+
+Or, you can use [`jq`](https://github.com/stedolan/jq) to mangle it into whatever you want. Heres a mess of pipes to create a graph of your `Completed` ratings, using [`termgraph`](https://github.com/mkaz/termgraph):
+
+```
+$ malexport parse list ./animelist.json | jq '.entries | .[] | select(.status == "Completed") | .score' | grep -vx 0 | sort | uniq -c | awk '{ print $2 " " $1}' | termgraph | sort -n
+1 : ▇▇▇▇▇▇▇▇▇ 158.00
+2 : ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 652.00
+3 : ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 847.00
+4 : ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 791.00
+5 : ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 562.00
+6 : ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 384.00
+7 : ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 263.00
+8 : ▇▇▇▇▇▇ 103.00
+9 : ▇▇ 47.00
+10: ▏ 5.00
+```
