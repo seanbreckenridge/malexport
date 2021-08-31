@@ -1,6 +1,6 @@
 # malexport
 
-This uses multiple methods to extract info about my MAL (MyAnimeList) account, focused on my episode history/forum posts I've made.
+This uses multiple methods to extract personal data from a MAL (MyAnimeList) account, focused on [anime|manga]lists/episode history and forum posts your account has made.
 
 I wanted to use the API whenever possible here, but the information returned by the API is so scarce, or endpoints don't really exist at all, so you can't really get a lot of info out of it. As far as I could figure out, it doesn't have a history endpoint, or any way to retrieve how many times you've rewatched a show, so this uses:
 
@@ -12,7 +12,7 @@ I wanted to use the API whenever possible here, but the information returned by 
 
 The defaults here are far more on the safe side when scraping. If data fails to download you may have been flagged as a bot and may need to open MAL in your browser to solve a captcha.
 
-For my list (which is pretty big), this takes a few days to download all of my data, and then a few minutes every few days to update it.
+For most people, this'll take a few hours to populate the initial cache, and then, and then a few minutes every few days to update it.
 
 ## Installation
 
@@ -31,6 +31,8 @@ Since this uses selenium, that requires a `chromedriver` binary somewhere on you
 ### update
 
 `malexport update all` can be run to run all the updaters or `malexport update [forum|history|lists|export]` can be run to update one of them. Each of those require you to pass a `-u malUsername`. This stores everything (except for the MAL API Client ID) on an account-by-account basis, so its possible to backup multiple accounts
+
+If you want to hide the chromedriver, you can run this like `MALEXPORT_CHROMEDRIVER_HIDDEN=1 malexport update ...`
 
 For the `update lists` command, this uses the unauthenticated `load.json` endpoint, which is what is used on modern lists as MAL. Therefore, its contents might be slightly different depending on your settings. To get the most info out of it, I'd recommend going to your [list preferences](https://myanimelist.net/editprofile.php?go=listpreferences) and enabling all of the columns so that metadata is returned
 
@@ -134,7 +136,7 @@ If you want exact dates, I'd recommend using the `xml` export, as theres some es
 
 `malexport parse forum -u yourUsername` extracts posts made by your user to JSON
 
-`$ python3 -m malexport parse history -u yourUsername | jq '.[] | select(.title == "Akira")'`
+`$ malexport parse history -u yourUsername | jq '.[] | select(.title == "Akira")'`
 
 ```json
 {
