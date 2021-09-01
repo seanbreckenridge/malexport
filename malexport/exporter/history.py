@@ -258,6 +258,8 @@ class HistoryManager:
             # request some amount till we hit unchanged data
             till = int(self.till_same_limit)
             for entry_data in mlist:
+                if till <= 0:
+                    break
                 logger.info(f"Requesting {till} more entries...")
                 mal_id = entry_data[f"{self.list_type.value}_id"]
                 if self.update_entry_data(mal_id):
@@ -270,8 +272,6 @@ class HistoryManager:
                         f"{self.list_type.value} {mal_id} matched old data, decrementing..."
                     )
                     till -= 1
-                if till <= 0:
-                    break
 
         elif export_file.exists():
             logger.info("Requesting any items which don't exist in history...")
