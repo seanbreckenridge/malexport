@@ -8,6 +8,7 @@ from ..paths import LocalDir
 
 
 class Post(NamedTuple):
+    title: str
     comment_id: int
     username: str
     url: str
@@ -32,6 +33,7 @@ def _extract_posts_by_user(forum_path: str, username: str) -> Iterator[Post]:
     for post in data["posts"]:
         if username.casefold() == post["created_by"]["name"].casefold():
             yield Post(
+                title=data["title"],
                 comment_id=post["id"],
                 created_at=datetime.fromisoformat(post["created_at"]),
                 username=username,
