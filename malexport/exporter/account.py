@@ -45,7 +45,7 @@ class Account:
     @staticmethod
     def from_username(username: str) -> "Account":
         """Alternate constructor to create an account from MAL username"""
-        return Account(localdir=LocalDir.from_username(username=username))
+        return Account(localdir=LocalDir.from_username(username))
 
     def update_lists(self) -> None:
         """

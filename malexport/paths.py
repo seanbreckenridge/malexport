@@ -10,6 +10,8 @@ from typing import Union, Dict
 import yaml
 import click
 
+PathIsh = Union[str, Path]
+
 default_local_dir = os.path.join(Path.home(), ".local", "share")
 local_directory: str = os.environ.get("XDG_DATA_HOME", default_local_dir)
 
@@ -29,7 +31,7 @@ default_data_dir.mkdir(exist_ok=True, parents=True)
 default_conf_dir.mkdir(exist_ok=True, parents=True)
 
 
-def _expand_path(pathish: Union[str, Path], is_dir: bool = True) -> Path:
+def _expand_path(pathish: PathIsh, is_dir: bool = True) -> Path:
     """
     given some path-like input, expand the path
     if is_dir:
@@ -48,6 +50,10 @@ def _expand_path(pathish: Union[str, Path], is_dir: bool = True) -> Path:
     else:
         p.parent.mkdir(parents=True, exist_ok=True)
     return p
+
+
+def _expand_file(pathish: PathIsh) -> Path:
+    return _expand_path(pathish, is_dir=False)
 
 
 class LocalDir:
@@ -106,8 +112,8 @@ class LocalDir:
 
     @staticmethod
     def from_username(
-        *,
         username: str,
+        *,
         data_dir: Path = default_data_dir,
         conf_dir: Path = default_conf_dir,
     ) -> "LocalDir":

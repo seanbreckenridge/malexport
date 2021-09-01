@@ -24,7 +24,7 @@ class History(NamedTuple):
 
 
 def iter_user_history(username: str) -> Iterator[History]:
-    localdir = LocalDir.from_username(username=username)
+    localdir = LocalDir.from_username(username)
     history_dir = localdir.data_dir / "history"
     # i.e. for anime / manga
     for _type in map(str.lower, ListType.__members__):

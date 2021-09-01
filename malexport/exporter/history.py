@@ -21,7 +21,7 @@ from .export_downloader import ExportDownloader
 from ..log import logger
 from ..paths import LocalDir, _expand_path
 from ..common import Json
-from ..parse.xml import parse_xml, AnimeEntry, MangaEntry
+from ..parse.xml import parse_xml, AnimeXML, MangaXML
 
 from lxml import html as ht  # type: ignore[import]
 from selenium.webdriver.support.ui import WebDriverWait  # type: ignore[import]
@@ -131,7 +131,7 @@ class HistoryManager:
         header = x.xpath('.//div[contains(text(), "Details")]')
         assert (
             len(header) == 1
-        ), "Found multiple elements while searching for header, expected 1"
+        ), f"Found {len(header)} elements while searching for header, expected 1"
         # split tokens and remove last two (Chapter Details or Episode Details)
         title = header[0].text.strip()
         title = " ".join(title.split(" ")[:-2]).strip()
@@ -277,15 +277,9 @@ class HistoryManager:
             logger.info("Requesting any items which don't exist in history...")
             # use the XML file if that exists
             for el in parse_xml(str(export_file)).entries:
-                if self.list_type == ListType.ANIME:
-                    assert isinstance(el, AnimeEntry)
-                    mal_id = el.anime_id
-                else:
-                    assert isinstance(el, MangaEntry)
-                    mal_id = el.manga_id
-                p = self.entry_path(mal_id)
+                p = self.entry_path(el.id)
                 if not p.exists():
-                    self.update_entry_data(mal_id)
+                    self.update_entry_data(el.id)
         else:
             raise RuntimeError(
                 f"Neither {m.list_path} (lists) or {export_file} (export) exist, need one to update history"

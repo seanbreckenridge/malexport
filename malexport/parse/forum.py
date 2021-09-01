@@ -16,7 +16,7 @@ class Post(NamedTuple):
 
 
 def iter_forum_posts(username: str) -> Iterator[Post]:
-    localdir = LocalDir.from_username(username=username)
+    localdir = LocalDir.from_username(username)
     mal_username = localdir.load_or_prompt_credentials()["username"]
     forum_dir = localdir.data_dir / "forum"
     for forum_path in glob.glob(os.path.join(forum_dir, "*.json")):
