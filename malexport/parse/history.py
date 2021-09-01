@@ -28,10 +28,10 @@ def iter_user_history(username: str) -> Iterator[History]:
     history_dir = localdir.data_dir / "history"
     # i.e. for anime / manga
     for _type in map(str.lower, ListType.__members__):
-        yield from _parse_history_dir(history_dir / _type, _type)
+        yield from parse_history_dir(history_dir / _type, _type)
 
 
-def _parse_history_dir(history_dir: Path, list_type: str) -> Iterator[History]:
+def parse_history_dir(history_dir: Path, list_type: str) -> Iterator[History]:
     for history_path in history_dir.glob("*.json"):
         assert (
             history_path.stem.isnumeric()
