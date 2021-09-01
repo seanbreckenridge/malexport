@@ -77,7 +77,7 @@ class MangaXML(NamedTuple):
     manga_id: int
     title: str
     volumes: int
-    episodes: int
+    chapters: int
     my_id: int
     read_volumes: int
     read_chapters: int
@@ -108,7 +108,7 @@ class MangaXML(NamedTuple):
             manga_id=int(manga_el.find("manga_mangadb_id").text),
             title=manga_el.find("manga_title").text,
             volumes=int(manga_el.find("manga_volumes").text),
-            episodes=int(manga_el.find("manga_chapters").text),
+            chapters=int(manga_el.find("manga_chapters").text),
             my_id=int(manga_el.find("my_id").text),
             read_volumes=int(manga_el.find("my_read_volumes").text),
             read_chapters=int(manga_el.find("my_read_chapters").text),

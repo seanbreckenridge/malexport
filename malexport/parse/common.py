@@ -1,9 +1,13 @@
 import os
 import re
-from typing import Optional, Union
+from typing import Optional, Union, List
 from datetime import date
 
 from distutils.util import strtobool as strtoint
+
+
+def split_tags(tags: str) -> List[str]:
+    return list(re.split(r"\s*,\s*", tags))
 
 
 def parse_date_safe(d: str) -> Optional[date]:

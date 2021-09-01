@@ -5,6 +5,7 @@ import click
 
 from .exporter import Account
 from .parse import parse_xml, parse_list, iter_forum_posts, iter_user_history
+from .parse.combine import combine
 from .common import serialize
 from .list_type import ListType
 
@@ -133,6 +134,31 @@ def _list_parse(_type: Optional[str], list_file: str) -> None:
 @shared
 def _forum_parse(username: str) -> None:
     click.echo(serialize(list(iter_forum_posts(username))))
+
+
+@parse.command(name="combine", short_help="combines lists, xml and history data")
+@click.option(
+    "-o",
+    "--only",
+    type=click.Choice(["anime", "manga"], case_sensitive=False),
+    required=False,
+    help="Only print anime or manga specifically",
+)
+@shared
+def _combine_parse(only: Optional[str], username: str) -> None:
+    """
+    This combines relevant info from the lists, xml and history files
+    It removes some of the commonly unused fields, and uses the xml for rewatch info/better dates
+
+    It doesn't require you have a list export
+    """
+    anime, manga = combine(username)
+    if only == "anime":
+        click.echo(serialize(anime))
+    elif only == "manga":
+        click.echo(serialize(manga))
+    else:
+        click.echo(serialize({"anime": anime, "manga": manga}))
 
 
 @parse.command(name="history", short_help="parse downloaded user history")

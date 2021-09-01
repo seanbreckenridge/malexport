@@ -21,7 +21,7 @@ from .export_downloader import ExportDownloader
 from ..log import logger
 from ..paths import LocalDir, _expand_path
 from ..common import Json
-from ..parse.xml import parse_xml, AnimeXML, MangaXML
+from ..parse.xml import parse_xml
 
 from lxml import html as ht  # type: ignore[import]
 from selenium.webdriver.support.ui import WebDriverWait  # type: ignore[import]

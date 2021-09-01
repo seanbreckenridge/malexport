@@ -55,7 +55,65 @@ To show debug logs set `export MALEXPORT_LOGS=10` (uses [logging levels](https:/
 
 ### parse
 
-The `parse` subcommand includes corresponding commands which take the saved data, clean it up a bit into easier to manipulate representations. Those each have python functions which can be imported from `malexport.parse`, or called from the CLI to produce JSON:
+The `parse` subcommand includes corresponding commands which take the saved data, clean it up a bit into easier to manipulate representations. Those each have python functions which can be imported from `malexport.parse`, or called from the CLI to produce JSON.
+
+The most useful is probably `combine`, which combines the `xml`, `history` and `lists` data:
+
+`$ malexport parse combine -u malUsername -o anime | jq '.[] | select(.title == "Akira")'`
+
+```json
+{
+  "id": 47,
+  "title": "Akira",
+  "media_type": "Movie",
+  "episodes": 1,
+  "watched_episodes": 1,
+  "start_date": "2016-02-01",
+  "finish_date": "2016-02-02",
+  "rated": null,
+  "score": 5,
+  "status": "Completed",
+  "times_watched": 0,
+  "tags": "Action, Adventure, Horror, Military, Sci-Fi, Supernatural, dub",
+  "rewatching": false,
+  "rewatching_ep": 0,
+  "history": [
+    {
+      "at": "2016-02-02 21:47:00",
+      "number": 1
+    }
+  ],
+  "airing_status": "Finished Airing",
+  "studios": [
+    {
+      "id": 65,
+      "name": "Tokyo Movie Shinsha"
+    }
+  ],
+  "licensors": [
+    {
+      "id": 102,
+      "name": "Funimation"
+    },
+    {
+      "id": 233,
+      "name": "Bandai Entertainment"
+    },
+    {
+      "id": 1459,
+      "name": "Geneon Entertainment USA"
+    }
+  ],
+  "season": {
+    "year": 1988,
+    "season": "Summer"
+  },
+  "url": "/anime/47/Akira",
+  "image_path": "https://cdn.myanimelist.net/r/96x136/images/anime/2/82596.jpg?s=a9157a9f6008c4ea02f8b09659e85b62",
+  "air_start_date": "1988-07-16",
+  "air_end_date": "1988-07-16"
+}
+```
 
 `$ malexport parse xml ./animelist.xml | jq '.entries[106]'`
 
@@ -134,9 +192,9 @@ The `parse` subcommand includes corresponding commands which take the saved data
 
 If you want exact dates, I'd recommend using the `xml` export, as theres some estimation that has to done for the `list` export since the dates aren't absolute (e.g. `04-09-20` could be `2020` or `1920`
 
-`malexport parse forum -u yourUsername` extracts posts made by your user to JSON
+`malexport parse forum -u malUsername` extracts posts made by your user to JSON
 
-`$ malexport parse history -u yourUsername | jq '.[] | select(.title == "Akira")'`
+`$ malexport parse history -u malUsername | jq '.[] | select(.title == "Akira")'`
 
 ```json
 {
