@@ -70,7 +70,6 @@ The most useful is probably `combine`, which combines the `xml`, `history` and `
   "watched_episodes": 1,
   "start_date": "2016-02-01",
   "finish_date": "2016-02-02",
-  "rated": null,
   "score": 5,
   "status": "Completed",
   "times_watched": 0,
@@ -111,7 +110,8 @@ The most useful is probably `combine`, which combines the `xml`, `history` and `
   "url": "/anime/47/Akira",
   "image_path": "https://cdn.myanimelist.net/r/96x136/images/anime/2/82596.jpg?s=a9157a9f6008c4ea02f8b09659e85b62",
   "air_start_date": "1988-07-16",
-  "air_end_date": "1988-07-16"
+  "air_end_date": "1988-07-16",
+  "rating": "R+"
 }
 ```
 
