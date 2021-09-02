@@ -4,11 +4,11 @@
 # a lot of them use https://github.com/stedolan/jq, so I'd
 # recommend getting a bit familiar with that
 
-if [ -z "${MAL_USERNAME}" ]; then
-	echo "Set the 'MAL_USERNAME' environment variable to your account name"
-fi
-
 mal_list() {
+	if [ -z "${MAL_USERNAME}" ]; then
+		echo "Set the 'MAL_USERNAME' environment variable to your account name" >&2
+		return 1
+	fi
 	TYPE="${1:-anime}"
 	malexport parse list "${MALEXPORT_DIR}/${MAL_USERNAME}/${TYPE}list.json" | jq -r '.entries | .[]'
 }
