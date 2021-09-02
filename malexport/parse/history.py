@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import NamedTuple, List, Iterator, Tuple
+from typing import NamedTuple, List, Iterator, Tuple, Union
 
 from ..paths import LocalDir
 from ..list_type import ListType
@@ -31,7 +31,10 @@ def iter_user_history(username: str) -> Iterator[History]:
         yield from parse_history_dir(history_dir / _type, _type)
 
 
-def parse_history_dir(history_dir: Path, list_type: str) -> Iterator[History]:
+def parse_history_dir(
+    history_dir: Path, list_type: Union[str, ListType]
+) -> Iterator[History]:
+    lt: str = list_type.value.lower() if isinstance(list_type, ListType) else list_type
     for history_path in history_dir.glob("*.json"):
         assert (
             history_path.stem.isnumeric()
@@ -41,7 +44,7 @@ def parse_history_dir(history_dir: Path, list_type: str) -> Iterator[History]:
         if len(entries) == 0:
             continue
         yield History(
-            list_type=list_type,
+            list_type=lt,
             mal_id=int(history_path.stem),
             title=title,
             entries=entries,
