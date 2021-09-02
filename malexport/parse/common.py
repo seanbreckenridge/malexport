@@ -7,7 +7,7 @@ from distutils.util import strtobool as strtoint
 
 
 def split_tags(tags: str) -> List[str]:
-    return list(re.split(r"\s*,\s*", tags))
+    return list(re.split(r"\s*,\s*", tags.strip()))
 
 
 def parse_date_safe(d: str) -> Optional[date]:
