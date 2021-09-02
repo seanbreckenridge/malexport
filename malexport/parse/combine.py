@@ -231,9 +231,12 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
         logger.warning(
             f"mangalist_json_data entries left over: {len(mangalist_json_data)}"
         )
-    if len(anime_history) > 0:
-        logger.warning(f"anime_history entries left over: {len(anime_history)}")
-    if len(manga_history) > 0:
-        logger.warning(f"manga_history entries left over: {len(manga_history)}")
+    # shouldn't be warned for -- if you delete something off your list the
+    # local history files still remain -- not sure if the should be deleted
+    #
+    #if len(anime_history) > 0:
+    #    logger.warning(f"anime_history entries left over: {len(anime_history)}")
+    #if len(manga_history) > 0:
+    #    logger.warning(f"manga_history entries left over: {len(manga_history)}")
 
     return list(anime_combined_data.values()), list(manga_combined_data.values())
