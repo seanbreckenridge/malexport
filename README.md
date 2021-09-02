@@ -26,6 +26,8 @@ For your [API Info](https://myanimelist.net/apiconfig), you can use 'other' as t
 
 Since this uses selenium, that requires a `chromedriver` binary somewhere on your system. Thats typically available in package repositories, else see [here](https://gist.github.com/seanbreckenridge/709a824b8c56ea22dbf4e86a7804287d). If this isn't able to find the file, set the `MALEXPORT_CHROMEDRIVER_LOCATION` environment variable, like: `MALEXPORT_CHROMEDRIVER_LOCATION=C:\\Downloads\\chromedriver.exe malexport ...`
 
+I left some shell functions I commonly use to query my data in `malexport.sh`, to use that set the `MAL_USERNAME` variable to your account name, and then `source malexport.sh` in your shell startup. Should work on both `bash`/`zsh`
+
 ## Usage
 
 ### update
