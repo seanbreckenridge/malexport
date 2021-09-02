@@ -10,7 +10,8 @@ mal_list() {
 		return 1
 	fi
 	TYPE="${1:-anime}"
-	malexport parse list "${MALEXPORT_DIR}/${MAL_USERNAME}/${TYPE}list.json" | jq -r '.entries | .[]'
+	DIR="${MALEXPORT_DIR:-${HOME}/.local/share/malexport}"
+	python3 -m malexport parse list "${DIR}/${MAL_USERNAME}/${TYPE}list.json" | jq -r '.entries | .[]'
 }
 
 openentry() {
