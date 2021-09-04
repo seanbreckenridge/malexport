@@ -11,6 +11,7 @@ from typing import List
 from selenium.webdriver.support.ui import WebDriverWait  # type: ignore[import]
 from selenium.webdriver.common.by import By  # type: ignore[import]
 from selenium.webdriver.support import expected_conditions as EC  # type: ignore[import]
+from selenium.common.exceptions import TimeoutException  # type: ignore[import]
 
 from .driver import driver, driver_login, wait, TEMP_DOWNLOAD_DIR
 from ..list_type import ListType
@@ -59,12 +60,19 @@ class ExportDownloader:
         if list_type == ListType.MANGA:
             d.execute_script("""$("#dialog select.inputtext").val(2)""")
         d.find_element_by_css_selector(EXPORT_BUTTON_CSS).click()
+        time.sleep(0.5)
         WebDriverWait(d, 10).until(EC.alert_is_present())
         alert = d.switch_to.alert
+        time.sleep(0.5)
         alert.accept()
+        time.sleep(0.5)
         download_button_selector = tuple([By.CSS_SELECTOR, DOWNLOAD_BUTTON])
-        WebDriverWait(d, 10).until(EC.element_to_be_clickable(download_button_selector))
-        d.find_element_by_css_selector(DOWNLOAD_BUTTON).click()
+        try:
+            # hmm -- this page seems to be there sometimes, but not others?
+            WebDriverWait(d, 10).until(EC.element_to_be_clickable(download_button_selector))
+            d.find_element_by_css_selector(DOWNLOAD_BUTTON).click()
+        except TimeoutException:
+            pass
         logger.debug("Waiting for download...")
         wait()
 
