@@ -53,8 +53,8 @@ def _all(username: str) -> None:
     """
     acc = Account.from_username(username)
     acc.update_lists()
-    acc.update_exports()
     acc.update_forum_posts()
+    acc.update_exports()
     acc.update_history()
     click.secho("Done updating!", fg="green")
 
