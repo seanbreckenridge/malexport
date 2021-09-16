@@ -56,7 +56,6 @@ def _all(username: str) -> None:
     acc.update_forum_posts()
     acc.update_exports()
     acc.update_history()
-    click.secho("Done updating!", fg="green")
 
 
 @update.command(name="lists", short_help="update animelist and mangalists")
