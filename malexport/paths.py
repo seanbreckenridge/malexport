@@ -78,7 +78,7 @@ class LocalDir:
         )
 
         # Base directory to store all data
-        self.data_dir = self.application_base / self.username
+        self.data_dir = _expand_path(self.application_base / self.username)
 
     def load_or_prompt_mal_client_info(self) -> Dict[str, str]:
         if not self.mal_client_info.exists():
