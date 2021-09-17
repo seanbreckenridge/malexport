@@ -69,7 +69,9 @@ class ExportDownloader:
         download_button_selector = tuple([By.CSS_SELECTOR, DOWNLOAD_BUTTON])
         try:
             # hmm -- this page seems to be there sometimes, but not others?
-            WebDriverWait(d, 10).until(EC.element_to_be_clickable(download_button_selector))
+            WebDriverWait(d, 10).until(
+                EC.element_to_be_clickable(download_button_selector)
+            )
             d.find_element_by_css_selector(DOWNLOAD_BUTTON).click()
         except TimeoutException:
             pass
