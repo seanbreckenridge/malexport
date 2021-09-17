@@ -15,7 +15,7 @@ from .mal_list import (
     AnimeEntry,
     MangaEntry,
     parse_file as parse_user_history,
-    Company,
+    IdInfo,
     Season,
 )
 from .xml import AnimeXML, MangaXML, parse_xml
@@ -43,8 +43,10 @@ class AnimeData(NamedTuple):
     history: List[HistoryEntry]
     # items from the load.json
     airing_status: Optional[str]
-    studios: List[Company]
-    licensors: List[Company]
+    studios: List[IdInfo]
+    licensors: List[IdInfo]
+    genres: List[IdInfo]
+    demographics: List[IdInfo]
     season: Optional[Season]
     url: Optional[str]
     image_path: Optional[str]
@@ -76,7 +78,9 @@ class MangaData(NamedTuple):
     history: List[HistoryEntry]
     # items from the load.json
     publishing_status: Optional[str]
-    manga_magazines: List[Company]
+    manga_magazines: List[IdInfo]
+    genres: List[IdInfo]
+    demographics: List[IdInfo]
     url: Optional[str]
     image_path: Optional[str]
     media_type: Optional[str]
@@ -176,6 +180,8 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
             airing_status=_extract(anime_dict, "airing_status", None),
             studios=anime_dict.get("studios") or [],
             licensors=anime_dict.get("licensors") or [],
+            genres=anime_dict.get("genres") or [],
+            demographics=anime_dict.get("demographics") or [],
             season=_extract(anime_dict, "season", None),
             url=_extract(anime_dict, "url", None),
             image_path=_extract(anime_dict, "image_path", None),
@@ -213,6 +219,8 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
             rereading=manga_xml.rereading,
             publishing_status=_extract(manga_dict, "publishing_status", None),
             manga_magazines=manga_dict.get("manga_magazines") or [],
+            genres=manga_dict.get("genres") or [],
+            demographics=manga_dict.get("demographics") or [],
             url=_extract(manga_dict, "url", None),
             image_path=_extract(manga_dict, "image_path", None),
             media_type=_extract(manga_dict, "media_type", None),

@@ -18,21 +18,20 @@ def filter_none(lst: List[Optional[T]]) -> List[T]:
     return lst_new
 
 
-class Company(NamedTuple):
+class IdInfo(NamedTuple):
     id: int
     name: str
 
     @staticmethod
-    def _parse(company_data: Optional[Json]) -> Optional["Company"]:
-        if (
-            isinstance(company_data, dict)
-            and "id" in company_data
-            and "name" in company_data
-        ):
-            return Company(id=company_data["id"], name=company_data["name"])
+    def _parse(data: Optional[Json]) -> Optional["IdInfo"]:
+        if isinstance(data, dict) and "id" in data and "name" in data:
+            return IdInfo(id=data["id"], name=data["name"])
         else:
-
             return None
+
+    @classmethod
+    def _parse_id_list(cls, el: Json, key: str) -> List["IdInfo"]:
+        return filter_none([cls._parse(e) for e in list(el.get(key) or [])])
 
 
 class Season(NamedTuple):
@@ -92,8 +91,10 @@ class AnimeEntry(NamedTuple):
     episodes: int
     airing_status: str
     id: int
-    studios: List[Company]
-    licensors: List[Company]
+    studios: List[IdInfo]
+    licensors: List[IdInfo]
+    genres: List[IdInfo]
+    demographics: List[IdInfo]
     season: Optional[Season]
     has_episode_video: bool
     has_promotion_video: bool
@@ -124,12 +125,10 @@ class AnimeEntry(NamedTuple):
             episodes=el["anime_num_episodes"],
             airing_status=ANIME_AIRING_STATUS_MAP[el["anime_airing_status"]],
             id=el["anime_id"],
-            studios=filter_none(
-                [Company._parse(e) for e in list(el["anime_studios"] or [])]
-            ),
-            licensors=filter_none(
-                [Company._parse(e) for e in list(el["anime_licensors"] or [])]
-            ),
+            studios=IdInfo._parse_id_list(el, "anime_studios"),
+            licensors=IdInfo._parse_id_list(el, "anime_licensors"),
+            genres=IdInfo._parse_id_list(el, "genres"),
+            demographics=IdInfo._parse_id_list(el, "demographics"),
             season=Season._parse(el["anime_season"]),
             has_video=el["has_video"],
             video_url=el["video_url"],
@@ -162,7 +161,9 @@ class MangaEntry(NamedTuple):
     volumes: int
     publishing_status: str
     id: int
-    manga_magazines: List[Company]
+    genres: List[IdInfo]
+    demographics: List[IdInfo]
+    manga_magazines: List[IdInfo]
     url: str
     image_path: str
     is_added_to_list: bool
@@ -191,9 +192,9 @@ class MangaEntry(NamedTuple):
                 el["manga_publishing_status"]
             ],
             id=el["manga_id"],
-            manga_magazines=filter_none(
-                [Company._parse(e) for e in list(el["manga_magazines"] or [])]
-            ),
+            manga_magazines=IdInfo._parse_id_list(el, "manga_magazines"),
+            genres=IdInfo._parse_id_list(el, "genres"),
+            demographics=IdInfo._parse_id_list(el, "demographics"),
             url=el["manga_url"],
             image_path=el["manga_image_path"],
             is_added_to_list=el["is_added_to_list"],
