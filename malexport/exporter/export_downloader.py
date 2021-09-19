@@ -6,7 +6,7 @@ import os
 import time
 import shutil
 import gzip
-from typing import List
+from typing import List, Optional
 
 from selenium.webdriver.support.ui import WebDriverWait  # type: ignore[import]
 from selenium.webdriver.common.by import By  # type: ignore[import]
@@ -98,7 +98,9 @@ class ExportDownloader:
         logger.debug("Waiting for download...")
         wait()
 
-    def _list_files(self, path: str = TEMP_DOWNLOAD_DIR) -> List[str]:
+    def _list_files(
+        self, path: str = TEMP_DOWNLOAD_DIR, list_type: Optional[ListType] = None
+    ) -> List[str]:
         """
         List files in the temporary download directory, warn if there
         are multiple files/partially downloaded files
@@ -110,6 +112,10 @@ class ExportDownloader:
             if len(search_results) != 1:
                 logger.warning(f"Found more than 1 matching file {search_results}")
         archive_files = animelist_gzs + mangalist_gzs
+        if list_type == ListType.ANIME:
+            archive_files = animelist_gzs
+        elif list_type == ListType.MANGA:
+            archive_files = mangalist_gzs
         logger.debug(archive_files)
         return archive_files
 
@@ -118,14 +124,21 @@ class ExportDownloader:
         Wait till two files (the anime/manga gz files) exist in the temporary download
         directory, then extract them to the data directory
         """
-        while len(self._list_files()) != 2:
+        while (
+            len(self._list_files(list_type=ListType.ANIME)) < 1
+            and len(self._list_files(list_type=ListType.MANGA)) < 1
+        ):
             logger.info(
-                f"Waiting till 2 list files exist, currently {os.listdir(TEMP_DOWNLOAD_DIR)}"
+                f"Waiting till anime/manga list export files exist, currently {os.listdir(TEMP_DOWNLOAD_DIR)}"
             )
             time.sleep(0.5)
 
         for (archive_name, target) in zip(
-            self._list_files(), [self.animelist_path, self.mangalist_path]
+            [
+                self._list_files(list_type=ListType.ANIME)[0],
+                self._list_files(list_type=ListType.MANGA)[0],
+            ],
+            [self.animelist_path, self.mangalist_path],
         ):
             archive_path = os.path.join(TEMP_DOWNLOAD_DIR, archive_name)
             logger.info(f"Extracting {archive_path} to {target}")
