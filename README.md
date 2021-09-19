@@ -1,6 +1,6 @@
 # malexport
 
-This uses multiple methods to extract personal data from a MAL (MyAnimeList) account, focused on [anime|manga]lists/episode history and forum posts your account has made.
+This uses multiple methods to save your personal data from a MAL (MyAnimeList) account, focused on [anime|manga]lists/episode history and forum posts your account has made.
 
 I wanted to use the API whenever possible here, but the information returned by the API is so scarce, or endpoints don't really exist at all, so you can't really get a lot of info out of it. As far as I could figure out, it doesn't have a history endpoint, or any way to retrieve how many times you've rewatched a show, so this uses:
 
