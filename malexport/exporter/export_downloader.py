@@ -11,12 +11,14 @@ from typing import List
 from selenium.webdriver.support.ui import WebDriverWait  # type: ignore[import]
 from selenium.webdriver.common.by import By  # type: ignore[import]
 from selenium.webdriver.support import expected_conditions as EC  # type: ignore[import]
-from selenium.common.exceptions import TimeoutException  # type: ignore[import]
+from selenium.common.exceptions import TimeoutException, WebDriverException  # type: ignore[import]
 
 from .driver import driver, driver_login, wait, TEMP_DOWNLOAD_DIR
 from ..list_type import ListType
 from ..paths import LocalDir
 from ..log import logger
+
+TRY_EXPORT_TIMES = int(os.environ.get("MALEXPORT_EXPORT_TRIES", 3))
 
 EXPORT_PAGE = "https://myanimelist.net/panel.php?go=export"
 EXPORT_BUTTON_CSS = "input[value='Export My List']"
@@ -40,9 +42,27 @@ class ExportDownloader:
     def export_lists(self) -> None:
         """Exports the anime/manga lists, then extracts the gz files into the data dir"""
         self.authenticate()
-        self.export_list(ListType.ANIME)
-        self.export_list(ListType.MANGA)
+        self.export_with_retry(ListType.ANIME)
+        self.export_with_retry(ListType.MANGA)
         self.extract_gz_files()
+
+    def export_with_retry(self, list_type: ListType, *, times: int = 0) -> None:
+        """
+        If exporting a list fails, resets the browser and tries again
+        """
+        try:
+            self.export_list(list_type)
+        except WebDriverException as e:
+            times += 1
+            logger.exception(
+                f"Failed to export {list_type.value}, retrying ({times} of {TRY_EXPORT_TIMES})",
+                exc_info=e,
+            )
+            if times > TRY_EXPORT_TIMES:
+                raise e
+            wait()
+            self.authenticate()
+            self.export_with_retry(list_type, times=times)  # recursive call
 
     def export_list(self, list_type: ListType) -> None:
         """
