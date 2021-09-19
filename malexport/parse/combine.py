@@ -54,6 +54,11 @@ class AnimeData(NamedTuple):
     air_end_date: Optional[date]
     rating: Optional[str]
 
+    # alias
+    @property
+    def name(self) -> str:
+        return self.title
+
     @property
     def tags_list(self) -> List[str]:
         return split_tags(self.tags)
@@ -86,6 +91,11 @@ class MangaData(NamedTuple):
     media_type: Optional[str]
     publish_start_date: Optional[date]
     publish_end_date: Optional[date]
+
+    # alias
+    @property
+    def name(self) -> str:
+        return self.title
 
     @property
     def tags_list(self) -> List[str]:
