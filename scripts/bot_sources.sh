@@ -25,7 +25,7 @@ mal_sources_has_sources() {
 
 # items on my CW which have a source
 mal_sources_shared_ids() {
-	comm -1 -2 <(mal_sources_has_sources) <(mal_sources_has_sources)
+	comm -1 -2 <(mal_sources_has_sources) <(mal_sources_currently_watching_ids)
 }
 
 # extract an ID from the source file
@@ -46,6 +46,7 @@ mal_sources_watch_next() {
 	while IFS= read -r url; do
 		# open the video in mpv https://sean.fish/d/mpv-corner?dark
 		# https://sean.fish/d/mpv-corner?dark
+		echo "Source for ${RANDOM_NEXT_ID}: ${url}"
 		mpv-corner "${url}"
 	done <<<"$urls"
 	python3 -m webbrowser -t "https://myanimelist.net/anime/${RANDOM_NEXT_ID}"
