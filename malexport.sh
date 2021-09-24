@@ -47,7 +47,8 @@ mal_describe() {
 	jq -r '"\(.id) \(.title) (\(.season.year)) \(.status) \(.score)/10"'
 }
 
-# Opens any aired entries that are still on my PTW
+# I use my PTW to track items that haven't aired yet
+# This opens any aired entries that are still on my PTW
 mal_open_aired() {
 	mal_status 'Plan to Watch' | jq -r 'select(.airing_status == "Currently Airing") | .id' | sed 's#^#https://myanimelist.net/anime/#' | xargs -I {} sh -c 'python3 -m webbrowser -t "{}"'
 }

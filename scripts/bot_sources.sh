@@ -34,6 +34,14 @@ mal_sources_extract_id() {
 	jq -r "to_entries | .[] | select(.key == \"$ID\") | .value" </tmp/export.json
 }
 
+# wait till mpv is closed
+mpv_wait() {
+	sleep 15  # wait while things are launching
+	while pgrep -x mpv >/dev/null; do
+		sleep 1
+	done
+}
+
 # copy down the sources file if needed
 # pick a random ID on my currently watching I haven't watched yet
 # start streaming the source(s) using mpv
@@ -48,6 +56,7 @@ mal_sources_watch_next() {
 		# https://sean.fish/d/mpv-corner?dark
 		echo "Source for ${RANDOM_NEXT_ID}: ${url}"
 		mpv-corner "${url}"
+		mpv_wait
 	done <<<"$urls"
 	python3 -m webbrowser -t "https://myanimelist.net/anime/${RANDOM_NEXT_ID}"
 }
