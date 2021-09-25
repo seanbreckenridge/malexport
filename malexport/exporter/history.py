@@ -42,7 +42,7 @@ def history_url(list_type: ListType, entry_id: int) -> str:
 
 # if we hit these many recently updated entries which
 # are the same as the previous then stop requesting
-TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_EPISODE_LIMIT", 10))
+TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_EPISODE_LIMIT", 5))
 
 EPISODE_COL_REGEX = re.compile(
     "Ep (\d+), watched on (\d+)\/(\d+)\/(\d+) at (\d+):(\d+)"
