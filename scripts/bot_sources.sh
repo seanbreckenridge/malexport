@@ -48,7 +48,12 @@ mpv_wait() {
 # once its done, open the MAL page so I can mark it done
 mal_sources_watch_next() {
 	mal_sources_copy_vultr
-	local RANDOM_NEXT_ID="$(mal_sources_shared_ids | shuf -n1)"
+	local RANDOM_NEXT_ID
+	if [[ -n "${RANDOM_MAL_ID}" ]]; then
+		RANDOM_NEXT_ID="${RANDOM_MAL_ID}"
+	else
+		RANDOM_NEXT_ID="$(mal_sources_shared_ids | shuf -n1)"
+	fi
 	# https://sean.fish/d/extracturls?dark
 	local urls="$(mal_sources_extract_id "${RANDOM_NEXT_ID}" | extracturls)"
 	while IFS= read -r url; do
