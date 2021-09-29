@@ -9,6 +9,8 @@ mal_friends_list() {
 
 mal_friends_update() {
 	while IFS= read -r user; do
-		malexport update lists -u "${user}"
+		# update separately incase one is privated by the user
+		malexport update lists -u "${user}" -o anime
+		malexport update lists -u "${user}" -o manga
 	done < <(mal_friends_list)
 }
