@@ -36,7 +36,7 @@ mal_sources_extract_id() {
 
 # wait till mpv is closed
 mpv_wait() {
-	sleep 15  # wait while things are launching
+	sleep 15 # wait while things are launching
 	while pgrep -x mpv >/dev/null; do
 		sleep 1
 	done
