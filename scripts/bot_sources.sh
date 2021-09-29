@@ -1,4 +1,3 @@
-#!/usr/bin/env zsh
 # should be used in bash/zsh
 #	quite personal as it uses sources collated by my https://github.com/seanbreckenridge/mal-notify-bot
 # this should be sourced into shell environment
