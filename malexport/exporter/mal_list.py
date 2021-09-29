@@ -14,7 +14,7 @@ from pathlib import Path
 import requests
 
 from ..list_type import ListType
-from ..common import Json, safe_request_json
+from ..common import Json, safe_request_json, logger
 from ..paths import LocalDir
 
 # this is order=5, which requests items that were edited by you recently
@@ -27,6 +27,20 @@ LIST_USER_AGENT = os.environ.get(
 
 
 OFFSET_CHUNK = 300
+
+
+def handle_unauthorized(r: requests.Response) -> None:
+    if r.status_code in [400, 403]:
+        if (
+            "Content-Type" in r.headers
+            and "application/json" in r.headers["Content-Type"]
+        ):
+            logger.warning(r.json())
+        else:
+            logger.warning(r.text)
+        raise RuntimeError(
+            f"Auth/Permission error retrieving {r.url}, probably a permission error; the user has restricted access to their list"
+        )
 
 
 class MalList:
@@ -82,7 +96,9 @@ class MalList:
         session.headers.update({"User-Agent": LIST_USER_AGENT})
         while True:
             url = self.offset_url(offset)
-            new_data = safe_request_json(url, session=session)
+            new_data = safe_request_json(
+                url, session=session, on_error=handle_unauthorized
+            )
             list_data.extend(new_data)
             if len(new_data) < OFFSET_CHUNK:
                 break
