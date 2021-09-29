@@ -59,10 +59,20 @@ def _all(username: str) -> None:
 
 
 @update.command(name="lists", short_help="update animelist and mangalists")
+@click.option(
+    "-o",
+    "--only",
+    type=click.Choice(["anime", "manga"], case_sensitive=False),
+    required=False,
+    help="Only update anime or manga history specifically",
+)
 @shared
-def _lists_update(username: str) -> None:
+def _lists_update(only: str, username: str) -> None:
     acc = Account.from_username(username)
-    acc.update_lists()
+    only_update: Optional[ListType] = None
+    if only is not None:
+        only_update = ListType.__members__[only.upper()]
+    acc.update_lists(only=only_update)
 
 
 @update.command(name="export", short_help="export xml lists")

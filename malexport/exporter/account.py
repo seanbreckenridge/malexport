@@ -47,13 +47,15 @@ class Account:
         """Alternate constructor to create an account from MAL username"""
         return Account(localdir=LocalDir.from_username(username))
 
-    def update_lists(self) -> None:
+    def update_lists(self, only: Optional[ListType] = None) -> None:
         """
         Uses the load.json endpoint to request anime/manga lists.
         Does not require any authentication
         """
-        self.animelist.update_list()
-        self.mangalist.update_list()
+        if only == ListType.ANIME or only is None:
+            self.animelist.update_list()
+        if only == ListType.MANGA or only is None:
+            self.mangalist.update_list()
 
     def update_exports(self) -> None:
         """
@@ -75,15 +77,10 @@ class Account:
         self.manga_chapter_history = HistoryManager(
             list_type=ListType.MANGA, localdir=self.localdir
         )
-        if only is not None:
-            if only == ListType.ANIME:
-                self.anime_episode_history.update_history()
-                return
-            elif only == ListType.MANGA:
-                self.manga_chapter_history.update_history()
-                return
-        self.anime_episode_history.update_history()
-        self.manga_chapter_history.update_history()
+        if only == ListType.ANIME or only is None:
+            self.anime_episode_history.update_history()
+        if only == ListType.MANGA or only is None:
+            self.manga_chapter_history.update_history()
 
     def update_forum_posts(self) -> None:
         """
