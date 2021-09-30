@@ -11,7 +11,7 @@ mal_list() {
 	fi
 	TYPE="${1:-anime}"
 	DIR="${MALEXPORT_DIR:-${HOME}/.local/share/malexport}"
-	python3 -m malexport parse list "${DIR}/${MAL_USERNAME}/${TYPE}list.json" | jq -r '.entries | .[]'
+	python3 -m malexport parse list -s "${DIR}/${MAL_USERNAME}/${TYPE}list.json" | jq -r
 }
 
 openentry() {

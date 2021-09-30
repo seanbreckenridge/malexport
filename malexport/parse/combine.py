@@ -137,14 +137,14 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
             el.id: el  # type: ignore[union-attr,misc]
             for el in parse_user_history(
                 json_file=str(d / "animelist.json"), list_type=ListType.ANIME
-            ).entries
+            )
         }
     if (d / "mangalist.json").exists():
         mangalist_json_data = {
             el.id: el  # type: ignore[union-attr,misc]
             for el in parse_user_history(
                 json_file=str(d / "mangalist.json"), list_type=ListType.MANGA
-            ).entries
+            )
         }
 
     # xml exports should always exist

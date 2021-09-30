@@ -1,5 +1,5 @@
 import json
-from typing import NamedTuple, Union, List, Optional, TypeVar
+from typing import NamedTuple, Union, List, Optional, TypeVar, Iterator
 from datetime import date
 
 from .common import strtobool, parse_short_date
@@ -212,21 +212,16 @@ class MangaEntry(NamedTuple):
 Entry = Union[AnimeEntry, MangaEntry]
 
 
-class UserList(NamedTuple):
-    list_type: str
-    entries: List[Entry]
-
-    @classmethod
-    def parse(cls, json_file: str, list_type: ListType) -> "UserList":
-        with open(json_file) as f:
-            data = json.load(f)
-        entries: List[Entry]
-        if list_type == ListType.ANIME:
-            entries = [AnimeEntry._parse(el) for el in data]
-        else:
-            entries = [MangaEntry._parse(el) for el in data]
-        return cls(list_type=list_type.value.lower(), entries=entries)
+def iter_user_list(json_file: str, list_type: ListType) -> Iterator[Entry]:
+    with open(json_file) as f:
+        data = json.load(f)
+    if list_type == ListType.ANIME:
+        for el in data:
+            yield AnimeEntry._parse(el)
+    else:
+        for el in data:
+            yield MangaEntry._parse(el)
 
 
-def parse_file(json_file: PathIsh, list_type: ListType) -> UserList:
-    return UserList.parse(str(_expand_file(json_file)), list_type)
+def parse_file(json_file: PathIsh, list_type: ListType) -> Iterator[Entry]:
+    yield from iter_user_list(str(_expand_file(json_file)), list_type)

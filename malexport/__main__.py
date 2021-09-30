@@ -1,5 +1,6 @@
 import os
-from typing import Callable, Optional
+import sys
+from typing import Callable, Optional, Any
 
 import click
 
@@ -18,24 +19,42 @@ def main() -> None:
 
 
 # shared click options/args
-SHARED = [
-    click.option(
-        "-u",
-        "--username",
-        "username",
-        required=True,
-        help="Username to use",
-    ),
-]
+USERNAME = click.option(
+    "-u",
+    "--username",
+    "username",
+    required=True,
+    help="Username to use",
+)
+
+ONLY = click.option(
+    "-o",
+    "--only",
+    type=click.Choice(["anime", "manga"], case_sensitive=False),
+    required=False,
+    help="Only update anime or manga history specifically",
+)
+
+STREAM = click.option(
+    "-s",
+    "--stream",
+    is_flag=True,
+    default=False,
+    help="Stream JSON objects instead of printing a list",
+)
 
 
-def shared(func: Callable[..., None]) -> Callable[..., None]:
+def apply_shared(*chosen: Any) -> Any:
     """
-    Decorator to apply shared arguments
+    Decorator to apply the username argument
     """
-    for decorator in SHARED:
-        func = decorator(func)
-    return func
+
+    def _add_options(func: Callable[..., None]) -> Callable[..., None]:
+        for dec in chosen:
+            func = dec(func)
+        return func
+
+    return _add_options
 
 
 @main.group()
@@ -46,7 +65,7 @@ def update() -> None:
 
 
 @update.command(name="all", short_help="update all data")
-@shared
+@apply_shared(USERNAME)
 def _all(username: str) -> None:
     """
     update all data for the account
@@ -59,14 +78,7 @@ def _all(username: str) -> None:
 
 
 @update.command(name="lists", short_help="update animelist and mangalists")
-@click.option(
-    "-o",
-    "--only",
-    type=click.Choice(["anime", "manga"], case_sensitive=False),
-    required=False,
-    help="Only update anime or manga history specifically",
-)
-@shared
+@apply_shared(USERNAME, ONLY)
 def _lists_update(only: str, username: str) -> None:
     acc = Account.from_username(username)
     only_update: Optional[ListType] = None
@@ -76,21 +88,14 @@ def _lists_update(only: str, username: str) -> None:
 
 
 @update.command(name="export", short_help="export xml lists")
-@shared
+@apply_shared(USERNAME)
 def _export(username: str) -> None:
     acc = Account.from_username(username)
     acc.update_exports()
 
 
 @update.command(name="history", short_help="update episode history")
-@click.option(
-    "-o",
-    "--only",
-    type=click.Choice(["anime", "manga"], case_sensitive=False),
-    required=False,
-    help="Only update anime or manga history specifically",
-)
-@shared
+@apply_shared(USERNAME, ONLY)
 def _history(username: str, only: Optional[str]) -> None:
     acc = Account.from_username(username)
     only_update: Optional[ListType] = None
@@ -100,7 +105,7 @@ def _history(username: str, only: Optional[str]) -> None:
 
 
 @update.command(name="forum", short_help="update forum posts")
-@shared
+@apply_shared(USERNAME)
 def _forum(username: str) -> None:
     acc = Account.from_username(username)
     acc.update_forum_posts()
@@ -126,34 +131,34 @@ def _xml(xml_file: str) -> None:
     required=False,
     help="Specify type of list. If not supplied, this tries to guess based on the filename",
 )
+@apply_shared(STREAM)
 @click.argument("LIST_FILE")
-def _list_parse(_type: Optional[str], list_file: str) -> None:
+def _list_parse(_type: Optional[str], list_file: str, stream: bool) -> None:
     chosen_type: ListType
     if _type is not None:
         chosen_type = ListType.__members__[_type.upper()]
     else:
+        # infer type
         chosen_type = (
             ListType.ANIME if "anime" in os.path.basename(list_file) else ListType.MANGA
         )
-    list_data = parse_list(list_file, list_type=chosen_type)
-    click.echo(serialize(list_data))
+    idata = parse_list(list_file, list_type=chosen_type)
+    if stream:
+        for i in idata:
+            sys.stdout.write(serialize(i))
+        sys.stdout.flush()
+    else:
+        click.echo(serialize(list(idata)))
 
 
 @parse.command(name="forum", short_help="extract forum posts by your user")
-@shared
+@apply_shared(USERNAME)
 def _forum_parse(username: str) -> None:
     click.echo(serialize(list(iter_forum_posts(username))))
 
 
 @parse.command(name="combine", short_help="combines lists, xml and history data")
-@click.option(
-    "-o",
-    "--only",
-    type=click.Choice(["anime", "manga"], case_sensitive=False),
-    required=False,
-    help="Only print anime or manga specifically",
-)
-@shared
+@apply_shared(USERNAME, ONLY)
 def _combine_parse(only: Optional[str], username: str) -> None:
     """
     This combines relevant info from the lists, xml and history files
@@ -171,7 +176,7 @@ def _combine_parse(only: Optional[str], username: str) -> None:
 
 
 @parse.command(name="history", short_help="parse downloaded user history")
-@shared
+@apply_shared(USERNAME)
 def _history_parse(username: str) -> None:
     click.echo(serialize(list(iter_user_history(username))))
 
