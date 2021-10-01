@@ -49,7 +49,10 @@ def parse_short_date(d: Optional[str]) -> Optional[date]:
             day = 1
         if month == 0:
             month = 1
-        return date(year=year, month=month, day=day)
+        try:
+            return date(year=year, month=month, day=day)
+        except ValueError:
+            return None
     else:
         return None
 
