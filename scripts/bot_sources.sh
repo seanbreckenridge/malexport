@@ -9,7 +9,7 @@
 mal_sources_copy_vultr() {
 	# cache this evry two hours with evry
 	# https://github.com/seanbreckenridge/evry
-	evry 2 hours -copy_mal_notify_sources && scp vultr:~/'code/mal-notify-bot/export.json' /tmp/export.json
+	evry 2 hours -copy_mal_notify_sources && scp vultr:~/'code/mal-notify-bot/export.json' "${HOME}/.cache/source_cache.json"
 }
 
 # items on my CW
@@ -19,7 +19,7 @@ mal_sources_currently_watching_ids() {
 
 # items which have sources
 mal_sources_has_sources() {
-	jq -r 'keys[]' </tmp/export.json | sort
+	jq -r 'keys[]' <"${HOME}/.cache/source_cache.json" | sort
 }
 
 # items on my CW which have a source
@@ -30,7 +30,7 @@ mal_sources_shared_ids() {
 # extract an ID from the source file
 mal_sources_extract_id() {
 	local ID="${1?:Provide ID as first argument}"
-	jq -r "to_entries | .[] | select(.key == \"$ID\") | .value" </tmp/export.json
+	jq -r "to_entries | .[] | select(.key == \"$ID\") | .value" <"${HOME}/.cache/source_cache.json"
 }
 
 # wait till mpv is closed
