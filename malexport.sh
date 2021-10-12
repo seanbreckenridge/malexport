@@ -31,7 +31,7 @@ mangafzf() {
 
 # filters the mal_list down to a particular status type
 # mal_status 'Plan to Watch'
-# mal_status 'Plan to Watch' manga
+# mal_status 'Plan to Read' manga
 mal_status() {
 	mal_list "${2:-anime}" | jq "select(.status == \"${1:-Completed}\")"
 }
