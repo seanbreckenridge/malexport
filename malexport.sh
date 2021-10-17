@@ -41,6 +41,24 @@ mal_filter_unscored() {
 	jq 'select(.score != 0)'
 }
 
+mal_filter_type() {
+	jq "select(.media_type == \"${1:-Movie}\")"
+}
+
+mal_sort_blobs() {
+	jq -s "sort_by(.\"${1:-score}\") | .[]"
+}
+
+mal_filter_genre() {
+	local genre
+	genre="${1?:Pass name of Genre as first argument}"
+	jq "select(.genres | .[] | .name | contains(\"${genre}\"))"
+}
+
+mal_filter_airing_status() {
+	jq "select(.airing_status == \"${1:-Currently Airing}\")"
+}
+
 # given blobs of objects, describes each
 # can be used like "mal_status 'Plan to Watch' | mal_describe"
 mal_describe() {
