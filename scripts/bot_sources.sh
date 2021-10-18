@@ -14,7 +14,7 @@ mal_sources_copy_vultr() {
 
 # items on my CW
 mal_sources_currently_watching_ids() {
-	mal_list | mal_status 'Currently Watching' | jq -r '.id' | sort
+	mal_status 'Currently Watching' | jq -r '.id' | sort
 }
 
 # items which have sources
