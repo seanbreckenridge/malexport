@@ -216,7 +216,7 @@ If you want exact dates, I'd recommend using the `xml` export, as theres some es
 
 ---
 
-As a random examples, this lets you query your information, either in python or from the CLI:
+As some random examples, using this from the python, or the CLI:
 
 _Which season do I have the most completed from?_
 
