@@ -12,7 +12,7 @@ I wanted to use the API whenever possible here, but the information returned by 
 
 The defaults here are far more on the safe side when scraping. If data fails to download you may have been flagged as a bot and may need to open MAL in your browser to solve a captcha.
 
-For most people, this'll take a few hours to populate the initial cache, and then, and then a few minutes every few days to update it.
+For most people, this'll take a few hours to populate the initial cache, and then, and then a few minutes every few days (would recommend doing it at least once every 3 weeks, since it uses recent history to update history entries) to update it.
 
 ## Installation
 
