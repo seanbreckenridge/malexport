@@ -3,7 +3,8 @@ A helper module to combine data from the list,
 export and history modules into data I find useful
 """
 
-from typing import Any, Dict, List, NamedTuple, Optional, TypeVar, Tuple
+import os
+from typing import Any, Dict, List, NamedTuple, Optional, TypeVar, Tuple, Union, Set
 from datetime import date
 
 from ..list_type import ListType
@@ -23,8 +24,11 @@ from .xml import AnimeXML, MangaXML, parse_xml
 
 T = TypeVar("T")
 
+FILTER_TAGS = "MALEXPORT_COMBINED_FILTER_TAGS"
+
 
 class AnimeData(NamedTuple):
+    username: str
     # items from the xml
     id: int
     title: str
@@ -54,11 +58,6 @@ class AnimeData(NamedTuple):
     air_end_date: Optional[date]
     rating: Optional[str]
 
-    # alias
-    @property
-    def name(self) -> str:
-        return self.title
-
     @property
     def tags_list(self) -> List[str]:
         return split_tags(self.tags)
@@ -66,6 +65,7 @@ class AnimeData(NamedTuple):
 
 class MangaData(NamedTuple):
     # items from the xml
+    username: str
     id: int
     title: str
     volumes: int
@@ -91,11 +91,6 @@ class MangaData(NamedTuple):
     media_type: Optional[str]
     publish_start_date: Optional[date]
     publish_end_date: Optional[date]
-
-    # alias
-    @property
-    def name(self) -> str:
-        return self.title
 
     @property
     def tags_list(self) -> List[str]:
@@ -173,6 +168,7 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
             anime_history.pop(mal_id)  # remove from anime history dict
 
         anime_combined_data[mal_id] = AnimeData(
+            username=username,
             id=anime_xml.anime_id,
             title=anime_xml.title,
             media_type=anime_xml.media_type,
@@ -214,6 +210,7 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
             manga_history.pop(mal_id)  # remove from manga history dict
 
         manga_combined_data[mal_id] = MangaData(
+            username=username,
             id=manga_xml.manga_id,
             title=manga_xml.title,
             volumes=manga_xml.volumes,
@@ -257,4 +254,23 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
     # if len(manga_history) > 0:
     #    logger.warning(f"manga_history entries left over: {len(manga_history)}")
 
-    return list(anime_combined_data.values()), list(manga_combined_data.values())
+    anime_combined = list(anime_combined_data.values())
+    manga_combined = list(manga_combined_data.values())
+
+    # e.g. if you had MALEXPORT_COMBINED_FILTER_TAGS="no source,no raws"
+    # anything which has those tags would be removed
+    # from the results here
+    if FILTER_TAGS in os.environ:
+        filter_by_tags: List[str] = os.environ[FILTER_TAGS].split(",")
+
+        def filter_func(e: Union[AnimeData, MangaData]) -> bool:
+            tags: Set[str] = set(e.tags_list)
+            for t in filter_by_tags:
+                if t in tags:
+                    return False
+            return True
+
+        anime_combined = list(filter(filter_func, anime_combined))
+        manga_combined = list(filter(filter_func, manga_combined))
+
+    return anime_combined, manga_combined
