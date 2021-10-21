@@ -24,11 +24,10 @@ from .xml import AnimeXML, MangaXML, parse_xml
 
 T = TypeVar("T")
 
-FILTER_TAGS = "MALEXPORT_COMBINED_FILTER_TAGS"
+FILTER_TAGS = "MALEXPORT_COMBINE_FILTER_TAGS"
 
 
 class AnimeData(NamedTuple):
-    username: str
     # items from the xml
     id: int
     title: str
@@ -57,6 +56,8 @@ class AnimeData(NamedTuple):
     air_start_date: Optional[date]
     air_end_date: Optional[date]
     rating: Optional[str]
+    # additional items
+    username: str
 
     @property
     def tags_list(self) -> List[str]:
@@ -65,7 +66,6 @@ class AnimeData(NamedTuple):
 
 class MangaData(NamedTuple):
     # items from the xml
-    username: str
     id: int
     title: str
     volumes: int
@@ -91,6 +91,8 @@ class MangaData(NamedTuple):
     media_type: Optional[str]
     publish_start_date: Optional[date]
     publish_end_date: Optional[date]
+    # additional items
+    username: str
 
     @property
     def tags_list(self) -> List[str]:
@@ -257,7 +259,7 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
     anime_combined = list(anime_combined_data.values())
     manga_combined = list(manga_combined_data.values())
 
-    # e.g. if you had MALEXPORT_COMBINED_FILTER_TAGS="no source,no raws"
+    # e.g. if you had MALEXPORT_COMBINE_FILTER_TAGS="no source,no raws"
     # anything which has those tags would be removed
     # from the results here
     if FILTER_TAGS in os.environ:
