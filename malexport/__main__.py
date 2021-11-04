@@ -5,7 +5,13 @@ from typing import Callable, Optional, Any
 import click
 
 from .exporter import Account
-from .parse import parse_xml, parse_list, iter_forum_posts, iter_user_history
+from .parse import (
+    parse_xml,
+    parse_list,
+    iter_forum_posts,
+    iter_user_history,
+    iter_friends,
+)
 from .parse.combine import combine
 from .common import serialize
 from .list_type import ListType
@@ -75,6 +81,7 @@ def _all(username: str) -> None:
     acc.update_forum_posts()
     acc.update_exports()
     acc.update_history()
+    acc.update_friends()
 
 
 @update.command(name="lists", short_help="update animelist and mangalists")
@@ -109,6 +116,13 @@ def _history(username: str, only: Optional[str]) -> None:
 def _forum(username: str) -> None:
     acc = Account.from_username(username)
     acc.update_forum_posts()
+
+
+@update.command(name="friends", short_help="update friends")
+@apply_shared(USERNAME)
+def _friends(username: str) -> None:
+    acc = Account.from_username(username)
+    acc.update_friends()
 
 
 @main.group(name="parse")
@@ -179,6 +193,12 @@ def _combine_parse(only: Optional[str], username: str) -> None:
 @apply_shared(USERNAME)
 def _history_parse(username: str) -> None:
     click.echo(serialize(list(iter_user_history(username))))
+
+
+@parse.command(name="friends", short_help="parse user friends")
+@apply_shared(USERNAME)
+def _friends_parse(username: str) -> None:
+    click.echo(serialize(list(iter_friends(username))))
 
 
 if __name__ == "__main__":

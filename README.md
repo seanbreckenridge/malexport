@@ -9,6 +9,7 @@ I wanted to use the API whenever possible here, but the information returned by 
   - `malexport update history` - Individually grab episode/chapter history data (i.e., [this](https://i.imgur.com/2h5ZFng.png))
   - `malexport update export` - Download the MAL export (the giant XML files), since those have rewatch information, and better dates
 - `malexport update forum` - Uses the MAL API ([docs](https://myanimelist.net/apiconfig/references/api/v2)) to grab forum posts
+- `malexport update friends` - Uses [Jikan](https://jikan.moe/) to update your friends
 
 The defaults here are far more on the safe side when scraping. If data fails to download you may have been flagged as a bot and may need to open MAL in your browser to solve a captcha.
 
@@ -32,7 +33,7 @@ I left some shell functions I commonly use to query my data in `malexport.sh`, t
 
 ### update
 
-`malexport update all` can be run to run all the updaters or `malexport update [forum|history|lists|export]` can be run to update one of them. Each of those require you to pass a `-u malUsername`. This stores everything (except for the MAL API Client ID) on an account-by-account basis, so its possible to backup multiple accounts
+`malexport update all` can be run to run all the updaters or `malexport update [forum|history|lists|export|friends]` can be run to update one of them. Each of those require you to pass a `-u malUsername`. This stores everything (except for the MAL API Client ID) on an account-by-account basis, so its possible to backup multiple accounts
 
 If you want to hide the chromedriver, you can run this like `MALEXPORT_CHROMEDRIVER_HIDDEN=1 malexport update ...`
 

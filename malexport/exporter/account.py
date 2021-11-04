@@ -7,6 +7,7 @@ from .mal_session import MalSession
 from .history import HistoryManager
 from .forum import ForumManager
 from .export_downloader import ExportDownloader
+from .friends import FriendDownloader
 
 
 class Account:
@@ -23,6 +24,7 @@ class Account:
         self.manga_chapter_history: Optional[HistoryManager] = None
         self.forum_manager: Optional[ForumManager] = None
         self.export_downloader: Optional[ExportDownloader] = None
+        self.friend_downloader: Optional[FriendDownloader] = None
 
     def mal_api_authenticate(self) -> MalSession:
         """
@@ -98,3 +100,10 @@ class Account:
         )
         self.forum_manager.update_forum_index()
         self.forum_manager.update_changed_forum_posts()
+
+    def update_friends(self) -> None:
+        """
+        Uses Jikan to download your friends from MAL
+        """
+        self.friend_downloader = FriendDownloader(localdir=self.localdir)
+        self.friend_downloader.update_friend_index()
