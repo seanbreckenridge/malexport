@@ -67,11 +67,14 @@ class Account:
         self.export_downloader = ExportDownloader(self.localdir)
         self.export_downloader.export_lists()
 
-    def update_history(self, only: Optional[ListType] = None) -> None:
+    def update_history(
+        self, only: Optional[ListType] = None, count: Optional[int] = None
+    ) -> None:
         """
         Uses selenium to download episode/chapter history one entry at a time.
 
         This takes quite a while, and requires authentication (MAL Username/Password)
+        If count is specified, only requests the first 'count' IDs found in your history
         """
         self.anime_episode_history = HistoryManager(
             list_type=ListType.ANIME, localdir=self.localdir
@@ -80,9 +83,9 @@ class Account:
             list_type=ListType.MANGA, localdir=self.localdir
         )
         if only == ListType.ANIME or only is None:
-            self.anime_episode_history.update_history()
+            self.anime_episode_history.update_history(count=count)
         if only == ListType.MANGA or only is None:
-            self.manga_chapter_history.update_history()
+            self.manga_chapter_history.update_history(count=count)
 
     def update_forum_posts(self) -> None:
         """

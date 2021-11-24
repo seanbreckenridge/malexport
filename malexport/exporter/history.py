@@ -9,9 +9,10 @@ import os
 import re
 import json
 import time
+from itertools import islice
 from urllib.parse import urlparse, parse_qs
 from pathlib import Path
-from typing import Tuple, List, Set
+from typing import Tuple, List, Set, Optional, Iterable
 from datetime import datetime
 
 from ..list_type import ListType
@@ -164,12 +165,14 @@ class HistoryManager:
         wait()
         content_div = d.find_element_by_css_selector("div#content")
         x = ht.fromstring(content_div.get_attribute("innerHTML"))
-        found_ids: Set[int] = set()
+        found_ids: List[int] = []
         for el in x.xpath(
             f'.//a[starts-with(@href, "/{self.list_type.value}.php?id=")]'
         ):
-            found_ids.add(int(parse_qs(urlparse(el.attrib["href"]).query)["id"][0]))
-        return list(found_ids)
+            new_id = int(parse_qs(urlparse(el.attrib["href"]).query)["id"][0])
+            if new_id not in found_ids:
+                found_ids.append(new_id)
+        return found_ids
 
     def download_history_for_entry(self, entry_id: int) -> Json:
         """
@@ -222,7 +225,7 @@ class HistoryManager:
         self.already_requested.add(entry_id)
         return has_new_data
 
-    def update_history(self) -> None:
+    def update_history(self, count: Optional[int] = None) -> None:
         """
         If data doesn't exist at all for an entry, this requests
         info. Then, after that, this employs two strategies to update history data
@@ -231,6 +234,7 @@ class HistoryManager:
               some limit of unchanged data
             - use the history page (using Jikan) for the user to update
               items that have been watched in the last 3 weeks
+        If count is specified, only requests the first 'count' entries
         """
         self.authenticate()
 
@@ -285,6 +289,12 @@ class HistoryManager:
                 f"Neither {m.list_path} (lists) or {export_file} (export) exist, need one to update history"
             )
 
+        recent_history: Iterable[int] = iter(self.download_recent_user_history())
+        if count is not None:
+            logger.info(f"Requesting {count} first items from user history")
+            recent_history = islice(recent_history, count)
+        else:
+            logger.info("Requesting all items from user history")
         # use selenium to go to users' history and update things watched within the last few weeks
-        for mal_id in self.download_recent_user_history():
+        for mal_id in recent_history:
             self.update_entry_data(mal_id)

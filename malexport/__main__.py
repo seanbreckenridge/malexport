@@ -103,12 +103,20 @@ def _export(username: str) -> None:
 
 @update.command(name="history", short_help="update episode history")
 @apply_shared(USERNAME, ONLY)
-def _history(username: str, only: Optional[str]) -> None:
+@click.option(
+    "-c",
+    "--count",
+    "count",
+    default=None,
+    type=int,
+    help="Only request the first 'count' entries in the users episode history",
+)
+def _history(username: str, only: Optional[str], count: Optional[int]) -> None:
     acc = Account.from_username(username)
     only_update: Optional[ListType] = None
     if only is not None:
         only_update = ListType.__members__[only.upper()]
-    acc.update_history(only=only_update)
+    acc.update_history(only=only_update, count=count)
 
 
 @update.command(name="forum", short_help="update forum posts")
