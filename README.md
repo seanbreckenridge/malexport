@@ -150,7 +150,7 @@ The most useful is probably `combine`, which combines the `xml`, `history` and `
 
 `parse list` converts some of the status int enumerations (status/airing status) into the corresponding string values, and parses date strings like '04-09-20' to '09-04-2020':
 
-`malexport parse list ./animelist.json | jq '.entries | .[0]'`:
+`malexport parse list ./animelist.json | jq '.[0]'`:
 
 ```json
 {
@@ -222,14 +222,14 @@ As some random examples, using this from the python, or the CLI:
 _Which season do I have the most completed from?_
 
 ```python
->>> Counter([a.season for a in malexport.parse.parse_list("animelist.json", malexport.parse.ListType.ANIME).entries if a.score is not None and a.status == "Completed" if a.season is not None]).most_common(1)
+>>> Counter([a.season for a in malexport.parse.parse_list("animelist.json", malexport.parse.ListType.ANIME) if a.score is not None and a.status == "Completed" if a.season is not None]).most_common(1)
 [(Season(year=2016, season='Spring'), 73)]
 ```
 
 Or, you can use [`jq`](https://github.com/stedolan/jq) to mangle it into whatever you want. Heres a mess of pipes to create a graph of your `Completed` ratings, using [`termgraph`](https://github.com/mkaz/termgraph):
 
 ```
-$ malexport parse list ./animelist.json | jq '.entries | .[] | select(.status == "Completed") | .score' | grep -vx 0 | sort | uniq -c | awk '{ print $2 " " $1}' | termgraph | sort -n
+$ malexport parse list ./animelist.json | jq '.[] | select(.status == "Completed") | .score' | grep -vx 0 | sort | uniq -c | awk '{ print $2 " " $1}' | termgraph | sort -n
 1 : ▇▇▇▇▇▇▇▇▇ 158.00
 2 : ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 652.00
 3 : ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 847.00
