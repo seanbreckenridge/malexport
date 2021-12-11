@@ -101,6 +101,7 @@ class MalList:
             )
             list_data.extend(new_data)
             if len(new_data) < OFFSET_CHUNK:
+                logger.info(f"After {offset // OFFSET_CHUNK} pages, only received {len(new_data)} (typical pages have {OFFSET_CHUNK}), stopping...")
                 break
             offset += OFFSET_CHUNK
         encoded_data = json.dumps(list_data)
