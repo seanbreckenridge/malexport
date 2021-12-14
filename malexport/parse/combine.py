@@ -265,12 +265,10 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
     if FILTER_TAGS in os.environ:
         filter_by_tags: List[str] = os.environ[FILTER_TAGS].split(",")
 
+        # if this entry has any tags which are in the filter list
         def filter_func(e: Union[AnimeData, MangaData]) -> bool:
             tags: Set[str] = set(e.tags_list)
-            for t in filter_by_tags:
-                if t in tags:
-                    return False
-            return True
+            return not any(t in filter_by_tags for t in tags)
 
         anime_combined = list(filter(filter_func, anime_combined))
         manga_combined = list(filter(filter_func, manga_combined))
