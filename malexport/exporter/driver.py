@@ -48,7 +48,7 @@ def driver() -> Chrome:
     )
     driver = Chrome("chromedriver", chrome_options=options, **CHROME_KWARGS)
     # quit when python exits to avoid hanging browsers
-    atexit.register(lambda: driver.quit())
+    atexit.register(lambda: driver.quit())  # type: ignore[no-any-return]
     return driver
 
 
