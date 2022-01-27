@@ -3,6 +3,7 @@ from typing import Optional
 from ..paths import LocalDir
 from ..list_type import ListType
 from .mal_list import MalList
+from .api_list import APIList
 from .mal_session import MalSession
 from .history import HistoryManager
 from .forum import ForumManager
@@ -19,6 +20,8 @@ class Account:
         self.localdir = localdir
         self.animelist = MalList(list_type=ListType.ANIME, localdir=self.localdir)
         self.mangalist = MalList(list_type=ListType.MANGA, localdir=self.localdir)
+        self.animelist_api: Optional[APIList] = None
+        self.mangalist_api: Optional[APIList] = None
         self.mal_session: Optional[MalSession] = None
         self.anime_episode_history: Optional[HistoryManager] = None
         self.manga_chapter_history: Optional[HistoryManager] = None
@@ -58,6 +61,30 @@ class Account:
             self.animelist.update_list()
         if only == ListType.MANGA or only is None:
             self.mangalist.update_list()
+
+    def update_api_lists(self, only: Optional[ListType] = None) -> None:
+        """
+        Uses MALs API to request anime/manga lists
+        Requires authentication, but includes more data than load.json
+        """
+        self.mal_api_authenticate()
+        assert self.mal_session is not None
+        if self.animelist_api is None:
+            self.animelist_api = APIList(
+                list_type=ListType.ANIME,
+                localdir=self.localdir,
+                mal_session=self.mal_session,
+            )
+        if self.mangalist_api is None:
+            self.mangalist_api = APIList(
+                list_type=ListType.MANGA,
+                localdir=self.localdir,
+                mal_session=self.mal_session,
+            )
+        if only == ListType.ANIME or only is None:
+            self.animelist_api.update_list()
+        if only == ListType.MANGA or only is None:
+            self.mangalist_api.update_list()
 
     def update_exports(self) -> None:
         """

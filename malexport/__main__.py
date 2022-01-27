@@ -78,6 +78,7 @@ def _all(username: str) -> None:
     """
     acc = Account.from_username(username)
     acc.update_lists()
+    acc.update_api_lists()
     acc.update_forum_posts()
     acc.update_exports()
     acc.update_history()
@@ -92,6 +93,18 @@ def _lists_update(only: str, username: str) -> None:
     if only is not None:
         only_update = ListType.__members__[only.upper()]
     acc.update_lists(only=only_update)
+
+
+@update.command(
+    name="api-lists", short_help="update animelist and mangalists using the API"
+)
+@apply_shared(USERNAME, ONLY)
+def _api_lists(only: str, username: str) -> None:
+    acc = Account.from_username(username)
+    only_update: Optional[ListType] = None
+    if only is not None:
+        only_update = ListType.__members__[only.upper()]
+    acc.update_api_lists(only=only_update)
 
 
 @update.command(name="export", short_help="export xml lists")

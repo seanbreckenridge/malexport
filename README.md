@@ -5,6 +5,7 @@ This uses multiple methods to save your personal data from a MAL (MyAnimeList) a
 I wanted to use the API whenever possible here, but the information returned by the API is so scarce, or endpoints don't really exist at all, so you can't really get a lot of info out of it. As far as I could figure out, it doesn't have a history endpoint, or any way to retrieve how many times you've rewatched a show, so this uses:
 
 - `malexport update lists` - The `load.json` endpoint (unauthenticated) to backup my `anime`/`manga` list (by most recently updated, as thats useful in many contexts)
+- `malexport update api-lists` - The MAL API endpoint (authenticated) to backup my `anime`/`manga` list. This includes a lot of metadata for each entry, and also works for private lists (assuming you go through the OAuth flow with the private account logged in your browser)
 - Selenium (so requires your MAL Username/Password; stored locally) to:
   - `malexport update history` - Individually grab episode/chapter history data (i.e., [this](https://i.imgur.com/2h5ZFng.png))
   - `malexport update export` - Download the MAL export (the giant XML files), since those have rewatch information, and better dates
