@@ -2,15 +2,12 @@
 Requests MAL Lists (animelist/mangalist) for a user, using MAL API
 """
 
-import os
 import json
 from typing import List
 from pathlib import Path
 
-import requests
-
 from ..list_type import ListType
-from ..common import Json, safe_request_json, logger
+from ..common import Json
 from ..paths import LocalDir
 from .mal_session import MalSession
 
