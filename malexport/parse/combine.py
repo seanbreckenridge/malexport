@@ -5,7 +5,6 @@ export and history modules into data I find useful
 
 import os
 from typing import Any, Dict, List, NamedTuple, Optional, TypeVar, Tuple, Union, Set
-from datetime import date
 
 from ..list_type import ListType
 from ..log import logger
@@ -16,8 +15,6 @@ from .mal_list import (
     AnimeEntry,
     MangaEntry,
     parse_file as parse_user_history,
-    IdInfo,
-    Season,
 )
 from .api_list import iter_api_list, Entry
 from .xml import AnimeXML, MangaXML, parse_xml
@@ -36,6 +33,10 @@ class AnimeData(NamedTuple):
     username: str
 
     @property
+    def id(self) -> int:
+        return self.XMLData.id
+
+    @property
     def tags_list(self) -> List[str]:
         if self.JSONList:
             return split_tags(self.JSONList.tags)
@@ -48,6 +49,10 @@ class MangaData(NamedTuple):
     JSONList: Optional[MangaEntry]
     APIList: Optional[Entry]
     username: str
+
+    @property
+    def id(self) -> int:
+        return self.XMLData.id
 
     @property
     def tags_list(self) -> List[str]:

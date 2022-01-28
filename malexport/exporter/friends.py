@@ -1,5 +1,5 @@
 import json
-from typing import Iterator, List
+from typing import List
 
 import requests
 

@@ -1,12 +1,12 @@
 import json
-from typing import NamedTuple, Union, List, Optional, TypeVar, Iterator, Dict, Any
+from typing import NamedTuple, List, Optional, TypeVar, Iterator, Dict, Any
 from datetime import date, datetime
 
-from .common import strtobool, parse_short_date, parse_date_safe
+from .common import parse_date_safe
 from ..list_type import ListType
 from ..common import Json
 from ..paths import PathIsh, _expand_file
-from .mal_list import IdInfo, Season, filter_none
+from .mal_list import IdInfo, Season
 
 T = TypeVar("T")
 
