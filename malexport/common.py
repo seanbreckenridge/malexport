@@ -8,6 +8,8 @@ import requests
 import backoff  # type: ignore[import]
 import simplejson
 
+from .list_type import ListType
+
 Json = Any
 
 from malexport.log import logger
@@ -77,6 +79,8 @@ def safe_request_json(
 
 
 def default_encoder(o: Any) -> Any:
+    if isinstance(o, ListType):
+        return o.value
     if isinstance(o, datetime.datetime):
         return str(o)
     elif isinstance(o, datetime.date):

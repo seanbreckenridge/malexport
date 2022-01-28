@@ -19,6 +19,7 @@ from .mal_list import (
     IdInfo,
     Season,
 )
+from .api_list import iter_api_list, Entry
 from .xml import AnimeXML, MangaXML, parse_xml
 
 
@@ -28,75 +29,31 @@ FILTER_TAGS = "MALEXPORT_COMBINE_FILTER_TAGS"
 
 
 class AnimeData(NamedTuple):
-    # items from the xml
-    id: int
-    title: str
-    media_type: str
-    episodes: int
-    watched_episodes: int
-    start_date: Optional[date]
-    finish_date: Optional[date]
-    score: int
-    status: str
-    times_watched: int
-    tags: str
-    rewatching: bool
-    rewatching_ep: int
-    # history
+    XMLData: AnimeXML
     history: List[HistoryEntry]
-    # items from the load.json
-    airing_status: Optional[str]
-    studios: List[IdInfo]
-    licensors: List[IdInfo]
-    genres: List[IdInfo]
-    demographics: List[IdInfo]
-    season: Optional[Season]
-    url: Optional[str]
-    image_path: Optional[str]
-    air_start_date: Optional[date]
-    air_end_date: Optional[date]
-    rating: Optional[str]
-    # additional items
+    JSONList: Optional[AnimeEntry]
+    APIList: Optional[Entry]
     username: str
 
     @property
     def tags_list(self) -> List[str]:
-        return split_tags(self.tags)
+        if self.JSONList:
+            return split_tags(self.JSONList.tags)
+        return []
 
 
 class MangaData(NamedTuple):
-    # items from the xml
-    id: int
-    title: str
-    volumes: int
-    chapters: int
-    read_volumes: int
-    read_chapters: int
-    start_date: Optional[date]
-    finish_date: Optional[date]
-    score: int
-    status: str
-    times_read: int
-    tags: str
-    rereading: bool
-    # history
+    XMLData: MangaXML
     history: List[HistoryEntry]
-    # items from the load.json
-    publishing_status: Optional[str]
-    manga_magazines: List[IdInfo]
-    genres: List[IdInfo]
-    demographics: List[IdInfo]
-    url: Optional[str]
-    image_path: Optional[str]
-    media_type: Optional[str]
-    publish_start_date: Optional[date]
-    publish_end_date: Optional[date]
-    # additional items
+    JSONList: Optional[MangaEntry]
+    APIList: Optional[Entry]
     username: str
 
     @property
     def tags_list(self) -> List[str]:
-        return split_tags(self.tags)
+        if self.JSONList:
+            return split_tags(self.JSONList.tags)
+        return []
 
 
 # helper to extract optional data from json data
@@ -133,14 +90,14 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
         animelist_json_data = {
             el.id: el  # type: ignore[union-attr,misc]
             for el in parse_user_history(
-                json_file=str(d / "animelist.json"), list_type=ListType.ANIME
+                str(d / "animelist.json"), list_type=ListType.ANIME
             )
         }
     if (d / "mangalist.json").exists():
         mangalist_json_data = {
             el.id: el  # type: ignore[union-attr,misc]
             for el in parse_user_history(
-                json_file=str(d / "mangalist.json"), list_type=ListType.MANGA
+                str(d / "mangalist.json"), list_type=ListType.MANGA
             )
         }
 
@@ -154,15 +111,28 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
         for el in parse_xml(str(d / "mangalist.xml")).entries
     }
 
+    # list using the API
+    animelist_api_json_data: Dict[int, Entry] = {}
+    mangalist_api_json_data: Dict[int, Entry] = {}
+    if (d / "animelist_api.json").exists():
+        animelist_api_json_data = {
+            el.id: el
+            for el in iter_api_list(
+                str(d / "animelist_api.json"), list_type=ListType.ANIME
+            )
+        }
+    if (d / "mangalist_api.json").exists():
+        mangalist_api_json_data = {
+            el.id: el
+            for el in iter_api_list(
+                str(d / "mangalist_api.json"), list_type=ListType.MANGA
+            )
+        }
+
     anime_combined_data: Dict[int, AnimeData] = {}
 
     # combine anime data
     for mal_id, anime_xml in animelist_xml_data.items():
-
-        anime_blob: Optional[AnimeEntry] = animelist_json_data.pop(mal_id, None)
-        anime_dict: Dict[str, Any] = {}
-        if anime_blob is not None:
-            anime_dict = anime_blob._asdict()
 
         anime_hist: List[HistoryEntry] = []
         if mal_id in anime_history:
@@ -171,40 +141,14 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
 
         anime_combined_data[mal_id] = AnimeData(
             username=username,
-            id=anime_xml.anime_id,
-            title=anime_xml.title,
-            media_type=anime_xml.media_type,
-            episodes=anime_xml.episodes,
-            watched_episodes=anime_xml.watched_episodes,
-            start_date=anime_xml.start_date,
-            finish_date=anime_xml.finish_date,
-            score=anime_xml.score,
-            status=anime_xml.status,
-            times_watched=anime_xml.times_watched,
-            tags=anime_xml.tags,
-            rewatching=anime_xml.rewatching,
-            rewatching_ep=anime_xml.rewatching_ep,
+            XMLData=anime_xml,
             history=anime_hist,
-            airing_status=_extract(anime_dict, "airing_status", None),
-            studios=anime_dict.get("studios") or [],
-            licensors=anime_dict.get("licensors") or [],
-            genres=anime_dict.get("genres") or [],
-            demographics=anime_dict.get("demographics") or [],
-            season=_extract(anime_dict, "season", None),
-            url=_extract(anime_dict, "url", None),
-            image_path=_extract(anime_dict, "image_path", None),
-            air_start_date=_extract(anime_dict, "air_start_date", None),
-            air_end_date=_extract(anime_dict, "air_end_date", None),
-            rating=_extract(anime_dict, "rating", None),
+            JSONList=animelist_json_data.pop(mal_id, None),
+            APIList=animelist_api_json_data.pop(mal_id, None),
         )
 
     manga_combined_data: Dict[int, MangaData] = {}
     for mal_id, manga_xml in mangalist_xml_data.items():
-
-        manga_blob: Optional[MangaEntry] = mangalist_json_data.pop(mal_id, None)
-        manga_dict: Dict[str, Any] = {}
-        if manga_blob is not None:
-            manga_dict = manga_blob._asdict()
 
         manga_hist: List[HistoryEntry] = []
         if mal_id in manga_history:
@@ -213,29 +157,10 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
 
         manga_combined_data[mal_id] = MangaData(
             username=username,
-            id=manga_xml.manga_id,
-            title=manga_xml.title,
-            volumes=manga_xml.volumes,
-            chapters=manga_xml.chapters,
-            read_volumes=manga_xml.read_volumes,
-            read_chapters=manga_xml.read_chapters,
-            start_date=manga_xml.start_date,
-            finish_date=manga_xml.finish_date,
-            score=manga_xml.score,
-            status=manga_xml.status,
-            times_read=manga_xml.times_read,
-            tags=manga_xml.tags,
-            rereading=manga_xml.rereading,
-            publishing_status=_extract(manga_dict, "publishing_status", None),
-            manga_magazines=manga_dict.get("manga_magazines") or [],
-            genres=manga_dict.get("genres") or [],
-            demographics=manga_dict.get("demographics") or [],
-            url=_extract(manga_dict, "url", None),
-            image_path=_extract(manga_dict, "image_path", None),
-            media_type=_extract(manga_dict, "media_type", None),
-            publish_start_date=_extract(manga_dict, "publish_start_date", None),
-            publish_end_date=_extract(manga_dict, "publish_end_date", None),
+            XMLData=manga_xml,
             history=manga_hist,
+            JSONList=mangalist_json_data.pop(mal_id, None),
+            APIList=mangalist_api_json_data.pop(mal_id, None),
         )
 
     # while parsing, items were removed when they were merged into

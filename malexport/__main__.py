@@ -11,6 +11,7 @@ from .parse import (
     iter_forum_posts,
     iter_user_history,
     iter_friends,
+    iter_api_list,
 )
 from .parse.combine import combine
 from .common import serialize
@@ -185,6 +186,33 @@ def _list_parse(_type: Optional[str], list_file: str, stream: bool) -> None:
     else:
         click.echo(serialize(list(idata)))
 
+@parse.command(name="api-list", short_help="parse the API list file")
+@click.option(
+    "--type",
+    "_type",
+    type=click.Choice(["anime", "manga"], case_sensitive=False),
+    required=False,
+    help="Specify type of list. If not supplied, this tries to guess based on the filename",
+)
+@apply_shared(STREAM)
+@click.argument("API_LIST_FILE")
+def _api_list_file(_type: Optional[str], api_list_file: str, stream: bool) -> None:
+    chosen_type: ListType
+    if _type is not None:
+        chosen_type = ListType.__members__[_type.upper()]
+    else:
+        # infer type
+        chosen_type = (
+            ListType.ANIME if "anime" in os.path.basename(api_list_file) else ListType.MANGA
+        )
+    idata = iter_api_list(api_list_file, list_type=chosen_type)
+    if stream:
+        for i in idata:
+            sys.stdout.write(serialize(i))
+        sys.stdout.flush()
+    else:
+        click.echo(serialize(list(idata)))
+
 
 @parse.command(name="forum", short_help="extract forum posts by your user")
 @apply_shared(USERNAME)
@@ -192,7 +220,7 @@ def _forum_parse(username: str) -> None:
     click.echo(serialize(list(iter_forum_posts(username))))
 
 
-@parse.command(name="combine", short_help="combines lists, xml and history data")
+@parse.command(name="combine", short_help="combines lists, api-lists, xml and history data")
 @apply_shared(USERNAME, ONLY)
 def _combine_parse(only: Optional[str], username: str) -> None:
     """

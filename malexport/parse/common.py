@@ -10,7 +10,9 @@ def split_tags(tags: str) -> List[str]:
     return list(re.split(r"\s*,\s*", tags.strip()))
 
 
-def parse_date_safe(d: str) -> Optional[date]:
+def parse_date_safe(d: Optional[str]) -> Optional[date]:
+    if d is None:
+        return None
     try:
         return date.fromisoformat(d)
     except ValueError:  # no date supplied, uses '0000-00-00'
