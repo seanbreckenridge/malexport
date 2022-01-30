@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import NamedTuple, List, Iterator, Tuple, Union
 
 from ..paths import LocalDir
@@ -58,7 +58,7 @@ def _parse_history_file(history_path: Path) -> Tuple[str, List[HistoryEntry]]:
         [num, epoch] = entry_data
         entries.append(
             HistoryEntry(
-                at=datetime.fromtimestamp(epoch),
+                at=datetime.fromtimestamp(epoch, tz=timezone.utc),
                 number=num,
             )
         )
