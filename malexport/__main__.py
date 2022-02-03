@@ -81,9 +81,9 @@ def _all(username: str) -> None:
     acc.update_lists()
     acc.update_api_lists()
     acc.update_forum_posts()
-    acc.update_exports()
     acc.update_history()
     acc.update_friends()
+    acc.update_exports()
 
 
 @update.command(name="lists", short_help="update animelist and mangalists")
