@@ -4,17 +4,6 @@ from typing import Callable, Optional, Any
 
 import click
 
-from .exporter import Account
-from .parse import (
-    parse_xml,
-    parse_list,
-    iter_forum_posts,
-    iter_user_history,
-    iter_friends,
-    iter_api_list,
-)
-from .parse.combine import combine
-from .common import serialize
 from .list_type import ListType
 
 
@@ -77,6 +66,8 @@ def _all(username: str) -> None:
     """
     update all data for the account
     """
+    from .exporter import Account
+
     acc = Account.from_username(username)
     acc.update_lists()
     acc.update_api_lists()
@@ -89,6 +80,8 @@ def _all(username: str) -> None:
 @update.command(name="lists", short_help="update animelist and mangalists")
 @apply_shared(USERNAME, ONLY)
 def _lists_update(only: str, username: str) -> None:
+    from .exporter import Account
+
     acc = Account.from_username(username)
     only_update: Optional[ListType] = None
     if only is not None:
@@ -101,6 +94,8 @@ def _lists_update(only: str, username: str) -> None:
 )
 @apply_shared(USERNAME, ONLY)
 def _api_lists(only: str, username: str) -> None:
+    from .exporter import Account
+
     acc = Account.from_username(username)
     only_update: Optional[ListType] = None
     if only is not None:
@@ -111,6 +106,8 @@ def _api_lists(only: str, username: str) -> None:
 @update.command(name="export", short_help="export xml lists")
 @apply_shared(USERNAME)
 def _export(username: str) -> None:
+    from .exporter import Account
+
     acc = Account.from_username(username)
     acc.update_exports()
 
@@ -126,6 +123,8 @@ def _export(username: str) -> None:
     help="Only request the first 'count' entries in the users episode history",
 )
 def _history(username: str, only: Optional[str], count: Optional[int]) -> None:
+    from .exporter import Account
+
     acc = Account.from_username(username)
     only_update: Optional[ListType] = None
     if only is not None:
@@ -136,6 +135,8 @@ def _history(username: str, only: Optional[str], count: Optional[int]) -> None:
 @update.command(name="forum", short_help="update forum posts")
 @apply_shared(USERNAME)
 def _forum(username: str) -> None:
+    from .exporter import Account
+
     acc = Account.from_username(username)
     acc.update_forum_posts()
 
@@ -143,6 +144,8 @@ def _forum(username: str) -> None:
 @update.command(name="friends", short_help="update friends")
 @apply_shared(USERNAME)
 def _friends(username: str) -> None:
+    from .exporter import Account
+
     acc = Account.from_username(username)
     acc.update_friends()
 
@@ -155,6 +158,9 @@ def parse() -> None:
 @parse.command(name="xml", short_help="parse the XML export files")
 @click.argument("XML_FILE")
 def _xml(xml_file: str) -> None:
+    from .parse import parse_xml
+    from .common import serialize
+
     xml_data = parse_xml(xml_file)
     click.echo(serialize(xml_data))
 
@@ -170,6 +176,9 @@ def _xml(xml_file: str) -> None:
 @apply_shared(STREAM)
 @click.argument("LIST_FILE")
 def _list_parse(_type: Optional[str], list_file: str, stream: bool) -> None:
+    from .parse import parse_list
+    from .common import serialize
+
     chosen_type: ListType
     if _type is not None:
         chosen_type = ListType.__members__[_type.upper()]
@@ -186,6 +195,7 @@ def _list_parse(_type: Optional[str], list_file: str, stream: bool) -> None:
     else:
         click.echo(serialize(list(idata)))
 
+
 @parse.command(name="api-list", short_help="parse the API list file")
 @click.option(
     "--type",
@@ -197,13 +207,18 @@ def _list_parse(_type: Optional[str], list_file: str, stream: bool) -> None:
 @apply_shared(STREAM)
 @click.argument("API_LIST_FILE")
 def _api_list_file(_type: Optional[str], api_list_file: str, stream: bool) -> None:
+    from .parse import iter_api_list
+    from .common import serialize
+
     chosen_type: ListType
     if _type is not None:
         chosen_type = ListType.__members__[_type.upper()]
     else:
         # infer type
         chosen_type = (
-            ListType.ANIME if "anime" in os.path.basename(api_list_file) else ListType.MANGA
+            ListType.ANIME
+            if "anime" in os.path.basename(api_list_file)
+            else ListType.MANGA
         )
     idata = iter_api_list(api_list_file, list_type=chosen_type)
     if stream:
@@ -217,10 +232,15 @@ def _api_list_file(_type: Optional[str], api_list_file: str, stream: bool) -> No
 @parse.command(name="forum", short_help="extract forum posts by your user")
 @apply_shared(USERNAME)
 def _forum_parse(username: str) -> None:
+    from .parse import iter_forum_posts
+    from .common import serialize
+
     click.echo(serialize(list(iter_forum_posts(username))))
 
 
-@parse.command(name="combine", short_help="combines lists, api-lists, xml and history data")
+@parse.command(
+    name="combine", short_help="combines lists, api-lists, xml and history data"
+)
 @apply_shared(USERNAME, ONLY)
 def _combine_parse(only: Optional[str], username: str) -> None:
     """
@@ -229,6 +249,9 @@ def _combine_parse(only: Optional[str], username: str) -> None:
 
     It doesn't require you have a list export
     """
+    from .parse.combine import combine
+    from .common import serialize
+
     anime, manga = combine(username)
     if only == "anime":
         click.echo(serialize(anime))
@@ -241,12 +264,18 @@ def _combine_parse(only: Optional[str], username: str) -> None:
 @parse.command(name="history", short_help="parse downloaded user history")
 @apply_shared(USERNAME)
 def _history_parse(username: str) -> None:
+    from .parse import iter_user_history
+    from .common import serialize
+
     click.echo(serialize(list(iter_user_history(username))))
 
 
 @parse.command(name="friends", short_help="parse user friends")
 @apply_shared(USERNAME)
 def _friends_parse(username: str) -> None:
+    from .common import serialize
+    from .parse import iter_friends
+
     click.echo(serialize(list(iter_friends(username))))
 
 
