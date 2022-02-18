@@ -11,7 +11,7 @@ from ..common import Json
 from ..paths import LocalDir
 from .mal_session import MalSession
 
-BASE_URL = "https://api.myanimelist.net/v2/users/{username}/{list_type}list?limit=100&offset=0&nsfw=true&fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,my_list_status,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,related_manga,recommendations,studios,statistics&limit=100&offset=0"
+BASE_URL = "https://api.myanimelist.net/v2/users/{username}/{list_type}list?limit=100&offset=0&nsfw=true&fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,my_list_status,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,related_manga,recommendations,studios,statistics"
 
 
 class APIList:
