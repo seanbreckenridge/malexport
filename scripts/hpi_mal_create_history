@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+
+import os
+from typing import Any
+
+
+import click
+from my.mal.export import anime, manga
+
+
+def _print_item(item: Any) -> None:
+    print("\t", end="")
+    print(f"{item[0].at} {item[2]} {item[0].number} of {item[1]}")
+
+
+@click.command()
+@click.argument("ORDER", type=click.Choice(["most", "date"]), default="date")
+def main(order: str) -> None:
+    """ """
+
+    username = os.environ["MAL_USERNAME"]
+
+    day_watching: dict[str, Any] = {}
+
+    for a in anime():
+        if a.username != username:
+            continue
+        for item in a.history:
+            dy = item.at.date()
+            if dy in day_watching:
+                day_watching[dy].append((item, a.XMLData.title, "Watched episode"))  # type: ignore
+            else:
+                day_watching[dy] = [(item, a.XMLData.title, "Watched episode")]  # type: ignore
+
+    for m in manga():
+        if m.username != username:
+            continue
+        for item in m.history:
+            dy = item.at.date()
+            if dy in day_watching:
+                day_watching[dy].append((item, m.XMLData.title, "Read chapter"))  # type: ignore
+            else:
+                day_watching[dy] = [(item, m.XMLData.title, "Read chapter")]  # type: ignore
+
+    if order == "date":
+        for day in sorted(set(day_watching.keys())):
+            print(str(day))
+            for item in day_watching[day]:
+                _print_item(item)
+    else:
+        most = sorted(
+            [(day, len(entries)) for day, entries in day_watching.items()],
+            key=lambda t: t[1],
+            reverse=True,
+        )
+        for day, _ in most:
+            print(str(day))
+            for item in day_watching[day]:
+                _print_item(item)
+
+
+if __name__ == "__main__":
+    main(prog_name="hpi_mal_create_history")
