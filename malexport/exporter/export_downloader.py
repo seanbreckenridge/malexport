@@ -74,23 +74,23 @@ class ExportDownloader:
         logger.info(f"Downloading {list_type.value} export")
         d.get(EXPORT_PAGE)
         export_button_selector = tuple([By.CSS_SELECTOR, EXPORT_BUTTON_CSS])
-        WebDriverWait(d, 10).until(
-            EC.visibility_of_element_located(export_button_selector)
+        WebDriverWait(d, 10).until(  # type: ignore[no-untyped-call]
+            EC.visibility_of_element_located(export_button_selector)  # type: ignore[no-untyped-call]
         )
         if list_type == ListType.MANGA:
-            d.execute_script("""$("#dialog select.inputtext").val(2)""")
-        d.find_element_by_css_selector(EXPORT_BUTTON_CSS).click()
+            d.execute_script("""$("#dialog select.inputtext").val(2)""")  # type: ignore[no-untyped-call]
+        d.find_element_by_css_selector(EXPORT_BUTTON_CSS).click()  # type: ignore[no-untyped-call]
         time.sleep(0.5)
-        WebDriverWait(d, 10).until(EC.alert_is_present())
+        WebDriverWait(d, 10).until(EC.alert_is_present())  # type: ignore[no-untyped-call]
         alert = d.switch_to.alert
         time.sleep(0.5)
-        alert.accept()
+        alert.accept()  # type: ignore[no-untyped-call]
         time.sleep(0.5)
         download_button_selector = tuple([By.CSS_SELECTOR, DOWNLOAD_BUTTON])
         try:
             # hmm -- this page seems to be there sometimes, but not others?
-            WebDriverWait(d, 10).until(
-                EC.element_to_be_clickable(download_button_selector)
+            WebDriverWait(d, 10).until(  # type: ignore[no-untyped-call]
+                EC.element_to_be_clickable(download_button_selector)  # type: ignore[no-untyped-call]
             )
             d.find_element_by_css_selector(DOWNLOAD_BUTTON).click()
         except TimeoutException:

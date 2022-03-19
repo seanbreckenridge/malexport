@@ -90,7 +90,7 @@ class HistoryManager:
         list_type: ListType,
         localdir: LocalDir,
         till_same_limit: int = TILL_SAME_LIMIT,
-    ):
+    ) -> None:
         self.list_type = list_type
         self.localdir = localdir
         # if we request this many items and there is no difference
@@ -185,8 +185,8 @@ class HistoryManager:
         d.get(url)
         wait()
         # sanity check to make sure data is present on the page
-        WebDriverWait(d, 10).until(
-            EC.text_to_be_present_in_element(
+        WebDriverWait(d, 10).until( # type: ignore[no-untyped-call]
+            EC.text_to_be_present_in_element(  # type: ignore[no-untyped-call]
                 (
                     By.ID,
                     self.container_id,

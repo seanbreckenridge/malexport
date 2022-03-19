@@ -38,15 +38,15 @@ CHROME_KWARGS: Dict[str, Any] = {}
 def driver() -> Chrome:
     options = ChromeOptions()
     if HIDDEN_CHROMEDRIVER:
-        options.add_argument("headless")
-        options.add_argument("window-size=1920x1080")
-        options.add_argument("disable-gpu")
+        options.add_argument("headless")  # type: ignore[no-untyped-call]
+        options.add_argument("window-size=1920x1080")  # type: ignore[no-untyped-call]
+        options.add_argument("disable-gpu")  # type: ignore[no-untyped-call]
     if CHROME_LOCATION is not None:
         CHROME_KWARGS["executable_path"] = CHROME_LOCATION
     options.add_experimental_option(
         "prefs", {"download.default_directory": str(TEMP_DOWNLOAD_DIR)}
     )
-    driver = Chrome("chromedriver", chrome_options=options, **CHROME_KWARGS)
+    driver = Chrome("chromedriver", chrome_options=options, **CHROME_KWARGS) # type: ignore[unreachable]
     # quit when python exits to avoid hanging browsers
     atexit.register(lambda: driver.quit())  # type: ignore[no-any-return]
     return driver
@@ -79,7 +79,7 @@ def driver_login(localdir: LocalDir) -> None:
     d.find_element_by_id(PASSWORD_ID).send_keys(creds["password"])
     time.sleep(1)
     # use script to login incase window is too small to be clickable
-    d.execute_script(f"""document.querySelector("{LOGIN_BUTTON_CSS}").click()""")
+    d.execute_script(f"""document.querySelector("{LOGIN_BUTTON_CSS}").click()""")  # type: ignore[no-untyped-call]
     IS_LOGGED_IN = True
 
 
