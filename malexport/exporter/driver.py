@@ -46,7 +46,7 @@ def driver() -> Chrome:
     options.add_experimental_option(
         "prefs", {"download.default_directory": str(TEMP_DOWNLOAD_DIR)}
     )
-    driver = Chrome("chromedriver", chrome_options=options, **CHROME_KWARGS) # type: ignore[unreachable]
+    driver = Chrome("chromedriver", chrome_options=options, **CHROME_KWARGS)  # type: ignore[unreachable]
     # quit when python exits to avoid hanging browsers
     atexit.register(lambda: driver.quit())  # type: ignore[no-any-return]
     return driver

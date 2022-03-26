@@ -185,7 +185,7 @@ class HistoryManager:
         d.get(url)
         wait()
         # sanity check to make sure data is present on the page
-        WebDriverWait(d, 10).until( # type: ignore[no-untyped-call]
+        WebDriverWait(d, 10).until(  # type: ignore[no-untyped-call]
             EC.text_to_be_present_in_element(  # type: ignore[no-untyped-call]
                 (
                     By.ID,

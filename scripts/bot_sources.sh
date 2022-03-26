@@ -39,14 +39,15 @@ mal_sources_extract_id() {
 # start streaming the source(s) using mpv
 mal_sources_watch_next() {
 	mal_sources_copy_vultr
-	local RANDOM_NEXT_ID
+	local RANDOM_NEXT_ID DATA
 	if [[ -n "${RANDOM_MAL_ID}" ]]; then
 		RANDOM_NEXT_ID="${RANDOM_MAL_ID}"
 	else
 		RANDOM_NEXT_ID="$(mal_sources_shared_ids | shuf -n1)"
 	fi
-	# marked done with https://github.com/z411/trackma/ curses interface
-	mal_list | jq "select(.id == $RANDOM_NEXT_ID)" | mal_describe
+	DATA="$(mal_list | jq "select(.id == $RANDOM_NEXT_ID)")"
+	echo "$DATA" | mal_describe
+	echo "$DATA" | jq '"\(.id)"' -r | sed -e 's_^_https://myanimelist.net/anime/_'
 	# https://sean.fish/d/extracturls?dark
 	local urls="$(mal_sources_extract_id "${RANDOM_NEXT_ID}" | extracturls)"
 	while IFS= read -r url; do
@@ -57,4 +58,5 @@ mal_sources_watch_next() {
 		echo "Source for ${RANDOM_NEXT_ID}: ${url}"
 		CLIPBOARD_CONTENTS="${url}" stream-corner-480
 	done <<<"$urls"
+	epoch >>~/.cache/mal_sources_watched_at
 }
