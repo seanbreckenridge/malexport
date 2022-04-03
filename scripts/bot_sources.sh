@@ -56,7 +56,7 @@ mal_sources_watch_next() {
 		# run behind tsp (a task spooler) so mpv waits till
 		# previous is over
 		echo "Source for ${RANDOM_NEXT_ID}: ${url}"
-		CLIPBOARD_CONTENTS="${url}" stream-corner-480
+		CLIPBOARD_CONTENTS="${url}" stream-corner-1080
 	done <<<"$urls"
 	epoch >>~/.cache/mal_sources_watched_at
 }
