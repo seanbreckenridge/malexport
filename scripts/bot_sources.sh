@@ -37,11 +37,12 @@ mal_sources_extract_id() {
 # copy down the sources file if needed
 # pick a random ID on my currently watching I haven't watched yet
 # start streaming the source(s) using mpv
+# if mal id provided as the first argument, use that instead
 mal_sources_watch_next() {
 	mal_sources_copy_vultr
 	local RANDOM_NEXT_ID DATA
-	if [[ -n "${RANDOM_MAL_ID}" ]]; then
-		RANDOM_NEXT_ID="${RANDOM_MAL_ID}"
+	if [[ -n "$1" ]]; then
+		RANDOM_NEXT_ID="$1"
 	else
 		RANDOM_NEXT_ID="$(mal_sources_shared_ids | shuf -n1)"
 	fi
