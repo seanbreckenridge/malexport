@@ -65,3 +65,11 @@ mal_sources_watch_next() {
 	done <<<"$urls"
 	epoch >>~/.cache/mal_sources_watched_at
 }
+
+mal_club_on_watching() {
+	comm -1 -2 <(mal_sources_currently_watching_ids) <(mal_club "$1")
+}
+
+mal_anime_links() {
+	sed 's#^#https://myanimelist.net/anime/#'
+}

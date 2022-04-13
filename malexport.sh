@@ -70,3 +70,9 @@ mal_describe() {
 mal_open_aired() {
 	mal_status 'Plan to Watch' | jq -r 'select(.airing_status != "Not Yet Aired") | .id' | sed 's#^#https://myanimelist.net/anime/#' | xargs -I {} sh -c 'python3 -m webbrowser -t "{}"'
 }
+
+mal_club() {
+	local club
+	club="${1?:Pass club id as first argument}"
+	curl -s "https://api.jikan.moe/v4/clubs/${club}/relations" | jq '.data.anime[].mal_id' | sort
+}
