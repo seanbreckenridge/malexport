@@ -8,6 +8,11 @@ import click
 import IPython  # type: ignore[import]
 from malexport.exporter import Account
 
+try:
+    from seanb.malexport_secret import *
+except ImportError:
+    pass
+
 
 @click.command()
 @click.option(

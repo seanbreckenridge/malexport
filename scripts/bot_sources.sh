@@ -57,7 +57,11 @@ mal_sources_watch_next() {
 		# run behind tsp (a task spooler) so mpv waits till
 		# previous is over
 		echo "Source for ${RANDOM_NEXT_ID}: ${url}"
-		CLIPBOARD_CONTENTS="${url}" stream-corner-1080
+		if [[ -n "$MAL_SOURCES_DOWNLOAD" ]]; then
+			youtube-dl "$url" -o "${RANDOM_NEXT_ID}_%(title)s.%(ext)s"
+		else
+			CLIPBOARD_CONTENTS="${url}" stream-corner-1080
+		fi
 	done <<<"$urls"
 	epoch >>~/.cache/mal_sources_watched_at
 }
