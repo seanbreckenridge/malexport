@@ -58,7 +58,7 @@ mal_sources_watch_next() {
 		# previous is over
 		echo "Source for ${RANDOM_NEXT_ID}: ${url}"
 		if [[ -n "$MAL_SOURCES_DOWNLOAD" ]]; then
-			youtube-dl "$url" -o "${RANDOM_NEXT_ID}_%(title)s.%(ext)s"
+			youtube-dl "$url" -o "${RANDOM_NEXT_ID}_%(title)s.%(ext)s" --write-sub --sub-lang en
 		else
 			CLIPBOARD_CONTENTS="${url}" stream-corner-1080
 		fi
