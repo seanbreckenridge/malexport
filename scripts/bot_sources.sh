@@ -61,9 +61,9 @@ mal_sources_watch_next() {
 			youtube-dl "$url" -o "${RANDOM_NEXT_ID}_%(title)s.%(ext)s" --write-sub --sub-lang en
 		else
 			CLIPBOARD_CONTENTS="${url}" stream-corner-1080
+			epoch >>~/.cache/mal_sources_watched_at
 		fi
 	done <<<"$urls"
-	epoch >>~/.cache/mal_sources_watched_at
 }
 
 mal_club_on_watching() {
