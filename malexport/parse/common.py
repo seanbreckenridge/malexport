@@ -27,7 +27,7 @@ def parse_date_safe(d: Optional[str]) -> Optional[date]:
 # '31' parses to 1931
 CUTOFF_DATE = int(os.environ.get("MALEXPORT_CUTOFF_DATE", date.today().year + 5))
 
-DATE_REGEX = re.compile("(\d+)-(\d+)-(\d+)")
+DATE_REGEX = re.compile(r"(\d+)-(\d+)-(\d+)")
 
 
 def parse_short_date(d: Optional[str]) -> Optional[date]:

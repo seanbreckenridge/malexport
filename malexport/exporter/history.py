@@ -12,7 +12,7 @@ import time
 from itertools import islice
 from urllib.parse import urlparse, parse_qs
 from pathlib import Path
-from typing import Tuple, List, Set, Optional, Iterable
+from typing import Tuple, List, Set, Optional, Iterable, Dict, Any
 from datetime import datetime
 
 from ..list_type import ListType
@@ -46,11 +46,11 @@ def history_url(list_type: ListType, entry_id: int) -> str:
 TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_EPISODE_LIMIT", 5))
 
 EPISODE_COL_REGEX = re.compile(
-    "Ep (\d+), watched on (\d+)\/(\d+)\/(\d+) at (\d+):(\d+)"
+    r"Ep (\d+), watched on (\d+)\/(\d+)\/(\d+) at (\d+):(\d+)"
 )
 
 CHAPTER_COL_REGEX = re.compile(
-    "Chapter (\d+), read on (\d+)\/(\d+)\/(\d+) at (\d+):(\d+)"
+    r"Chapter (\d+), read on (\d+)\/(\d+)\/(\d+) at (\d+):(\d+)"
 )
 
 
@@ -82,7 +82,6 @@ def _extract_column_data(col_html: str, list_type: ListType) -> Tuple[int, int]:
 class HistoryManager:
     """
     Uses multiple strategies to update history data (episode/chapter watch dates)
-
     """
 
     def __init__(
@@ -136,7 +135,7 @@ class HistoryManager:
         # split tokens and remove last two (Chapter Details or Episode Details)
         title = header[0].text.strip()
         title = " ".join(title.split(" ")[:-2]).strip()
-        data = {"title": title}
+        data: Dict[str, Any] = {"title": title}
         # parse episodes/chapters; fine even if there are no episode/chapter elements
         episode_elements = x.xpath(f'.//div[starts-with(@id, "{self.idprefix}")]')
         episodes = [

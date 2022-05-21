@@ -64,7 +64,6 @@ class MalSession:
         """
         Load or run the OAuth flow to get an access_token for the MAL API
         """
-        refresh_info: Dict[str, str]
         if self.localdir.refresh_info.exists():
             try:
                 return cast(
