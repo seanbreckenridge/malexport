@@ -2,7 +2,7 @@ import os
 import time
 import warnings
 import datetime
-from typing import Any, Iterator, Dict, Optional, Callable
+from typing import Any, Generator, Dict, Optional, Callable
 
 import requests
 import backoff  # type: ignore[import]
@@ -17,7 +17,7 @@ from malexport.log import logger
 REQUEST_WAIT_TIME: int = int(os.environ.get("MALEXPORT_REQUEST_WAIT_TIME", 10))
 
 
-def fibo_backoff() -> Iterator[int]:
+def fibo_backoff() -> Generator[float, None, None]:
     """
     Fibonacci backoff, with the first 7 elements consumed.
     In other words, this starts at 13, 21, ....
@@ -25,7 +25,7 @@ def fibo_backoff() -> Iterator[int]:
     fib = backoff.fibo()
     for _ in range(7):
         next(fib)
-    yield from fib
+    yield from map(float, fib)
 
 
 def backoff_warn(details: Dict[str, Any]) -> None:
