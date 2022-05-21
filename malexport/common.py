@@ -2,7 +2,7 @@ import os
 import time
 import warnings
 import datetime
-from typing import Any, Generator, Dict, Optional, Callable
+from typing import Any, Generator, Dict, Optional, Callable, Type, cast, Sequence
 
 import requests
 import backoff  # type: ignore[import]
@@ -28,15 +28,18 @@ def fibo_backoff() -> Generator[float, None, None]:
     yield from map(float, fib)
 
 
-def backoff_warn(details: Dict[str, Any]) -> None:
-    warning_msg: str = "Backing off {wait:0.1f} seconds afters {tries} tries with {args} {kwargs}".format(
+def backoff_hdlr(details: Any) -> None:
+    warning_msg = "Backing off {wait:0.1f} seconds after {tries} tries with {args} {kwargs}".format(
         **details
     )
     warnings.warn(warning_msg)
 
 
 @backoff.on_exception(
-    fibo_backoff, requests.RequestException, max_tries=3, on_backoff=backoff_warn
+    fibo_backoff,
+    cast(Sequence[Type[Exception]], (requests.RequestException,)),
+    max_tries=3,
+    on_backoff=backoff_hdlr,
 )
 def safe_request(
     url: str,

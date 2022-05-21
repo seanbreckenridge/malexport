@@ -1,7 +1,7 @@
 click>=7.0
 logzero
 requests
-backoff
+backoff>=2.0.0
 PyYaml
 selenium
 lxml
