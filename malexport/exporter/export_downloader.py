@@ -59,7 +59,7 @@ class ExportDownloader:
                 exc_info=e,
             )
             if times > TRY_EXPORT_TIMES:
-                raise e
+                return
             wait()
             self.authenticate()
             self.export_with_retry(list_type, times=times)  # recursive call
