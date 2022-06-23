@@ -25,7 +25,8 @@ def fibo_backoff() -> Generator[float, None, None]:
     fib = backoff.fibo()
     for _ in range(7):
         next(fib)
-    yield from map(float, fib)
+    for n in fib:
+        yield float(n)
 
 
 def backoff_hdlr(details: Any) -> None:
