@@ -11,7 +11,9 @@ from pathlib import Path
 from functools import lru_cache
 from typing import Optional, Dict, Any
 
-from selenium.webdriver import Chrome, ChromeOptions  # type: ignore[import]
+from selenium.webdriver import Chrome, ChromeOptions
+from selenium.webdriver.common.by import By
+
 
 from ..paths import LocalDir, _expand_path
 from ..common import REQUEST_WAIT_TIME
@@ -74,9 +76,9 @@ def driver_login(localdir: LocalDir) -> None:
     time.sleep(1)
     d.get(LOGIN_PAGE)
     time.sleep(1)
-    d.find_element_by_id(LOGIN_ID).send_keys(creds["username"])
+    d.find_element(By.ID, LOGIN_ID).send_keys(creds["username"])
     time.sleep(1)
-    d.find_element_by_id(PASSWORD_ID).send_keys(creds["password"])
+    d.find_element(By.ID, PASSWORD_ID).send_keys(creds["password"])
     time.sleep(1)
     # use script to login incase window is too small to be clickable
     d.execute_script(f"""document.querySelector("{LOGIN_BUTTON_CSS}").click()""")  # type: ignore[no-untyped-call]

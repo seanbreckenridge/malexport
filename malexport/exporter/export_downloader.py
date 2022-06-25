@@ -79,7 +79,7 @@ class ExportDownloader:
         )
         if list_type == ListType.MANGA:
             d.execute_script("""$("#dialog select.inputtext").val(2)""")  # type: ignore[no-untyped-call]
-        d.find_element_by_css_selector(EXPORT_BUTTON_CSS).click()  # type: ignore[no-untyped-call]
+        d.find_element(By.CSS_SELECTOR, EXPORT_BUTTON_CSS).click()  # type: ignore[no-untyped-call]
         time.sleep(0.5)
         WebDriverWait(d, 10).until(EC.alert_is_present())  # type: ignore[no-untyped-call]
         alert = d.switch_to.alert
@@ -92,7 +92,7 @@ class ExportDownloader:
             WebDriverWait(d, 10).until(  # type: ignore[no-untyped-call]
                 EC.element_to_be_clickable(download_button_selector)  # type: ignore[no-untyped-call]
             )
-            d.find_element_by_css_selector(DOWNLOAD_BUTTON).click()
+            d.find_element(By.CSS_SELECTOR, DOWNLOAD_BUTTON).click()
         except TimeoutException:
             pass
         logger.debug("Waiting for download...")

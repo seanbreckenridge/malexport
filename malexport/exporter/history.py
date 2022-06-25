@@ -162,7 +162,7 @@ class HistoryManager:
         )
         d.get(history_url)
         wait()
-        content_div = d.find_element_by_css_selector("div#content")
+        content_div = d.find_element(By.CSS_SELECTOR, "div#content")
         x = ht.fromstring(content_div.get_attribute("innerHTML"))
         found_ids: List[int] = []
         for el in x.xpath(
@@ -193,7 +193,7 @@ class HistoryManager:
                 "Details",
             )
         )
-        details = d.find_element_by_id(self.container_id)
+        details = d.find_element(By.ID, self.container_id)
         assert (
             details is not None
         ), f"Couldn't find details (header) div for {self.list_type.value} {entry_id} {url}"
