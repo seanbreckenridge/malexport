@@ -63,7 +63,7 @@ The `parse` subcommand includes corresponding commands which take the saved data
 
 The most useful is probably `combine`, which combines the `xml`, `api-lists`, `history` and `lists` data.
 
-Otherwise, this acts on the data files:
+Otherwise, this acts on the data files (Reminder that data by default is stored in `~/.local/share/malexport`):
 
 `$ malexport parse xml ./animelist.xml | jq '.entries[106]'`
 
