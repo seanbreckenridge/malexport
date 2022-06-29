@@ -45,10 +45,12 @@ def driver() -> Chrome:
         options.add_argument("disable-gpu")  # type: ignore[no-untyped-call]
     if CHROME_LOCATION is not None:
         CHROME_KWARGS["executable_path"] = CHROME_LOCATION
+    else:
+        CHROME_KWARGS["executable_path"] = "chromedriver"
     options.add_experimental_option(
         "prefs", {"download.default_directory": str(TEMP_DOWNLOAD_DIR)}
     )
-    driver = Chrome("chromedriver", chrome_options=options, **CHROME_KWARGS)  # type: ignore[unreachable]
+    driver = Chrome(chrome_options=options, **CHROME_KWARGS)  # type: ignore[unreachable]
     # quit when python exits to avoid hanging browsers
     atexit.register(lambda: driver.quit())  # type: ignore[no-any-return]
     return driver
