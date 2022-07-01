@@ -9,9 +9,10 @@ import random
 import atexit
 from pathlib import Path
 from functools import lru_cache
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Union
 
 from selenium.webdriver import Chrome, ChromeOptions
+from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 
 
@@ -36,24 +37,36 @@ TEMP_DOWNLOAD_DIR = tempfile.mkdtemp(
 CHROME_KWARGS: Dict[str, Any] = {}
 
 
+BrowserType = str
+
+
 @lru_cache(maxsize=1)
-def driver() -> Chrome:
-    options = ChromeOptions()
-    if HIDDEN_CHROMEDRIVER:
-        options.add_argument("headless")  # type: ignore[no-untyped-call]
-        options.add_argument("window-size=1920x1080")  # type: ignore[no-untyped-call]
-        options.add_argument("disable-gpu")  # type: ignore[no-untyped-call]
-    if CHROME_LOCATION is not None:
-        CHROME_KWARGS["executable_path"] = CHROME_LOCATION
+def driver(browser_type: str = "chrome") -> Union[Chrome, Firefox]:
+    bt = browser_type.casefold()
+    assert bt in {"chrome", "firefox"}
+    if bt == "chrome":
+        options = ChromeOptions()
+        if HIDDEN_CHROMEDRIVER:
+            options.add_argument("headless")  # type: ignore[no-untyped-call]
+            options.add_argument("window-size=1920x1080")  # type: ignore[no-untyped-call]
+            options.add_argument("disable-gpu")  # type: ignore[no-untyped-call]
+        if CHROME_LOCATION is not None:
+            CHROME_KWARGS["executable_path"] = CHROME_LOCATION
+        else:
+            CHROME_KWARGS["executable_path"] = "chromedriver"
+        options.add_experimental_option(
+            "prefs", {"download.default_directory": str(TEMP_DOWNLOAD_DIR)}
+        )
+        driver = Chrome(chrome_options=options, **CHROME_KWARGS)  # type: ignore[unreachable]
+        # quit when python exits to avoid hanging browsers
+        atexit.register(lambda: driver.quit())  # type: ignore[no-any-return]
+        return driver
     else:
-        CHROME_KWARGS["executable_path"] = "chromedriver"
-    options.add_experimental_option(
-        "prefs", {"download.default_directory": str(TEMP_DOWNLOAD_DIR)}
-    )
-    driver = Chrome(chrome_options=options, **CHROME_KWARGS)  # type: ignore[unreachable]
-    # quit when python exits to avoid hanging browsers
-    atexit.register(lambda: driver.quit())  # type: ignore[no-any-return]
-    return driver
+        # mostly added to get around this bug https://github.com/SeleniumHQ/selenium/issues/10799,
+        # which seems to happen on chromedriver 103 while fetching history
+        ff = Firefox()
+        atexit.register(lambda: ff.quit())
+        return ff
 
 
 # If the user has been logged in using the MAL Username/Password using selenium
@@ -66,12 +79,12 @@ PASSWORD_ID = "login-password"
 LOGIN_BUTTON_CSS = ".inputButton.btn-form-submit[value='Login']"
 
 
-def driver_login(localdir: LocalDir) -> None:
+def driver_login(localdir: LocalDir, driver_type: str) -> None:
     """
     Login using the users MAL username and password
     """
     global IS_LOGGED_IN
-    d = driver()  # same instance as any other function which has called this
+    d = driver(driver_type)  # same instance as any other function which has called this
     if IS_LOGGED_IN:
         return
     creds = localdir.load_or_prompt_credentials()

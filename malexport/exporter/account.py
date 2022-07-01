@@ -95,7 +95,10 @@ class Account:
         self.export_downloader.export_lists()
 
     def update_history(
-        self, only: Optional[ListType] = None, count: Optional[int] = None
+        self,
+        only: Optional[ListType] = None,
+        count: Optional[int] = None,
+        driver_type: str = "chrome",
     ) -> None:
         """
         Uses selenium to download episode/chapter history one entry at a time.
@@ -104,10 +107,14 @@ class Account:
         If count is specified, only requests the first 'count' IDs found in your history
         """
         self.anime_episode_history = HistoryManager(
-            list_type=ListType.ANIME, localdir=self.localdir
+            list_type=ListType.ANIME,
+            localdir=self.localdir,
+            driver_type=driver_type,
         )
         self.manga_chapter_history = HistoryManager(
-            list_type=ListType.MANGA, localdir=self.localdir
+            list_type=ListType.MANGA,
+            localdir=self.localdir,
+            driver_type=driver_type,
         )
         if only == ListType.ANIME or only is None:
             self.anime_episode_history.update_history(count=count)

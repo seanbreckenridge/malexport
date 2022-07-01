@@ -122,14 +122,22 @@ def _export(username: str) -> None:
     type=int,
     help="Only request the first 'count' entries in the users episode history",
 )
-def _history(username: str, only: Optional[str], count: Optional[int]) -> None:
+@click.option(
+    "--driver-type",
+    default="chrome",
+    type=click.Choice(["chrome", "firefox"]),
+    help="whether to use chromedriver/geckodriver as the selenium browser",
+)
+def _history(
+    username: str, only: Optional[str], driver_type: str, count: Optional[int]
+) -> None:
     from .exporter import Account
 
     acc = Account.from_username(username)
     only_update: Optional[ListType] = None
     if only is not None:
         only_update = ListType.__members__[only.upper()]
-    acc.update_history(only=only_update, count=count)
+    acc.update_history(only=only_update, count=count, driver_type=driver_type)
 
 
 @update.command(name="forum", short_help="update forum posts")

@@ -17,7 +17,7 @@ from datetime import datetime
 
 from ..list_type import ListType
 from .mal_list import MalList
-from .driver import driver, driver_login, wait
+from .driver import driver as driver, driver_login, wait
 from .export_downloader import ExportDownloader
 from ..log import logger
 from ..paths import LocalDir, _expand_path
@@ -88,6 +88,7 @@ class HistoryManager:
         self,
         list_type: ListType,
         localdir: LocalDir,
+        driver_type: str = "chrome",
         till_same_limit: int = TILL_SAME_LIMIT,
     ) -> None:
         self.list_type = list_type
@@ -108,10 +109,12 @@ class HistoryManager:
             "chapdetails" if self.list_type == ListType.MANGA else "epdetails"
         )
         self.idprefix = "chaprow" if self.list_type == ListType.MANGA else "eprow"
+        self.driver_type = driver_type
+        self.driver = driver(self.driver_type)
 
     def authenticate(self) -> None:
         """Logs in to MAL using your MAL username/password"""
-        driver_login(localdir=self.localdir)
+        driver_login(localdir=self.localdir, driver_type=self.driver_type)
 
     def entry_path(self, entry_id: int) -> Path:
         """Location of the JSON file for this type/ID"""
@@ -154,7 +157,7 @@ class HistoryManager:
         and grabs IDs for any items which were recently watched/read
         """
         logger.info(f"Downloading recent user {self.list_type.value} history")
-        d = driver()
+        d = self.driver
         time.sleep(1)
         mal_username = self.localdir.load_or_prompt_credentials()["username"]
         history_url = (
@@ -177,7 +180,7 @@ class HistoryManager:
         """
         Download the information for a particular type/ID
         """
-        d = driver()
+        d = self.driver
         time.sleep(1)
         url: str = history_url(self.list_type, entry_id)
         logger.info(f"Requesting history data for {self.list_type.value} {entry_id}")
