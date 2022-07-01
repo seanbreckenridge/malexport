@@ -14,6 +14,8 @@ from typing import Optional, Dict, Any, Union
 from selenium import webdriver as sel
 from selenium.webdriver.common.by import By
 
+from selenium.webdriver.firefox.webdriver import WebDriver as Firefox  # type: ignore[import]
+
 
 from ..paths import LocalDir, _expand_path
 from ..common import REQUEST_WAIT_TIME
@@ -38,7 +40,7 @@ CHROME_KWARGS: Dict[str, Any] = {}
 
 BrowserType = str
 
-Browser = Union[sel.Chrome, sel.Firefox]
+Browser = Union[sel.Chrome, Firefox]
 
 
 @lru_cache(maxsize=12)
@@ -58,7 +60,7 @@ def webdriver(browser_type: str) -> Union[sel.Chrome, sel.Firefox]:
         options.add_experimental_option(
             "prefs", {"download.default_directory": str(TEMP_DOWNLOAD_DIR)}
         )
-        driver = sel.Chrome(chrome_options=options, **CHROME_KWARGS)  # type: ignore[unreachable]
+        driver = sel.Chrome(chrome_options=options, **CHROME_KWARGS)
         # quit when python exits to avoid hanging browsers
         atexit.register(lambda: driver.quit())  # type: ignore[no-any-return]
         return driver
@@ -66,7 +68,9 @@ def webdriver(browser_type: str) -> Union[sel.Chrome, sel.Firefox]:
         # mostly added to get around this bug https://github.com/SeleniumHQ/selenium/issues/10799
         # which seems to happen on chromedriver 103 while fetching history
         # hmm -- why is mypy complaining untyped? LSP seems to take me to webdriver definition
-        ff = sel.Firefox()  # type: ignore[no-untyped-call]
+        ff = Firefox(  # type: ignore[no-untyped-call]
+            service_log_path=os.path.join(tempfile.gettempdir(), "geckodriver.log")
+        )
         atexit.register(lambda: ff.quit())
         return ff
 
