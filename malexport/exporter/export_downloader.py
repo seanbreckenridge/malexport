@@ -13,7 +13,7 @@ from selenium.webdriver.common.by import By  # type: ignore[import]
 from selenium.webdriver.support import expected_conditions as EC  # type: ignore[import]
 from selenium.common.exceptions import TimeoutException, WebDriverException  # type: ignore[import]
 
-from .driver import driver, driver_login, wait, TEMP_DOWNLOAD_DIR
+from .driver import webdriver, driver_login, wait, TEMP_DOWNLOAD_DIR
 from ..list_type import ListType
 from ..paths import LocalDir
 from ..log import logger
@@ -34,11 +34,12 @@ class ExportDownloader:
         self.localdir = localdir
         self.animelist_path = self.localdir.data_dir / "animelist.xml"
         self.mangalist_path = self.localdir.data_dir / "mangalist.xml"
+        self.driver = webdriver(browser_type="chrome")
 
     def authenticate(self) -> None:
         """Logs in to MAL using your MAL username/password"""
         # requires chrome because uses experimental flag to save downloads to custom dir
-        driver_login(self.localdir, driver_type="chrome")
+        driver_login(self.driver, self.localdir)
 
     def export_lists(self) -> None:
         """Exports the anime/manga lists, then extracts the gz files into the data dir"""
@@ -70,30 +71,29 @@ class ExportDownloader:
         Exports a particular list types' XML file, waits a while so that it can finish downloading
         The only difference between anime and manga is what is selected in the dialog
         """
-        d = driver()
         time.sleep(1)
         logger.info(f"Downloading {list_type.value} export")
-        d.get(EXPORT_PAGE)
+        self.driver.get(EXPORT_PAGE)
         export_button_selector = tuple([By.CSS_SELECTOR, EXPORT_BUTTON_CSS])
-        WebDriverWait(d, 10).until(  # type: ignore[no-untyped-call]
+        WebDriverWait(self.driver, 10).until(  # type: ignore[no-untyped-call]
             EC.visibility_of_element_located(export_button_selector)  # type: ignore[no-untyped-call]
         )
         if list_type == ListType.MANGA:
-            d.execute_script("""$("#dialog select.inputtext").val(2)""")  # type: ignore[no-untyped-call]
-        d.find_element(By.CSS_SELECTOR, EXPORT_BUTTON_CSS).click()  # type: ignore[no-untyped-call]
+            self.driver.execute_script("""$("#dialog select.inputtext").val(2)""")  # type: ignore[no-untyped-call]
+        self.driver.find_element(By.CSS_SELECTOR, EXPORT_BUTTON_CSS).click()  # type: ignore[no-untyped-call]
         time.sleep(0.5)
-        WebDriverWait(d, 10).until(EC.alert_is_present())  # type: ignore[no-untyped-call]
-        alert = d.switch_to.alert
+        WebDriverWait(self.driver, 10).until(EC.alert_is_present())  # type: ignore[no-untyped-call]
+        alert = self.driver.switch_to.alert
         time.sleep(0.5)
         alert.accept()  # type: ignore[no-untyped-call]
         time.sleep(0.5)
         download_button_selector = tuple([By.CSS_SELECTOR, DOWNLOAD_BUTTON])
         try:
             # hmm -- this page seems to be there sometimes, but not others?
-            WebDriverWait(d, 10).until(  # type: ignore[no-untyped-call]
+            WebDriverWait(self.driver, 10).until(  # type: ignore[no-untyped-call]
                 EC.element_to_be_clickable(download_button_selector)  # type: ignore[no-untyped-call]
             )
-            d.find_element(By.CSS_SELECTOR, DOWNLOAD_BUTTON).click()
+            self.driver.find_element(By.CSS_SELECTOR, DOWNLOAD_BUTTON).click()
         except TimeoutException:
             pass
         logger.debug("Waiting for download...")

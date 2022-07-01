@@ -2,7 +2,7 @@ import os
 import time
 import warnings
 import datetime
-from typing import Any, Generator, Dict, Optional, Callable, Type, cast, Sequence
+from typing import Any, Generator, Optional, Callable, Type, cast, Sequence
 
 import requests
 import backoff  # type: ignore[import]

@@ -17,7 +17,7 @@ from datetime import datetime
 
 from ..list_type import ListType
 from .mal_list import MalList
-from .driver import driver as driver, driver_login, wait
+from .driver import webdriver, driver_login, wait
 from .export_downloader import ExportDownloader
 from ..log import logger
 from ..paths import LocalDir, _expand_path
@@ -110,11 +110,11 @@ class HistoryManager:
         )
         self.idprefix = "chaprow" if self.list_type == ListType.MANGA else "eprow"
         self.driver_type = driver_type
-        self.driver = driver(self.driver_type)
+        self.driver = webdriver(self.driver_type)
 
     def authenticate(self) -> None:
         """Logs in to MAL using your MAL username/password"""
-        driver_login(localdir=self.localdir, driver_type=self.driver_type)
+        driver_login(webdriver=self.driver, localdir=self.localdir)
 
     def entry_path(self, entry_id: int) -> Path:
         """Location of the JSON file for this type/ID"""
@@ -157,15 +157,14 @@ class HistoryManager:
         and grabs IDs for any items which were recently watched/read
         """
         logger.info(f"Downloading recent user {self.list_type.value} history")
-        d = self.driver
         time.sleep(1)
         mal_username = self.localdir.load_or_prompt_credentials()["username"]
         history_url = (
             f"https://myanimelist.net/history/{mal_username}/{self.list_type.value}"
         )
-        d.get(history_url)
+        self.driver.get(history_url)
         wait()
-        content_div = d.find_element(By.CSS_SELECTOR, "div#content")
+        content_div = self.driver.find_element(By.CSS_SELECTOR, "div#content")
         x = ht.fromstring(content_div.get_attribute("innerHTML"))
         found_ids: List[int] = []
         for el in x.xpath(
@@ -180,14 +179,13 @@ class HistoryManager:
         """
         Download the information for a particular type/ID
         """
-        d = self.driver
         time.sleep(1)
         url: str = history_url(self.list_type, entry_id)
         logger.info(f"Requesting history data for {self.list_type.value} {entry_id}")
-        d.get(url)
+        self.driver.get(url)
         wait()
         # sanity check to make sure data is present on the page
-        WebDriverWait(d, 10).until(  # type: ignore[no-untyped-call]
+        WebDriverWait(self.driver, 10).until(  # type: ignore[no-untyped-call]
             EC.text_to_be_present_in_element(  # type: ignore[no-untyped-call]
                 (
                     By.ID,
@@ -196,7 +194,7 @@ class HistoryManager:
                 "Details",
             )
         )
-        details = d.find_element(By.ID, self.container_id)
+        details = self.driver.find_element(By.ID, self.container_id)
         assert (
             details is not None
         ), f"Couldn't find details (header) div for {self.list_type.value} {entry_id} {url}"

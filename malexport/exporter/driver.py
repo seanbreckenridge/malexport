@@ -11,8 +11,7 @@ from pathlib import Path
 from functools import lru_cache
 from typing import Optional, Dict, Any, Union
 
-from selenium import webdriver
-from selenium.webdriver import Chrome, ChromeOptions
+from selenium import webdriver as sel
 from selenium.webdriver.common.by import By
 
 
@@ -39,13 +38,15 @@ CHROME_KWARGS: Dict[str, Any] = {}
 
 BrowserType = str
 
+Browser = Union[sel.Chrome, sel.Firefox]
 
-@lru_cache(maxsize=1)
-def driver(browser_type: str = "chrome") -> Union[Chrome, webdriver.Firefox]:
+
+@lru_cache(maxsize=12)
+def webdriver(browser_type: str) -> Union[sel.Chrome, sel.Firefox]:
     bt = browser_type.casefold()
     assert bt in {"chrome", "firefox"}
     if bt == "chrome":
-        options = ChromeOptions()
+        options = sel.ChromeOptions()
         if HIDDEN_CHROMEDRIVER:
             options.add_argument("headless")  # type: ignore[no-untyped-call]
             options.add_argument("window-size=1920x1080")  # type: ignore[no-untyped-call]
@@ -57,7 +58,7 @@ def driver(browser_type: str = "chrome") -> Union[Chrome, webdriver.Firefox]:
         options.add_experimental_option(
             "prefs", {"download.default_directory": str(TEMP_DOWNLOAD_DIR)}
         )
-        driver = Chrome(chrome_options=options, **CHROME_KWARGS)  # type: ignore[unreachable]
+        driver = sel.Chrome(chrome_options=options, **CHROME_KWARGS)  # type: ignore[unreachable]
         # quit when python exits to avoid hanging browsers
         atexit.register(lambda: driver.quit())  # type: ignore[no-any-return]
         return driver
@@ -65,14 +66,11 @@ def driver(browser_type: str = "chrome") -> Union[Chrome, webdriver.Firefox]:
         # mostly added to get around this bug https://github.com/SeleniumHQ/selenium/issues/10799
         # which seems to happen on chromedriver 103 while fetching history
         # hmm -- why is mypy complaining untyped? LSP seems to take me to webdriver definition
-        ff = webdriver.Firefox()  # type: ignore[no-untyped-call]
+        ff = sel.Firefox()  # type: ignore[no-untyped-call]
         atexit.register(lambda: ff.quit())
         return ff
 
 
-# If the user has been logged in using the MAL Username/Password using selenium
-# This is set in driver_login
-IS_LOGGED_IN: bool = False
 LOGIN_PAGE = "https://myanimelist.net/login.php"
 
 LOGIN_ID = "loginUserName"
@@ -80,25 +78,24 @@ PASSWORD_ID = "login-password"
 LOGIN_BUTTON_CSS = ".inputButton.btn-form-submit[value='Login']"
 
 
-def driver_login(localdir: LocalDir, driver_type: str) -> None:
+def driver_login(webdriver: Browser, localdir: LocalDir) -> None:
     """
     Login using the users MAL username and password
     """
-    global IS_LOGGED_IN
-    d = driver(driver_type)  # same instance as any other function which has called this
-    if IS_LOGGED_IN:
+    if hasattr(webdriver, "_malexport_logged_in"):
         return
     creds = localdir.load_or_prompt_credentials()
     time.sleep(1)
-    d.get(LOGIN_PAGE)
+    webdriver.get(LOGIN_PAGE)
     time.sleep(1)
-    d.find_element(By.ID, LOGIN_ID).send_keys(creds["username"])
+    webdriver.find_element(By.ID, LOGIN_ID).send_keys(creds["username"])
     time.sleep(1)
-    d.find_element(By.ID, PASSWORD_ID).send_keys(creds["password"])
+    webdriver.find_element(By.ID, PASSWORD_ID).send_keys(creds["password"])
     time.sleep(1)
     # use script to login incase window is too small to be clickable
-    d.execute_script(f"""document.querySelector("{LOGIN_BUTTON_CSS}").click()""")  # type: ignore[no-untyped-call]
-    IS_LOGGED_IN = True
+    webdriver.execute_script(f"""document.querySelector("{LOGIN_BUTTON_CSS}").click()""")  # type: ignore[no-untyped-call]
+    # set marker value on this instance to confirm user has logged in
+    setattr(webdriver, "_malexport_logged_in", True)
 
 
 # wait a random amount of time to be nice to MAL servers
