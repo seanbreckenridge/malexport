@@ -11,8 +11,8 @@ from pathlib import Path
 from functools import lru_cache
 from typing import Optional, Dict, Any, Union
 
+from selenium import webdriver
 from selenium.webdriver import Chrome, ChromeOptions
-from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 
 
@@ -41,7 +41,7 @@ BrowserType = str
 
 
 @lru_cache(maxsize=1)
-def driver(browser_type: str = "chrome") -> Union[Chrome, Firefox]:
+def driver(browser_type: str = "chrome") -> Union[Chrome, webdriver.Firefox]:
     bt = browser_type.casefold()
     assert bt in {"chrome", "firefox"}
     if bt == "chrome":
@@ -64,7 +64,8 @@ def driver(browser_type: str = "chrome") -> Union[Chrome, Firefox]:
     else:
         # mostly added to get around this bug https://github.com/SeleniumHQ/selenium/issues/10799,
         # which seems to happen on chromedriver 103 while fetching history
-        ff = Firefox()
+        # hmm -- why is mypy complaining untyped? LSP seems to take me to webdriver definition
+        ff = webdriver.Firefox()  # type: ignore[no-untyped-call]
         atexit.register(lambda: ff.quit())
         return ff
 

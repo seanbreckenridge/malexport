@@ -37,7 +37,8 @@ class ExportDownloader:
 
     def authenticate(self) -> None:
         """Logs in to MAL using your MAL username/password"""
-        driver_login(self.localdir)
+        # requires chrome because uses experimental flag to save downloads to custom dir
+        driver_login(self.localdir, driver_type="chrome")
 
     def export_lists(self) -> None:
         """Exports the anime/manga lists, then extracts the gz files into the data dir"""
