@@ -62,7 +62,7 @@ def driver(browser_type: str = "chrome") -> Union[Chrome, webdriver.Firefox]:
         atexit.register(lambda: driver.quit())  # type: ignore[no-any-return]
         return driver
     else:
-        # mostly added to get around this bug https://github.com/SeleniumHQ/selenium/issues/10799,
+        # mostly added to get around this bug https://github.com/SeleniumHQ/selenium/issues/10799
         # which seems to happen on chromedriver 103 while fetching history
         # hmm -- why is mypy complaining untyped? LSP seems to take me to webdriver definition
         ff = webdriver.Firefox()  # type: ignore[no-untyped-call]
