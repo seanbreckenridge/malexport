@@ -50,7 +50,8 @@ mal_sources_watch_next() {
 	echo "$DATA" | mal_describe
 	echo "$DATA" | jq '"\(.id)"' -r | sed -e 's_^_https://myanimelist.net/anime/_'
 	# https://sean.fish/d/extracturls?dark
-	local urls="$(mal_sources_extract_id "${RANDOM_NEXT_ID}" | extracturls)"
+	# local urls
+	urls="$(mal_sources_extract_id "${RANDOM_NEXT_ID}" | extracturls)"
 	while IFS= read -r url; do
 		# open the video in mpv https://sean.fish/d/mpv-corner?dark
 		# https://sean.fish/d/stream-corner-480?dark
@@ -72,4 +73,15 @@ mal_club_on_watching() {
 
 mal_anime_links() {
 	sed 's#^#https://myanimelist.net/anime/#'
+}
+
+# for items downloaded with mal_sources_watch_next,
+# open the corresponding MAL page by extracting it from
+# the filename
+mal_mpv_open_currently_playing() {
+	# https://sean.fish/d/openurl?dark
+	# https://github.com/seanbreckenridge/mpv-sockets
+	local id
+	id="$(basename "$(mpv-currently-playing)" | cut -d"_" -f1 | cut -d"." -f1)"
+	[[ -n "$id" ]] && echo "$id" | mal_anime_links | openurl
 }
