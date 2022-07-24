@@ -62,8 +62,11 @@ class ExportDownloader:
             )
             if times > TRY_EXPORT_TIMES:
                 return
-            wait()
             self.authenticate()
+            # if user manually accepted/a file already present, skip retry
+            if len(self._list_files(list_type=list_type)) > 0:
+                logger.info("Found downloaded file, skipping retry...")
+                return
             self.export_with_retry(list_type, times=times)  # recursive call
 
     def export_list(self, list_type: ListType) -> None:
@@ -75,18 +78,18 @@ class ExportDownloader:
         logger.info(f"Downloading {list_type.value} export")
         self.driver.get(EXPORT_PAGE)
         export_button_selector = tuple([By.CSS_SELECTOR, EXPORT_BUTTON_CSS])
-        WebDriverWait(self.driver, 10).until(  # type: ignore[no-untyped-call]
+        WebDriverWait(self.driver, 15).until(  # type: ignore[no-untyped-call]
             EC.visibility_of_element_located(export_button_selector)  # type: ignore[no-untyped-call]
         )
         if list_type == ListType.MANGA:
             self.driver.execute_script("""$("#dialog select.inputtext").val(2)""")  # type: ignore[no-untyped-call]
         self.driver.find_element(By.CSS_SELECTOR, EXPORT_BUTTON_CSS).click()  # type: ignore[no-untyped-call]
-        time.sleep(0.5)
-        WebDriverWait(self.driver, 10).until(EC.alert_is_present())  # type: ignore[no-untyped-call]
+        time.sleep(0.25)
+        WebDriverWait(self.driver, 5).until(EC.alert_is_present())  # type: ignore[no-untyped-call]
         alert = self.driver.switch_to.alert
-        time.sleep(0.5)
+        time.sleep(0.25)
         alert.accept()  # type: ignore[no-untyped-call]
-        time.sleep(0.5)
+        time.sleep(0.25)
         download_button_selector = tuple([By.CSS_SELECTOR, DOWNLOAD_BUTTON])
         try:
             # hmm -- this page seems to be there sometimes, but not others?
@@ -109,9 +112,6 @@ class ExportDownloader:
         files = os.listdir(path)
         animelist_gzs = [f for f in files if f.startswith("animelist_")]
         mangalist_gzs = [f for f in files if f.startswith("mangalist_")]
-        for search_results in (animelist_gzs, mangalist_gzs):
-            if len(search_results) != 1:
-                logger.warning(f"Found more than 1 matching file {search_results}")
         archive_files = animelist_gzs + mangalist_gzs
         if list_type == ListType.ANIME:
             archive_files = animelist_gzs
