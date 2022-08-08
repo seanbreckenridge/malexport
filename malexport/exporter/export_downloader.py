@@ -13,7 +13,7 @@ from selenium.webdriver.common.by import By  # type: ignore[import]
 from selenium.webdriver.support import expected_conditions as EC  # type: ignore[import]
 from selenium.common.exceptions import TimeoutException, WebDriverException  # type: ignore[import]
 
-from .driver import webdriver, driver_login, wait, TEMP_DOWNLOAD_DIR
+from .driver import webdriver, driver_login, wait, TEMP_DOWNLOAD_DIR, Browser
 from ..list_type import ListType
 from ..paths import LocalDir
 from ..log import logger
@@ -34,7 +34,13 @@ class ExportDownloader:
         self.localdir = localdir
         self.animelist_path = self.localdir.data_dir / "animelist.xml"
         self.mangalist_path = self.localdir.data_dir / "mangalist.xml"
-        self.driver = webdriver(browser_type="chrome")
+        self._driver: Optional[Browser] = None
+
+    @property
+    def driver(self) -> Browser:
+        if self._driver is None:
+            self._driver = webdriver(browser_type="chrome")
+        return self._driver
 
     def authenticate(self) -> None:
         """Logs in to MAL using your MAL username/password"""
