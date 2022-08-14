@@ -246,8 +246,10 @@ class HistoryManager:
             else exp.mangalist_path
         )
         mal_id: int
+        logger.info("Requesting any items which don't exist in history...")
+        updated = False
         if m.list_path.exists():
-            logger.info("Requesting any items which don't exist in history...")
+            updated = True
             mlist = m.load_list()
             for entry_data in mlist:
                 mal_id = entry_data[f"{self.list_type.value}_id"]
@@ -277,14 +279,14 @@ class HistoryManager:
                     )
                     till -= 1
 
-        elif export_file.exists():
-            logger.info("Requesting any items which don't exist in history...")
+        if export_file.exists():
+            updated = True
             # use the XML file if that exists
             for el in parse_xml(str(export_file)).entries:
                 p = self.entry_path(el.id)
                 if not p.exists():
                     self.update_entry_data(el.id)
-        else:
+        if not updated:
             raise RuntimeError(
                 f"Neither {m.list_path} (lists) or {export_file} (export) exist, need one to update history"
             )
