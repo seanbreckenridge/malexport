@@ -72,6 +72,7 @@ class ExportDownloader:
             # if user manually accepted/a file already present, skip retry
             if len(self._list_files(list_type=list_type)) > 0:
                 logger.info("Found downloaded file, skipping retry...")
+                time.sleep(1)
                 return
             self.export_with_retry(list_type, times=times)  # recursive call
 
