@@ -18,6 +18,7 @@ from selenium.webdriver.firefox.webdriver import WebDriver as Firefox  # type: i
 
 
 from ..paths import LocalDir, _expand_path
+from ..log import logger
 from ..common import REQUEST_WAIT_TIME
 
 # environment variables to overwrite the location of the chromedriver
@@ -89,6 +90,7 @@ def driver_login(webdriver: Browser, localdir: LocalDir) -> None:
     if hasattr(webdriver, "_malexport_logged_in"):
         return
     creds = localdir.load_or_prompt_credentials()
+    logger.info(f"Logging into {creds['username']}...")
     time.sleep(1)
     webdriver.get(LOGIN_PAGE)
     time.sleep(1)
