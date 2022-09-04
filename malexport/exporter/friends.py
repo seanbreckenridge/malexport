@@ -20,12 +20,7 @@ class FriendDownloader:
 
     def friend_page_url(self, page: int) -> str:
         assert page >= 1
-        if page == 1:
-            return f"https://api.jikan.moe/v3/user/{self.localdir.username}/friends"
-        else:
-            return (
-                f"https://api.jikan.moe/v3/user/{self.localdir.username}/friends/{page}"
-            )
+        return f"https://api.jikan.moe/v4/users/{self.localdir.username}/friends?page={page}"
 
     def download_friend_index(self) -> List[Json]:
         page = 1
@@ -34,11 +29,11 @@ class FriendDownloader:
             try:
                 new_data = safe_request_json(self.friend_page_url(page))
                 assert (
-                    "friends" in new_data
+                    "data" in new_data
                 ), f"No friends key in Jikan response: {new_data}"
-                data.extend(new_data["friends"])
+                data.extend(new_data["data"])
                 # hit the last page (or there was no data, if we're on the first page)
-                if len(new_data["friends"]) < self.friend_chunk_size:
+                if len(new_data["data"]) < self.friend_chunk_size:
                     return data
             except requests.exceptions.RequestException:
                 # failed too many times? Assume Jikan failed for some reason,
