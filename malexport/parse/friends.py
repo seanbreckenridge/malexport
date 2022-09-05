@@ -21,11 +21,11 @@ def iter_friends(username: str) -> Iterator[Friend]:
         logger.debug(f"{friends_path} doesn't exist, returning empty iterator")
         return
     for blob in json.loads(friends_path.read_text()):
-        fblob = blob["user"]
+        user = blob["user"]
         yield Friend(
-            url=fblob["url"],
-            username=fblob["username"],
-            image_url=fblob["images"]["jpg"],
+            url=user["url"],
+            username=user["username"],
+            image_url=user["images"]["jpg"]["image_url"],
             last_online=datetime.fromisoformat(blob["last_online"]),
             friends_since=datetime.fromisoformat(blob["friends_since"]),
         )
