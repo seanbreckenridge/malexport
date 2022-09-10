@@ -6,3 +6,4 @@ from .friends import iter_friends
 from ..list_type import ListType
 from .combine import combine
 from .api_list import Entry, iter_api_list
+from .messages import iter_user_threads
