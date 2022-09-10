@@ -25,7 +25,7 @@ from ..common import Json
 
 # if we hit these many recently updated entries which
 # are the same as the previous then stop requesting
-TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_THREAD_LIMIT", 15))
+TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_THREAD_LIMIT", 10))
 
 
 def extract_query_value(
