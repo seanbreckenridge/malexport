@@ -299,6 +299,15 @@ def _history_parse(username: str) -> None:
     click.echo(serialize(list(iter_user_history(username))))
 
 
+@parse.command(name="messages", short_help="parse downloaded message history")
+@apply_shared(USERNAME)
+def _messages_parse(username: str) -> None:
+    from .parse import iter_user_threads
+    from .common import serialize
+
+    click.echo(serialize(list(iter_user_threads(username))))
+
+
 @parse.command(name="friends", short_help="parse user friends")
 @apply_shared(USERNAME)
 def _friends_parse(username: str) -> None:
