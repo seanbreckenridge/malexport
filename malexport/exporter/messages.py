@@ -10,7 +10,7 @@ import json
 import time
 from urllib.parse import urlparse, parse_qs
 from pathlib import Path
-from typing import List, Optional, Dict, Iterator, Union, Any
+from typing import List, Optional, Dict, Iterator, Union, Any, Tuple
 
 from .driver import webdriver, driver_login, wait
 from ..log import logger
@@ -69,6 +69,12 @@ class MessageDownloader:
         """Location of the JSON file for this thread"""
         return self.message_base_path / f"{thread_id}.json"
 
+    def _fix_subject(self, subject: str) -> str:
+        s = subject.strip()
+        if s.startswith("re:"):
+            s = s[len("re:") :]
+        return s.strip()
+
     def _extract_details(self, html_details: str) -> Json:
         """
         Given the HTML div which contains the container for messages,
@@ -80,7 +86,7 @@ class MessageDownloader:
         subject = hx.cssselect(".dialog-text .mb4")[-1]
         data: Dict[str, Any] = {
             "messages": [],
-            "subject": subject.text_content().strip(),
+            "subject": self._fix_subject(subject.text_content()),
         }
         for row in table.cssselect("tr"):
             date_td = row.cssselect("td.date")[0]
@@ -95,14 +101,16 @@ class MessageDownloader:
             )
         return data
 
-    def message_ids_for_page(self, page: int = 1) -> List[int]:
+    def message_ids_for_page(self, page: int = 1, sent: bool = False) -> List[int]:
         """
         Goes to the message ids for a particular page of your messages
         """
-        logger.info(f"Downloading page {page} of your messages")
+        logger.info(
+            f"Downloading page {page} of your {'sent ' if sent else ''}messages"
+        )
         time.sleep(1)
         offset = (page - 1) * 20
-        message_url = f"https://myanimelist.net/mymessages.php?go=&show={offset}"
+        message_url = f"https://myanimelist.net/mymessages.php?go={'sent' if sent else ''}&show={offset}"
         self.driver.get(message_url)
         wait()
         # extract id=349234 from each message URL
@@ -111,25 +119,31 @@ class MessageDownloader:
             for a in self.driver.find_elements(By.CSS_SELECTOR, "a.subject-link")
         ]
 
-    def iter_message_ids(self, start_page: int = 1) -> Iterator[int]:
+    def iter_message_ids(self, start_page: int = 1) -> Iterator[Tuple[bool, int]]:
         """
         lazily retrieves new messages IDs for your user
+        swaps between recieved messages and sent messages, so that
+        this roughly grabs messages from the same time frame at the same time
         """
         page = int(start_page)
         while True:
             message_ids: List[int] = self.message_ids_for_page(page)
-            if len(message_ids) == 0:
+            for mid in message_ids:
+                yield False, mid
+            sent_ids: List[int] = self.message_ids_for_page(page, sent=True)
+            for smid in sent_ids:
+                yield True, smid
+            if len(message_ids) == 0 and len(sent_ids) == 0:
                 return
-            yield from message_ids
             page += 1
 
-    def _resolve_message_to_thread_id(self, message_id: int) -> int:
+    def _resolve_message_to_thread_id(self, message_id: int, sent: bool) -> int:
         """
         goes to a message ID page and clicks the 'view message history' button
         returns the thread ID this corresponds to
         """
         time.sleep(1)
-        url: str = f"https://myanimelist.net/mymessages.php?go=read&id={message_id}"
+        url: str = f"https://myanimelist.net/mymessages.php?go=read&id={message_id}{'&f=1' if sent else ''}"
         logger.debug(f"Resolving message ID {message_id} to thread...")
         self.driver.get(url)
         wait()
@@ -173,11 +187,11 @@ class MessageDownloader:
         till_base = int(self.till_same_limit) if count is None else int(count)
         till = int(till_base)
 
-        for message_id in self.iter_message_ids():
+        for sent, message_id in self.iter_message_ids():
             if till <= 0:
                 break
             # resolve message ID to thread, which is what we download
-            thread_id: int = self._resolve_message_to_thread_id(message_id)
+            thread_id: int = self._resolve_message_to_thread_id(message_id, sent=sent)
             logger.info(f"msg {message_id} -> thread {thread_id}")
             # keep track of if this is a new thread, so we can decrement the 'till same' counter
             new_thread_id: bool = thread_id not in self.msg_to_thread.values()
