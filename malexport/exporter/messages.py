@@ -122,7 +122,7 @@ class MessageDownloader:
     def iter_message_ids(self, start_page: int = 1) -> Iterator[Tuple[bool, int]]:
         """
         lazily retrieves new messages IDs for your user
-        swaps between recieved messages and sent messages, so that
+        swaps between received messages and sent messages, so that
         this roughly grabs messages from the same time frame at the same time
         """
         page = int(start_page)

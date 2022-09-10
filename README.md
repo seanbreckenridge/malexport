@@ -61,7 +61,7 @@ To show debug logs set `export MALEXPORT_LOGS=10` (uses [logging levels](https:/
 
 ### parse
 
-I generally don't interface with the CLI module here directly and instead use the `my.mal.export` in [HPI](https://github.com/seanbreckenridge/HPI). That handles configuring accounts/locating my data on disk
+I generally don't interface with the CLI interface here and instead use the `my.mal.export` in [HPI](https://github.com/seanbreckenridge/HPI). That handles configuring accounts/locating my data on disk
 
 The `parse` subcommand includes corresponding commands which take the saved data, clean it up a bit into easier to manipulate representations. Those each have python functions which can be imported from `malexport.parse`, or called from the CLI to produce JSON.
 
