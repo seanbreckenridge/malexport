@@ -3,6 +3,7 @@ import time
 import warnings
 import datetime
 from typing import Any, Generator, Optional, Callable, Type, cast, Sequence
+from urllib.parse import urlparse, parse_qs
 
 import requests
 import backoff  # type: ignore[import]
@@ -98,3 +99,8 @@ def serialize(data: Any) -> str:
         default=default_encoder,
         namedtuple_as_object=True,
     )
+
+
+def extract_query_value(url: str, param: str) -> str:
+    query_list = parse_qs(urlparse(url).query)[param]
+    return query_list[0]

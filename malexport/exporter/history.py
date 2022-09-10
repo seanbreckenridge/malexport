@@ -10,7 +10,6 @@ import re
 import json
 import time
 from itertools import islice
-from urllib.parse import urlparse, parse_qs
 from pathlib import Path
 from typing import Tuple, List, Set, Optional, Iterable, Dict, Any
 from datetime import datetime
@@ -26,7 +25,7 @@ from .driver import webdriver, driver_login, wait
 from .export_downloader import ExportDownloader
 from ..log import logger
 from ..paths import LocalDir, _expand_path
-from ..common import Json
+from ..common import Json, extract_query_value
 from ..parse.xml import parse_xml
 
 
@@ -171,7 +170,7 @@ class HistoryManager:
         for el in x.xpath(
             f'.//a[starts-with(@href, "/{self.list_type.value}.php?id=")]'
         ):
-            new_id = int(parse_qs(urlparse(el.attrib["href"]).query)["id"][0])
+            new_id = int(extract_query_value(el.attrib["href"], "id"))
             if new_id not in found_ids:
                 found_ids.append(new_id)
         return found_ids

@@ -8,9 +8,8 @@ this info isn't accessible from the API
 import os
 import json
 import time
-from urllib.parse import urlparse, parse_qs
 from pathlib import Path
-from typing import List, Optional, Dict, Iterator, Union, Any, Tuple
+from typing import List, Optional, Dict, Iterator, Any, Tuple
 
 import dateparser
 import more_itertools
@@ -20,21 +19,12 @@ from selenium.webdriver.common.by import By  # type: ignore[import]
 from .driver import webdriver, driver_login, wait
 from ..log import logger
 from ..paths import LocalDir, _expand_path
-from ..common import Json
+from ..common import Json, extract_query_value
 
 
 # if we hit these many recently updated entries which
 # are the same as the previous then stop requesting
 TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_THREAD_LIMIT", 10))
-
-
-def extract_query_value(
-    url: str, param: str, extract_first: bool = True
-) -> Union[str, List[str]]:
-    query_list = parse_qs(urlparse(url).query)[param]
-    if extract_first:
-        return query_list[0]
-    return query_list
 
 
 def dateparse_to_epoch(datestr: str) -> Optional[int]:
