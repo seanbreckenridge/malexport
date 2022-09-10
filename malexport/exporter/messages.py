@@ -100,6 +100,7 @@ class MessageDownloader:
                     "content": etree.tostring(content_td).decode("utf-8").strip(),
                 }
             )
+        logger.debug(data)
         return data
 
     def message_ids_for_page(self, page: int = 1, sent: bool = False) -> List[int]:
