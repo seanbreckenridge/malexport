@@ -128,11 +128,13 @@ class MessageDownloader:
         page = int(start_page)
         while True:
             message_ids: List[int] = self.message_ids_for_page(page)
-            for mid in message_ids:
-                yield False, mid
             sent_ids: List[int] = self.message_ids_for_page(page, sent=True)
-            for smid in sent_ids:
-                yield True, smid
+            tagged_msg_id = [(False, mid) for mid in message_ids]
+            tagged_sent_ids = [(True, mid) for mid in sent_ids]
+            for sent, msg_id in more_itertools.interleave_longest(
+                tagged_msg_id, tagged_sent_ids
+            ):
+                yield sent, msg_id
             if len(message_ids) == 0 and len(sent_ids) == 0:
                 return
             page += 1
@@ -180,11 +182,11 @@ class MessageDownloader:
         p.write_text(new_data_json)
         return has_new_data
 
-    def update_messages(self, start_page: int = 1, count: Optional[int] = None) -> None:
+    def update_messages(self, start_page: int = 1, thread_count: Optional[int] = None) -> None:
         self.authenticate()
 
         # if user supplied with CLI flag use that, else use envvar/default
-        till_base = int(self.till_same_limit) if count is None else int(count)
+        till_base = int(self.till_same_limit) if thread_count is None else int(thread_count)
         till = int(till_base)
 
         for sent, message_id in self.iter_message_ids(start_page=start_page):
