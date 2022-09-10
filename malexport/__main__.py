@@ -101,7 +101,9 @@ def _lists_update(only: str, username: str) -> None:
 @click.option(
     "--start-page", type=int, default=1, help="which page to start requesting from"
 )
-def _messages_update(username: str, start_page: int, thread_count: Optional[int] = None) -> None:
+def _messages_update(
+    username: str, start_page: int, thread_count: Optional[int] = None
+) -> None:
     from .exporter import Account
 
     acc = Account.from_username(username)
