@@ -124,7 +124,7 @@ class Account:
             self.manga_chapter_history.update_history(count=count)
 
     def update_messages(
-        self, start_page: int, thread_count: Optional[int] = None
+        self, start_page: int = 1, thread_count: Optional[int] = None
     ) -> None:
         """
         Download/Update DMs for your account
