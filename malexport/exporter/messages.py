@@ -180,14 +180,14 @@ class MessageDownloader:
         p.write_text(new_data_json)
         return has_new_data
 
-    def update_messages(self, count: Optional[int] = None) -> None:
+    def update_messages(self, start_page: int = 1, count: Optional[int] = None) -> None:
         self.authenticate()
 
         # if user supplied with CLI flag use that, else use envvar/default
         till_base = int(self.till_same_limit) if count is None else int(count)
         till = int(till_base)
 
-        for sent, message_id in self.iter_message_ids():
+        for sent, message_id in self.iter_message_ids(start_page=start_page):
             if till <= 0:
                 break
             # resolve message ID to thread, which is what we download

@@ -98,11 +98,14 @@ def _lists_update(only: str, username: str) -> None:
     default=None,
     help="how many new threads to update before giving up",
 )
-def _messages_update(username: str, thread_count: Optional[int] = None) -> None:
+@click.option(
+    "--start-page", type=int, default=1, help="which page to start requesting from"
+)
+def _messages_update(username: str, start_page: int, thread_count: Optional[int] = None) -> None:
     from .exporter import Account
 
     acc = Account.from_username(username)
-    acc.update_messages(thread_count=thread_count)
+    acc.update_messages(start_page=start_page, thread_count=thread_count)
 
 
 @update.command(

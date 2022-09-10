@@ -123,14 +123,17 @@ class Account:
         if only == ListType.MANGA or only is None:
             self.manga_chapter_history.update_history(count=count)
 
-    def update_messages(self, thread_count: Optional[int] = None) -> None:
+    def update_messages(
+        self, start_page: int, thread_count: Optional[int] = None
+    ) -> None:
         """
         Download/Update DMs for your account
         """
         self.message_manager = MessageDownloader(
-            self.localdir, till_same_limit=thread_count
+            self.localdir,
+            till_same_limit=thread_count,
         )
-        self.message_manager.update_messages()
+        self.message_manager.update_messages(start_page=start_page)
 
     def update_forum_posts(self) -> None:
         """
