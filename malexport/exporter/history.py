@@ -15,6 +15,11 @@ from pathlib import Path
 from typing import Tuple, List, Set, Optional, Iterable, Dict, Any
 from datetime import datetime
 
+from lxml import html as ht  # type: ignore[import]
+from selenium.webdriver.support.ui import WebDriverWait  # type: ignore[import]
+from selenium.webdriver.common.by import By  # type: ignore[import]
+from selenium.webdriver.support import expected_conditions as EC  # type: ignore[import]
+
 from ..list_type import ListType
 from .mal_list import MalList
 from .driver import webdriver, driver_login, wait
@@ -24,10 +29,6 @@ from ..paths import LocalDir, _expand_path
 from ..common import Json
 from ..parse.xml import parse_xml
 
-from lxml import html as ht  # type: ignore[import]
-from selenium.webdriver.support.ui import WebDriverWait  # type: ignore[import]
-from selenium.webdriver.common.by import By  # type: ignore[import]
-from selenium.webdriver.support import expected_conditions as EC  # type: ignore[import]
 
 HISTORY_URL = "https://myanimelist.net/ajaxtb.php?keepThis=true&detailed{list_type_letter}id={entry_id}&TB_iframe=true&height=420&width=390"
 

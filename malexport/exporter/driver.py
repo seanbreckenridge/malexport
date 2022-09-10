@@ -13,9 +13,7 @@ from typing import Optional, Dict, Any, Union
 
 from selenium import webdriver as sel
 from selenium.webdriver.common.by import By
-
 from selenium.webdriver.firefox.webdriver import WebDriver as Firefox  # type: ignore[import]
-
 
 from ..paths import LocalDir, _expand_path
 from ..log import logger

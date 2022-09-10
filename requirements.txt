@@ -8,3 +8,4 @@ lxml
 cssselect
 simplejson
 dateparser
+more_itertools

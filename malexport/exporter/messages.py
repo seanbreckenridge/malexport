@@ -12,14 +12,15 @@ from urllib.parse import urlparse, parse_qs
 from pathlib import Path
 from typing import List, Optional, Dict, Iterator, Union, Any, Tuple
 
+import dateparser
+import more_itertools
+from lxml import html as ht, etree  # type: ignore[import]
+from selenium.webdriver.common.by import By  # type: ignore[import]
+
 from .driver import webdriver, driver_login, wait
 from ..log import logger
 from ..paths import LocalDir, _expand_path
 from ..common import Json
-
-import dateparser
-from lxml import html as ht, etree  # type: ignore[import]
-from selenium.webdriver.common.by import By  # type: ignore[import]
 
 
 # if we hit these many recently updated entries which
@@ -147,6 +148,7 @@ class MessageDownloader:
         time.sleep(1)
         url: str = f"https://myanimelist.net/mymessages.php?go=read&id={message_id}{'&f=1' if sent else ''}"
         logger.debug(f"Resolving message ID {message_id} to thread...")
+        logger.debug(f"Navigating to '{url}'")
         self.driver.get(url)
         wait()
         thread_link = self.driver.find_element(
@@ -182,11 +184,15 @@ class MessageDownloader:
         p.write_text(new_data_json)
         return has_new_data
 
-    def update_messages(self, start_page: int = 1, thread_count: Optional[int] = None) -> None:
+    def update_messages(
+        self, start_page: int = 1, thread_count: Optional[int] = None
+    ) -> None:
         self.authenticate()
 
         # if user supplied with CLI flag use that, else use envvar/default
-        till_base = int(self.till_same_limit) if thread_count is None else int(thread_count)
+        till_base = (
+            int(self.till_same_limit) if thread_count is None else int(thread_count)
+        )
         till = int(till_base)
 
         for sent, message_id in self.iter_message_ids(start_page=start_page):
