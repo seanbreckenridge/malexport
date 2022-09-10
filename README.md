@@ -11,6 +11,7 @@ I wanted to use the API whenever possible here, but the information returned by 
   - `malexport update export` - Download the MAL export (the giant XML files), since those have rewatch information, and better dates
 - `malexport update forum` - Uses the MAL API ([docs](https://myanimelist.net/apiconfig/references/api/v2)) to grab forum posts
 - `malexport update friends` - Uses [Jikan](https://jikan.moe/) to update your friends
+- `malexport update messages` - Downloads/Updates your received and sent messages (DMs)
 
 The defaults here are far more on the safe side when scraping. If data fails to download you may have been flagged as a bot and may need to open MAL in your browser to solve a captcha.
 
@@ -34,7 +35,7 @@ I left some shell functions I commonly use to query my data in `malexport.sh`, t
 
 ### update
 
-`malexport update all` can be run to run all the updaters or `malexport update [forum|history|lists|export|friends]` can be run to update one of them. Each of those require you to pass a `-u malUsername`. This stores everything (except for the MAL API Client ID) on an account-by-account basis, so its possible to backup multiple accounts
+`malexport update all` can be run to run all the updaters or `malexport update [forum|history|lists|export|friends|messages]` can be run to update one of them. Each of those require you to pass a `-u malUsername`. This stores everything (except for the MAL API Client ID) on an account-by-account basis, so its possible to backup multiple accounts
 
 If you want to hide the chromedriver, you can run this like `MALEXPORT_CHROMEDRIVER_HIDDEN=1 malexport update ...`
 
@@ -49,6 +50,7 @@ malexport/exporter/driver.py:CHROME_LOCATION: Optional[str] = os.environ.get("MA
 malexport/exporter/driver.py:TEMP_DOWNLOAD_BASE = os.environ.get("MALEXPORT_TEMPDIR", tempfile.gettempdir())
 malexport/exporter/history.py:TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_EPISODE_LIMIT", 10))
 malexport/exporter/mal_session.py:MALEXPORT_REDIRECT_URI = os.environ.get("MALEXPORT_REDIRECT_URI", "http://localhost")
+malexport/exporter/messages.py:TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_THREAD_LIMIT", 15))
 malexport/log.py:    chosen_level = level or int(os.environ.get("MALEXPORT_LOGS", DEFAULT_LEVEL))
 malexport/parse/common.py:CUTOFF_DATE = int(os.environ.get("MALEXPORT_CUTOFF_DATE", date.today().year + 5))
 malexport/paths.py:    default_data_dir = Path(os.environ["MALEXPORT_DIR"])
@@ -58,6 +60,8 @@ malexport/paths.py:    default_conf_dir = Path(os.environ["MALEXPORT_CFG"])
 To show debug logs set `export MALEXPORT_LOGS=10` (uses [logging levels](https://docs.python.org/3/library/logging.html#logging-levels)).
 
 ### parse
+
+I generally don't interface with the CLI module here directly and instead use the `my.mal.export` in [HPI](https://github.com/seanbreckenridge/HPI). That handles configuring accounts/locating my data on disk
 
 The `parse` subcommand includes corresponding commands which take the saved data, clean it up a bit into easier to manipulate representations. Those each have python functions which can be imported from `malexport.parse`, or called from the CLI to produce JSON.
 
