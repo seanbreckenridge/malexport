@@ -75,6 +75,7 @@ def _all(username: str) -> None:
     acc.update_history()
     acc.update_friends()
     acc.update_exports()
+    acc.update_messages()
 
 
 @update.command(name="lists", short_help="update animelist and mangalists")
@@ -87,6 +88,21 @@ def _lists_update(only: str, username: str) -> None:
     if only is not None:
         only_update = ListType.__members__[only.upper()]
     acc.update_lists(only=only_update)
+
+
+@update.command(name="messages", short_help="update messages (DMs)")
+@apply_shared(USERNAME)
+@click.option(
+    "--thread-count",
+    type=int,
+    default=None,
+    help="how many new threads to update before giving up",
+)
+def _messages_update(username: str, thread_count: Optional[int] = None) -> None:
+    from .exporter import Account
+
+    acc = Account.from_username(username)
+    acc.update_messages(thread_count=thread_count)
 
 
 @update.command(

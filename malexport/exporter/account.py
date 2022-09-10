@@ -9,6 +9,7 @@ from .history import HistoryManager
 from .forum import ForumManager
 from .export_downloader import ExportDownloader
 from .friends import FriendDownloader
+from .messages import MessageDownloader
 
 
 class Account:
@@ -28,6 +29,7 @@ class Account:
         self.forum_manager: Optional[ForumManager] = None
         self.export_downloader: Optional[ExportDownloader] = None
         self.friend_downloader: Optional[FriendDownloader] = None
+        self.message_manager: Optional[MessageDownloader] = None
 
     def mal_api_authenticate(self) -> MalSession:
         """
@@ -120,6 +122,15 @@ class Account:
             self.anime_episode_history.update_history(count=count)
         if only == ListType.MANGA or only is None:
             self.manga_chapter_history.update_history(count=count)
+
+    def update_messages(self, thread_count: Optional[int] = None) -> None:
+        """
+        Download/Update DMs for your account
+        """
+        self.message_manager = MessageDownloader(
+            self.localdir, till_same_limit=thread_count
+        )
+        self.message_manager.update_messages()
 
     def update_forum_posts(self) -> None:
         """
