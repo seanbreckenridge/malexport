@@ -9,9 +9,9 @@ I wanted to use the API whenever possible here, but the information returned by 
 - Selenium (so requires your MAL Username/Password; stored locally) to:
   - `malexport update history` - Individually grab episode/chapter history data (i.e., [this](https://i.imgur.com/2h5ZFng.png))
   - `malexport update export` - Download the MAL export (the giant XML files), since those have rewatch information, and better dates
+  - `malexport update messages` - Downloads/Updates your received and sent messages (DMs)
 - `malexport update forum` - Uses the MAL API ([docs](https://myanimelist.net/apiconfig/references/api/v2)) to grab forum posts
 - `malexport update friends` - Uses [Jikan](https://jikan.moe/) to update your friends
-- `malexport update messages` - Downloads/Updates your received and sent messages (DMs)
 
 The defaults here are far more on the safe side when scraping. If data fails to download you may have been flagged as a bot and may need to open MAL in your browser to solve a captcha.
 
