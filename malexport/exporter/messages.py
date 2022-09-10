@@ -138,6 +138,7 @@ class MessageDownloader:
         )
         thread_url = thread_link.get_attribute("href")
         self.driver.get(thread_url)
+        wait()
         return int(str(extract_query_value(thread_url, "threadid")))
 
     def update_thread_data(self, thread_id: int) -> bool:
