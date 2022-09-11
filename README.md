@@ -59,6 +59,8 @@ malexport/paths.py:    default_conf_dir = Path(os.environ["MALEXPORT_CFG"])
 
 To show debug logs set `export MALEXPORT_LOGS=10` (uses [logging levels](https://docs.python.org/3/library/logging.html#logging-levels)).
 
+If you use 2FA you can set the `MALEXPORT_2FA` variable, like `MALEXPORT_2FA=1 malexport update ...` when running this, that adds a prompt to wait for you to login before continuing
+
 ### parse
 
 I generally don't interface with the CLI interface here and instead use the `my.mal.export` in [HPI](https://github.com/seanbreckenridge/HPI). That handles configuring accounts/locating my data on disk

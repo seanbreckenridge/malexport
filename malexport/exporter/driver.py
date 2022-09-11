@@ -11,6 +11,7 @@ from pathlib import Path
 from functools import lru_cache
 from typing import Optional, Dict, Any, Union
 
+import click
 from selenium import webdriver as sel
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver as Firefox  # type: ignore[import]
@@ -99,6 +100,13 @@ def driver_login(webdriver: Browser, localdir: LocalDir) -> None:
     # use script to login incase window is too small to be clickable
     webdriver.execute_script(f"""document.querySelector("{LOGIN_BUTTON_CSS}").click()""")  # type: ignore[no-untyped-call]
     # set marker value on this instance to confirm user has logged in
+    if "MALEXPORT_2FA" in os.environ:
+        click.confirm(
+            "Hit enter once you've logged in with 2FA...",
+            prompt_suffix="",
+            default=True,
+            show_default=False,
+        )
     setattr(webdriver, "_malexport_logged_in", True)
 
 
