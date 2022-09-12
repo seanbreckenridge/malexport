@@ -18,6 +18,33 @@ mal_sources_currently_watching_ids() {
 	malexport parse xml "${MALEXPORT_DIR}/${MAL_USERNAME}"/animelist.xml | jq '.entries | .[] | select(.status == "Watching") | .anime_id' -r | sort
 }
 
+mal_my_anime_ids() {
+	malexport parse xml "${MALEXPORT_DIR}/${MAL_USERNAME}"/animelist.xml | jq '.entries | .[] | .anime_id' -r | sort
+}
+
+mal_all_anime_ids() {
+	local mid_repo
+	for loc in "${REPOS?:no repos envvar set}/malsentinel/data/mal-id-cache" "$REPOS/mal-id-cache"; do
+		if [[ -d "$loc" ]]; then
+			mid_repo="${loc}"
+			break
+		fi
+	done
+	if [[ -z "$mid_repo" ]]; then
+		echo 'Could not find local repo in expected places' >&2
+	fi
+	(cd "$mid_repo" && git pull 1>&2)
+	jq <"${mid_repo}/cache/anime_cache.json" '.sfw + .nsfw | .[]' -r | sort
+}
+
+mal_missing_anime_ids() {
+	comm -1 -3 <(mal_my_anime_ids) <(mal_all_anime_ids)
+}
+
+mal_open_missing() {
+	mal_missing_anime_ids | mal_anime_links | openurls
+}
+
 # items which have sources
 mal_sources_has_sources() {
 	jq -r 'keys[]' <"${HOME}/.cache/source_cache.json" | sort
