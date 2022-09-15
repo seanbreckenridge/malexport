@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # should be used in bash/zsh
 #	quite personal as it uses sources collated by my https://github.com/seanbreckenridge/mal-notify-bot
 # this should be sourced into shell environment
@@ -7,9 +8,7 @@
 
 # copy the sources down from my server
 mal_sources_copy_vultr() {
-	# cache this evry two hours with evry
-	# https://github.com/seanbreckenridge/evry
-	evry 2 hours -copy_mal_notify_sources && scp vultr:~/'code/mal-notify-bot/export.json' "${HOME}/.cache/source_cache.json"
+	evry 5 minutes -mal_sources_copy_vultr && scp vultr:~/'code/mal-notify-bot/export.json' "${HOME}/.cache/source_cache.json"
 }
 
 # items on my CW
@@ -92,6 +91,21 @@ mal_sources_watch_next() {
 			epoch >>~/.cache/mal_sources_watched_at
 		fi
 	done <<<"$urls"
+}
+
+mal_sources_download() {
+	local download_dir
+	download_dir="${HOME}/Downloads/mal"
+	mkdir -p "${download_dir}"
+	cd "${download_dir}" || return $?
+	# shellcheck disable=SC2088
+	ssh vultr "~/vps/super --ctl restart restart-mal-notify-bot"
+	sleep 3m
+	rm -v "$(evry location -mal_sources_copy_vultr)"
+	mal_sources_copy_vultr
+	while read -r mid; do
+		MAL_SOURCES_DOWNLOAD=1 mal_sources_watch_next "$mid"
+	done < <(mal_sources_shared_ids)
 }
 
 mal_club_on_watching() {
