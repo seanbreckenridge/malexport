@@ -119,7 +119,7 @@ mal_sources_download() {
 	# shellcheck disable=SC2088
 	ssh vultr "~/vps/super --ctl restart restart-mal-notify-bot"
 	sleep 2m
-	rm -v "$(evry location -mal_sources_copy_vultr)"
+	rm -vf "$(evry location -mal_sources_copy_vultr)"
 	mal_sources_copy_vultr
 	while read -r mid; do
 		MAL_SOURCES_DOWNLOAD=1 mal_sources_watch_next "$mid"
