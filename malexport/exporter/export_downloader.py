@@ -83,7 +83,8 @@ class ExportDownloader:
         """
         time.sleep(1)
         logger.info(f"Downloading {list_type.value} export")
-        self.driver.get(EXPORT_PAGE)
+        if self.driver.current_url != EXPORT_PAGE:
+            self.driver.get(EXPORT_PAGE)
         export_button_selector = tuple([By.CSS_SELECTOR, EXPORT_BUTTON_CSS])
         WebDriverWait(self.driver, 15).until(  # type: ignore[no-untyped-call]
             EC.visibility_of_element_located(export_button_selector)  # type: ignore[no-untyped-call]
@@ -92,7 +93,10 @@ class ExportDownloader:
             self.driver.execute_script("""$("#dialog select.inputtext").val(2)""")  # type: ignore[no-untyped-call]
         self.driver.find_element(By.CSS_SELECTOR, EXPORT_BUTTON_CSS).click()  # type: ignore[no-untyped-call]
         time.sleep(0.25)
-        WebDriverWait(self.driver, 5).until(EC.alert_is_present())  # type: ignore[no-untyped-call]
+        try:
+            WebDriverWait(self.driver, 5).until(EC.alert_is_present())  # type: ignore[no-untyped-call]
+        except TimeoutException:
+            pass
         alert = self.driver.switch_to.alert
         time.sleep(0.25)
         alert.accept()  # type: ignore[no-untyped-call]
@@ -100,7 +104,7 @@ class ExportDownloader:
         download_button_selector = tuple([By.CSS_SELECTOR, DOWNLOAD_BUTTON])
         try:
             # hmm -- this page seems to be there sometimes, but not others?
-            WebDriverWait(self.driver, 10).until(  # type: ignore[no-untyped-call]
+            WebDriverWait(self.driver, 5).until(  # type: ignore[no-untyped-call]
                 EC.element_to_be_clickable(download_button_selector)  # type: ignore[no-untyped-call]
             )
             self.driver.find_element(By.CSS_SELECTOR, DOWNLOAD_BUTTON).click()
@@ -117,8 +121,12 @@ class ExportDownloader:
         are multiple files/partially downloaded files
         """
         files = os.listdir(path)
-        animelist_gzs = [f for f in files if f.startswith("animelist_")]
-        mangalist_gzs = [f for f in files if f.startswith("mangalist_")]
+        animelist_gzs = [
+            f for f in files if f.startswith("animelist_") and f.endswith(".gz")
+        ]
+        mangalist_gzs = [
+            f for f in files if f.startswith("mangalist_") and f.endswith(".gz")
+        ]
         archive_files = animelist_gzs + mangalist_gzs
         if list_type == ListType.ANIME:
             archive_files = animelist_gzs
