@@ -11,10 +11,10 @@ mal_sources_copy_vultr() {
 	evry 5 minutes -mal_sources_copy_vultr && scp vultr:~/'code/mal-notify-bot/export.json' "${HOME}/.cache/source_cache.json"
 }
 
-# items on my CW
-# use xml so its easier to update quickly
-mal_sources_currently_watching_ids() {
-	malexport parse xml "${MALEXPORT_DIR}/${MAL_USERNAME}"/animelist.xml | jq '.entries | .[] | select(.status == "Watching") | .anime_id' -r | sort
+# I use my PTW to track items that haven't aired yet
+# This opens any aired entries that are still on my PTW
+mal_open_aired() {
+	mal_status 'Plan to Watch' | jq -r 'select(.airing_status != "Not Yet Aired") | .id' | mal_anime_links | openurls "$@"
 }
 
 mal_my_anime_ids() {
@@ -41,7 +41,7 @@ mal_missing_anime_ids() {
 }
 
 mal_open_missing() {
-	mal_missing_anime_ids | mal_anime_links | openurls
+	mal_missing_anime_ids | mal_anime_links | openurls "$@"
 }
 
 # items which have sources
@@ -51,7 +51,7 @@ mal_sources_has_sources() {
 
 # items on my CW which have a source
 mal_sources_shared_ids() {
-	comm -1 -2 <(mal_sources_has_sources) <(mal_sources_currently_watching_ids)
+	comm -1 -2 <(mal_sources_has_sources) <(mal_xml_status_ids 'Watching')
 }
 
 # extract an ID from the source file
@@ -59,6 +59,24 @@ mal_sources_extract_id() {
 	local ID="${1?:Provide ID as first argument}"
 	jq -r "to_entries | .[] | select(.key == \"$ID\") | .value" <"${HOME}/.cache/source_cache.json"
 }
+
+mal_club_on_hold() {
+	comm -1 -2 <(mal_xml_status_ids On-Hold) <(mal_club "$1")
+}
+
+chinese_on_hold() {
+	mal_club_on_hold 42215
+}
+
+korean_on_hold() {
+	mal_club_on_hold 41909
+}
+
+mal_anime_links() {
+	sed 's#^#https://myanimelist.net/anime/#'
+}
+
+# SOURCES
 
 # copy down the sources file if needed
 # pick a random ID on my currently watching I haven't watched yet
@@ -106,14 +124,6 @@ mal_sources_download() {
 	while read -r mid; do
 		MAL_SOURCES_DOWNLOAD=1 mal_sources_watch_next "$mid"
 	done < <(mal_sources_shared_ids)
-}
-
-mal_club_on_watching() {
-	comm -1 -2 <(mal_sources_currently_watching_ids) <(mal_club "$1")
-}
-
-mal_anime_links() {
-	sed 's#^#https://myanimelist.net/anime/#'
 }
 
 # for items downloaded with mal_sources_watch_next,

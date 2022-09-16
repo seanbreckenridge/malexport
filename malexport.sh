@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # shell functions I use for my data
 # these can be used in combination to filter/extract data
 # a lot of them use https://github.com/stedolan/jq, so I'd
@@ -36,6 +36,14 @@ mal_status() {
 	mal_list "${2:-anime}" | jq "select(.status == \"${1:-Completed}\")"
 }
 
+# uses xml since thats easier to update
+mal_xml_status_ids() {
+	local st mtype
+	st="${1:-Watching}"
+	mtype="${2:-anime}"
+	malexport parse xml "${MALEXPORT_DIR}/${MAL_USERNAME}"/"${mtype}"list.xml | jq "$(printf '.entries | .[] | select(.status == "%s")' "$st")" -r | jq ".${mtype}_id" | sort
+}
+
 # e.g. mal_list 'Dropped' | mal_filter_unscored | mal_describe
 mal_filter_unscored() {
 	jq 'select(.score != 0)'
@@ -63,12 +71,6 @@ mal_filter_airing_status() {
 # can be used like "mal_status 'Plan to Watch' | mal_describe"
 mal_describe() {
 	jq -r '"\(.id) \(.title) (\(.season.year)) \(.status) \(.score)/10"'
-}
-
-# I use my PTW to track items that haven't aired yet
-# This opens any aired entries that are still on my PTW
-mal_open_aired() {
-	mal_status 'Plan to Watch' | jq -r 'select(.airing_status != "Not Yet Aired") | .id' | sed 's#^#https://myanimelist.net/anime/#' | xargs -I {} sh -c 'python3 -m webbrowser -t "{}"'
 }
 
 mal_club() {
