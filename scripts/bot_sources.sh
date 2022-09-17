@@ -92,7 +92,7 @@ mal_sources_watch_next() {
 	fi
 	DATA="$(mal_list | jq "select(.id == $RANDOM_NEXT_ID)")"
 	echo "$DATA" | mal_describe
-	echo "$DATA" | jq '"\(.id)"' -r | sed -e 's_^_https://myanimelist.net/anime/_'
+	echo "$DATA" | jq '"\(.id)"' -r | mal_anime_links
 	# https://sean.fish/d/extracturls?dark
 	# local urls
 	urls="$(mal_sources_extract_id "${RANDOM_NEXT_ID}" | extracturls)"
