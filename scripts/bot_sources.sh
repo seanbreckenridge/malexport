@@ -31,6 +31,7 @@ mal_all_anime_ids() {
 	done
 	if [[ -z "$mid_repo" ]]; then
 		echo 'Could not find local repo in expected places' >&2
+		return 1
 	fi
 	(cd "$mid_repo" && git pull 1>&2)
 	jq <"${mid_repo}/cache/anime_cache.json" '.sfw + .nsfw | .[]' -r | sort
