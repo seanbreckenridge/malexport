@@ -97,7 +97,7 @@ def serialize(data: Any) -> str:
     try:
         import orjson  # type: ignore[import]
 
-        return orjson.dumps(data, default=default_encoder).decode("utf-8")
+        return cast(str, orjson.dumps(data, default=default_encoder).decode("utf-8"))
 
     except ImportError:
         return simplejson.dumps(
