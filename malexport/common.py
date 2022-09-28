@@ -95,7 +95,7 @@ def default_encoder(o: Any) -> Any:
 
 def serialize(data: Any) -> str:
     try:
-        import orjson
+        import orjson  # type: ignore[import]
 
         return orjson.dumps(data, default=default_encoder).decode("utf-8")
 
