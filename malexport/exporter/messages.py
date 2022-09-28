@@ -19,7 +19,7 @@ from selenium.webdriver.common.by import By  # type: ignore[import]
 from .driver import webdriver, driver_login, wait
 from ..log import logger
 from ..paths import LocalDir, _expand_path
-from ..common import Json, extract_query_value
+from ..common import Json, extract_query_value, serialize
 
 
 # if we hit these many recently updated entries which
@@ -171,7 +171,7 @@ class MessageDownloader:
             # if these arent the same, the data has changed,
             # we should keep searching for more threads
             has_new_data = old_data != new_data
-        new_data_json = json.dumps(new_data)
+        new_data_json = serialize(new_data)
         p.write_text(new_data_json)
         return has_new_data
 

@@ -2,12 +2,11 @@
 Requests MAL Lists (animelist/mangalist) for a user, using MAL API
 """
 
-import json
 from typing import List
 from pathlib import Path
 
 from ..list_type import ListType
-from ..common import Json
+from ..common import Json, serialize
 from ..paths import LocalDir
 from .mal_session import MalSession
 
@@ -48,5 +47,5 @@ class APIList:
         for resp in self.mal_session.paginate_all_data(first_url):
             for entry in resp:
                 data.append(entry["node"])
-        encoded_data = json.dumps(data)
+        encoded_data = serialize(data)
         self.list_path.write_text(encoded_data)

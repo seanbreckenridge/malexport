@@ -25,7 +25,7 @@ from .driver import webdriver, driver_login, wait
 from .export_downloader import ExportDownloader
 from ..log import logger
 from ..paths import LocalDir, _expand_path
-from ..common import Json, extract_query_value
+from ..common import Json, extract_query_value, serialize
 from ..parse.xml import parse_xml
 
 
@@ -219,7 +219,7 @@ class HistoryManager:
             # if these arent the same, the data has changed,
             # we should keep searching for new episode information
             has_new_data = old_data != new_data
-        new_data_json = json.dumps(new_data)
+        new_data_json = serialize(new_data)
         # this saves even if there is no episode history, so we can compare when updating
         p.write_text(new_data_json)
         self.already_requested.add(entry_id)

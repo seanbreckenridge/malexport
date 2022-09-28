@@ -14,7 +14,7 @@ from pathlib import Path
 import requests
 
 from ..list_type import ListType
-from ..common import Json, safe_request_json, logger
+from ..common import Json, safe_request_json, logger, serialize
 from ..paths import LocalDir
 
 # this is order=5, which requests items that were edited by you recently
@@ -106,5 +106,5 @@ class MalList:
                 )
                 break
             offset += OFFSET_CHUNK
-        encoded_data = json.dumps(list_data)
+        encoded_data = serialize(list_data)
         self.list_path.write_text(encoded_data)

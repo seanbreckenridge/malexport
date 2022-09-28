@@ -7,7 +7,7 @@ from typing import Iterator
 
 from .mal_session import MalSession
 from ..paths import LocalDir, _expand_path
-from ..common import Json
+from ..common import Json, serialize
 
 
 # one is created by, one is commented on, doesn't really matter which is which
@@ -55,7 +55,7 @@ class ForumManager:
         do anything complicated, it just re-downloads the entire thing
         """
         data = list(self.download_forum_index())
-        data_json = json.dumps(data)
+        data_json = serialize(data)
         self.forum_index_path.write_text(data_json)
 
     def update_changed_forum_posts(self) -> None:

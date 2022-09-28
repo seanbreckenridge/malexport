@@ -94,11 +94,17 @@ def default_encoder(o: Any) -> Any:
 
 
 def serialize(data: Any) -> str:
-    return simplejson.dumps(
-        data,
-        default=default_encoder,
-        namedtuple_as_object=True,
-    )
+    try:
+        import orjson
+
+        return orjson.dumps(data, default=default_encoder).decode("utf-8")
+
+    except ImportError:
+        return simplejson.dumps(
+            data,
+            default=default_encoder,
+            namedtuple_as_object=True,
+        )
 
 
 def extract_query_value(url: str, param: str) -> str:

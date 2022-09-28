@@ -1,10 +1,9 @@
-import json
 from typing import List
 
 import requests
 
 from ..paths import LocalDir, _expand_file
-from ..common import safe_request_json, Json
+from ..common import safe_request_json, Json, serialize
 from ..log import logger
 
 
@@ -55,4 +54,4 @@ class FriendDownloader:
                 f"No friends found for {self.localdir.username} (could've failed to request, or user has no friends), skipping write to file..."
             )
             return
-        self.friend_index_path.write_text(json.dumps(friends))
+        self.friend_index_path.write_text(serialize(friends))
