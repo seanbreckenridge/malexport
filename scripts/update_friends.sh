@@ -3,8 +3,7 @@
 # then run mal_friends_update
 
 mal_friends_list() {
-	local JIKAN_URL="https://api.jikan.moe/v3/user/${MAL_USERNAME:?Set the MAL_USERNAME environment variable to your user}/friends"
-	curl -s "${JIKAN_URL}" | jq -r '.friends | .[] | .username'
+	malexport parse friends -u "$MAL_USERNAME" | jq '.[].username' -r
 }
 
 mal_friends_update() {
