@@ -277,6 +277,13 @@ class HistoryManager:
             return False
         new_data = self.download_history_for_entry(entry_id)
         self.already_requested.add(entry_id)
+        # if using merged file, save every 10 requests
+        if (
+            self.use_merged_file is True
+            and len(self.already_requested) > 0
+            and len(self.already_requested) % 10 == 0
+        ):
+            self._save_merged_file()
         return self.save_data(entry_id, new_data)
 
     def update_history(self, count: Optional[int] = None) -> None:
