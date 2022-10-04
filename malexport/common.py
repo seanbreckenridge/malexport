@@ -84,7 +84,7 @@ def safe_request_json(
 
 
 def default_encoder(o: Any) -> Any:
-    if hasattr(o, '_asdict'):
+    if hasattr(o, "_asdict"):
         return o._asdict()
     if isinstance(o, ListType):
         return o.value

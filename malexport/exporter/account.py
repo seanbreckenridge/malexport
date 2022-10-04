@@ -101,6 +101,7 @@ class Account:
         only: Optional[ListType] = None,
         count: Optional[int] = None,
         driver_type: str = "chrome",
+        use_merged_file: bool = False,
     ) -> None:
         """
         Uses selenium to download episode/chapter history one entry at a time.
@@ -112,11 +113,13 @@ class Account:
             list_type=ListType.ANIME,
             localdir=self.localdir,
             driver_type=driver_type,
+            use_merged_file=use_merged_file,
         )
         self.manga_chapter_history = HistoryManager(
             list_type=ListType.MANGA,
             localdir=self.localdir,
             driver_type=driver_type,
+            use_merged_file=use_merged_file,
         )
         if only == ListType.ANIME or only is None:
             self.anime_episode_history.update_history(count=count)

@@ -9,6 +9,7 @@ import os
 import re
 import json
 import time
+import atexit
 from itertools import islice
 from pathlib import Path
 from typing import Tuple, List, Set, Optional, Iterable, Dict, Any
@@ -90,6 +91,7 @@ class HistoryManager:
         localdir: LocalDir,
         driver_type: str = "chrome",
         till_same_limit: int = TILL_SAME_LIMIT,
+        use_merged_file: bool = False,
     ) -> None:
         self.list_type = list_type
         self.localdir = localdir
@@ -97,9 +99,25 @@ class HistoryManager:
         # in any of the responses to the previously saved entries,
         # stop requesting
         self.till_same_limit = till_same_limit
-        self.history_base_path: Path = _expand_path(
-            self.localdir.data_dir / "history" / self.list_type.value
-        )
+        self.use_merged_file = use_merged_file
+        self.merged_data: Optional[Dict[str, Any]] = None
+
+        if self.use_merged_file:
+            logger.debug(f"Using merged file for {self.list_type.value}")
+            self.history_path: Path = _expand_path(
+                self.localdir.data_dir / f"{self.list_type.value}_history.json",
+                is_dir=False,
+            )
+            if self.history_path.exists():
+                self.merged_data = json.loads(self.history_path.read_text())
+            else:
+                self.merged_data = {}
+            self._register_atexit()
+        else:
+            logger.debug("Using individual history files...")
+            self.history_path: Path = _expand_path(
+                self.localdir.data_dir / "history" / self.list_type.value
+            )
 
         # a list of IDs already requested by this instance, to avoid
         # duplicates across strategies
@@ -118,7 +136,53 @@ class HistoryManager:
 
     def entry_path(self, entry_id: int) -> Path:
         """Location of the JSON file for this type/ID"""
-        return self.history_base_path / f"{entry_id}.json"
+        if self.use_merged_file:
+            return self.history_path
+        else:
+            return self.history_path / f"{entry_id}.json"
+
+    def has_data(self, entry_id: int) -> bool:
+        if self.use_merged_file:
+            assert self.merged_data is not None
+            return str(entry_id) in self.merged_data
+        else:
+            return self.entry_path(entry_id).exists()
+
+    def save_data(self, entry_id: int, new_data: Json) -> bool:
+        """
+        return True if data changed, False otherwise
+        """
+        if self.use_merged_file:
+            logger.debug(f"Saving {entry_id} data to merged JSON...")
+            assert self.merged_data is not None
+            key = str(entry_id)
+            has_new_data = True
+            if key in self.merged_data:
+                old_data = self.merged_data[str(entry_id)]
+                has_new_data = old_data != new_data
+            self.merged_data[str(entry_id)] = new_data
+            return has_new_data
+        else:
+            has_new_data = True
+            p = self.entry_path(entry_id)
+            logger.debug(f"Saving {entry_id} to {p}...")
+            if p.exists():
+                old_data = json.loads(p.read_text())
+                # if these arent the same, the data has changed,
+                # we should keep searching for new episode information
+                has_new_data = old_data != new_data
+            new_data_json = serialize(new_data)
+            # this saves even if there is no episode history, so we can compare when updating
+            p.write_text(new_data_json)
+            return has_new_data
+
+    def _save_merged_file(self) -> None:
+        data = serialize(self.merged_data)
+        logger.debug(f"Writing merged JSON file: {self.history_path}")
+        self.history_path.write_text(data)
+
+    def _register_atexit(self) -> None:
+        atexit.register(lambda: self._save_merged_file())
 
     def _extract_details(self, html_details: str) -> Json:
         """
@@ -210,20 +274,9 @@ class HistoryManager:
         if entry_id in self.already_requested:
             logger.debug(f"{entry_id} has already been requested, skipping...")
             return False
-        p = self.entry_path(entry_id)
         new_data = self.download_history_for_entry(entry_id)
-        # assume this is new data
-        has_new_data = True
-        if p.exists():
-            old_data = json.loads(p.read_text())
-            # if these arent the same, the data has changed,
-            # we should keep searching for new episode information
-            has_new_data = old_data != new_data
-        new_data_json = serialize(new_data)
-        # this saves even if there is no episode history, so we can compare when updating
-        p.write_text(new_data_json)
         self.already_requested.add(entry_id)
-        return has_new_data
+        return self.save_data(entry_id, new_data)
 
     def update_history(self, count: Optional[int] = None) -> None:
         """
@@ -253,11 +306,10 @@ class HistoryManager:
             mlist = m.load_list()
             for entry_data in mlist:
                 mal_id = entry_data[f"{self.list_type.value}_id"]
-                p = self.entry_path(mal_id)
                 # If data doesn't exist for an item, request it
                 # this doesn't impact the other strategies and will likely run when
                 # you first add an item or when this is first run and is caching your entire list
-                if not p.exists():
+                if not self.has_data(mal_id):
                     self.update_entry_data(mal_id)
 
             logger.info("Requesting items till we hit some amount of unchanged data...")
@@ -270,7 +322,7 @@ class HistoryManager:
                 mal_id = entry_data[f"{self.list_type.value}_id"]
                 if self.update_entry_data(mal_id):
                     logger.debug(
-                        "{self.list_type.value} {mal_id} had new data, resetting..."
+                        f"{self.list_type.value} {mal_id} had new data, resetting..."
                     )
                     till = int(self.till_same_limit)
                 else:
@@ -283,8 +335,7 @@ class HistoryManager:
             updated = True
             # use the XML file if that exists
             for el in parse_xml(str(export_file)).entries:
-                p = self.entry_path(el.id)
-                if not p.exists():
+                if not self.has_data(el.id):
                     self.update_entry_data(el.id)
         if not updated:
             raise RuntimeError(
@@ -300,3 +351,4 @@ class HistoryManager:
         # use selenium to go to users' history and update things watched within the last few weeks
         for mal_id in recent_history:
             self.update_entry_data(mal_id)
+        self._save_merged_file()

@@ -149,8 +149,19 @@ def _export(username: str) -> None:
     type=click.Choice(["chrome", "firefox"]),
     help="whether to use chromedriver/geckodriver as the selenium browser",
 )
+@click.option(
+    "--use-merged-file",
+    default=False,
+    is_flag=True,
+    envvar="MALEXPORT_USE_MERGED_FILE",
+    help="use a single merged JSON file instead of storing history data in individual files",
+)
 def _history(
-    username: str, only: Optional[str], driver_type: str, count: Optional[int]
+    username: str,
+    only: Optional[str],
+    driver_type: str,
+    count: Optional[int],
+    use_merged_file: bool,
 ) -> None:
     from .exporter import Account
 
@@ -158,7 +169,12 @@ def _history(
     only_update: Optional[ListType] = None
     if only is not None:
         only_update = ListType.__members__[only.upper()]
-    acc.update_history(only=only_update, count=count, driver_type=driver_type)
+    acc.update_history(
+        only=only_update,
+        count=count,
+        driver_type=driver_type,
+        use_merged_file=use_merged_file,
+    )
 
 
 @update.command(name="forum", short_help="update forum posts")

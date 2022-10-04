@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+"""
+script to convert from individual to merged history format
+
+e.g. input: ./history/anime ./anime_history.json
+in your data directory
+"""
+
+import json
+from pathlib import Path
+
+import click
+
+
+@click.command()
+@click.argument("FROM_DIR")
+@click.argument("TO_FILE")
+def main(from_dir: str, to_file: str) -> None:
+    datafiles = list(Path(from_dir).glob("*.json"))
+    write_to = Path(to_file)
+    merged_data = {}
+    for file in datafiles:
+        merged_data[str(int(file.stem))] = json.loads(file.read_text())
+    write_to.write_text(json.dumps(merged_data))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import NamedTuple, List, Iterator, Tuple, Union
+from typing import NamedTuple, List, Iterator, Tuple, Union, Any
 
 from ..paths import LocalDir
 from ..list_type import ListType
@@ -28,7 +28,28 @@ def iter_user_history(username: str) -> Iterator[History]:
     history_dir = localdir.data_dir / "history"
     # i.e. for anime / manga
     for _type in map(str.lower, ListType.__members__):
+        merged_history_file = localdir.data_dir / f"{_type}_history.json"
+        yield from _parse_merged_history(merged_history_file, _type)
         yield from parse_history_dir(history_dir / _type, _type)
+
+
+def _parse_merged_history(
+    merged_history_file: Path, list_type: Union[str, ListType]
+) -> Iterator[History]:
+    lt: str = list_type.value.lower() if isinstance(list_type, ListType) else list_type
+    if not merged_history_file.exists():
+        return
+    merged_data = json.loads(merged_history_file.read_text())
+    for key, data in merged_data.items():
+        title, entries = _parse_history_data(data)
+        if len(entries) == 0:
+            continue
+        yield History(
+            list_type=lt,
+            mal_id=int(key),
+            title=title,
+            entries=entries,
+        )
 
 
 def parse_history_dir(
@@ -39,7 +60,8 @@ def parse_history_dir(
         assert (
             history_path.stem.isnumeric()
         ), f"Expected history JSON file, found {history_path}"
-        title, entries = _parse_history_file(history_path)
+        data = json.loads(history_path.read_text())
+        title, entries = _parse_history_data(data)
         # only return items which have at least one history entry
         if len(entries) == 0:
             continue
@@ -51,8 +73,7 @@ def parse_history_dir(
         )
 
 
-def _parse_history_file(history_path: Path) -> Tuple[str, List[HistoryEntry]]:
-    history_data = json.loads(history_path.read_text())
+def _parse_history_data(history_data: Any) -> Tuple[str, List[HistoryEntry]]:
     entries: List[HistoryEntry] = []
     for entry_data in history_data["episodes"]:
         [num, epoch] = entry_data
