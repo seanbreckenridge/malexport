@@ -102,9 +102,10 @@ class HistoryManager:
         self.use_merged_file = use_merged_file
         self.merged_data: Optional[Dict[str, Any]] = None
 
+        self.history_path: Path
         if self.use_merged_file:
             logger.debug(f"Using merged file for {self.list_type.value}")
-            self.history_path: Path = _expand_path(
+            self.history_path = _expand_path(
                 self.localdir.data_dir / f"{self.list_type.value}_history.json",
                 is_dir=False,
             )
@@ -115,7 +116,7 @@ class HistoryManager:
             self._register_atexit()
         else:
             logger.debug("Using individual history files...")
-            self.history_path: Path = _expand_path(
+            self.history_path = _expand_path(
                 self.localdir.data_dir / "history" / self.list_type.value
             )
 
