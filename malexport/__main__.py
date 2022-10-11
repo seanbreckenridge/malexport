@@ -21,6 +21,7 @@ USERNAME = click.option(
     "username",
     required=True,
     help="Username to use",
+    envvar="MAL_USERNAME"
 )
 
 ONLY = click.option(
