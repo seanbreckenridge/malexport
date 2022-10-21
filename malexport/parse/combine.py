@@ -171,13 +171,9 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
     # while parsing, items were removed when they were merged into
     # the combined data. if anything still exists here, then warn
     if len(animelist_json_data) > 0:
-        logger.warning(
-            f"animelist_json_data entries left over: {len(animelist_json_data)}"
-        )
+        logger.warning(f"animelist_json_data entries left over: {animelist_json_data}")
     if len(mangalist_json_data) > 0:
-        logger.warning(
-            f"mangalist_json_data entries left over: {len(mangalist_json_data)}"
-        )
+        logger.warning(f"mangalist_json_data entries left over: {mangalist_json_data}")
     # shouldn't be warned for -- if you delete something off your list the
     # local history files still remain -- not sure if the should be deleted
     #
