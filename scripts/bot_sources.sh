@@ -123,6 +123,7 @@ mal_sources_download() {
 	rm -vf "$(evry location -mal_sources_copy_vultr)"
 	mal_sources_copy_vultr
 	while read -r mid; do
+		mkdir -p "${download_dir}"
 		MAL_SOURCES_DOWNLOAD=1 mal_sources_watch_next "$mid"
 	done < <(mal_sources_shared_ids)
 }
