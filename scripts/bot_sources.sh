@@ -132,7 +132,7 @@ mal_sources_download() {
 # open the corresponding MAL page by extracting it from
 # the filename
 mal_mpv_open_currently_playing() {
-	# https://sean.fish/d/openurl?dark
+	# https://github.com/seanbreckenridge/core/blob/main/shellscripts/openurl
 	# https://github.com/seanbreckenridge/mpv-sockets
 	local id
 	id="$(basename "$(mpv-currently-playing)" | cut -d"_" -f1 | cut -d"." -f1)"
