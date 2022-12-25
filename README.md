@@ -7,7 +7,7 @@ I wanted to use the API whenever possible here, but the information returned by 
 - `malexport update lists` - The `load.json` endpoint (unauthenticated) to backup my `anime`/`manga` list (by most recently updated, as thats useful in many contexts)
 - `malexport update api-lists` - The MAL API endpoint (authenticated) to backup my `anime`/`manga` list. This includes a lot of metadata for each entry, and also works for private lists (assuming you go through the OAuth flow with the private account logged in your browser)
 - Selenium (so requires your MAL Username/Password; stored locally) to:
-  - `malexport update history` - Individually grab episode/chapter history data (i.e., [this](https://i.imgur.com/2h5ZFng.png))
+  - `malexport update history` - Individually grab episode/chapter history data (i.e., [this](https://i.imgur.com/2h5ZFng.png)). Note: the datetimes on these depend on what timezone you have set in your MAL settings
   - `malexport update export` - Download the MAL export (the giant XML files), since those have rewatch information, and better dates
   - `malexport update messages` - Downloads/Updates your received and sent messages (DMs)
 - `malexport update forum` - Uses the MAL API ([docs](https://myanimelist.net/apiconfig/references/api/v2)) to grab forum posts
