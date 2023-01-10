@@ -11,10 +11,14 @@ mal_sources_copy_vultr() {
 	evry 5 minutes -mal_sources_copy_vultr && scp vultr:~/'code/mal-notify-bot/export.json' "${HOME}/.cache/source_cache.json"
 }
 
+mal_aired_anime_ids() {
+	mal_status 'Plan to Watch' | jq -r 'select(.airing_status != "Not Yet Aired") | .id'
+}
+
 # I use my PTW to track items that haven't aired yet
 # This opens any aired entries that are still on my PTW
 mal_open_aired() {
-	mal_status 'Plan to Watch' | jq -r 'select(.airing_status != "Not Yet Aired") | .id' | mal_anime_links | openurls "$@"
+	mal_aired_anime_ids | mal_anime_links | openurls "$@"
 }
 
 mal_my_anime_ids() {
