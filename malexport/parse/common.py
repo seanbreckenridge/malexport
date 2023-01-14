@@ -13,6 +13,8 @@ def split_tags(tags: str) -> List[str]:
 def parse_date_safe(d: Optional[str]) -> Optional[date]:
     if d is None:
         return None
+    if isinstance(d, str) and len(d.strip()) == 4 and d.isdigit():
+        return date(year=int(d), month=1, day=1)
     try:
         return date.fromisoformat(d)
     except ValueError:  # no date supplied, uses '0000-00-00'
