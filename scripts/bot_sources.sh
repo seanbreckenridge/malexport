@@ -27,7 +27,7 @@ mal_my_anime_ids() {
 
 mal_all_anime_ids() {
 	local mid_repo
-	for loc in "${REPOS?no repos envvar set}/malsentinel/data/mal-id-cache" "$REPOS/mal-id-cache"; do
+	for loc in "${REPOS?no repos envvar set}/dbsentinel/data/mal-id-cache" "$REPOS/mal-id-cache"; do
 		if [[ -d "$loc" ]]; then
 			mid_repo="${loc}"
 			break
