@@ -27,6 +27,7 @@ def main(username: str) -> None:
     acc.mal_api_authenticate()
     mal_session = acc.mal_session
     assert mal_session is not None
+    mal_session.refresh_token()
     sess = mal_session.session
     req = mal_session.safe_json_request
     click.secho(
