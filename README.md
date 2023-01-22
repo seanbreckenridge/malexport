@@ -23,7 +23,9 @@ Requires `python3.7+`
 
 To install with pip, run:
 
-    pip install git+https://github.com/seanbreckenridge/malexport.git
+```
+pip install malexport
+```
 
 For your MyAnimeList [API Info](https://myanimelist.net/apiconfig), you can use 'other' as the 'App Type', 'hobbyist' as 'Purpose of Use', and `http://localhost` as the redirect URI. This only requires a Client ID, not both a Client ID and a Secret
 
@@ -199,7 +201,7 @@ $ malexport parse list ./animelist.json | jq '.[] | select(.status == "Completed
 
 This includes a command to recover deleted MAL entries (in other words, a MAL moderator completely deleted the entry from the site, which automatically removes it from your list) which you previously had on your list, by recovering deleted items from zipfiles. 
 
-This requires [`hpi`](https://pypi.org/project/HPI/) to automatically unzip files, install with `python3 -m pip install hpi`
+This requires [`hpi`](https://pypi.org/project/HPI/) to automatically unzip files, install with `python3 -m pip install malexport[recover]` or directly with `pip install hpi`
 
 I backup my list every 2 months with: `malexport recover-deleted backup`, which saves to `~/.local/share/malexport_zips` (overwrite default location with `MALEXPORT_ZIP_BACKUPS`)
 
