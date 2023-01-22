@@ -398,21 +398,21 @@ def approved_ids_stats() -> None:
     default=str(default_zip_base),
 )
 def recover(data_dir: Path) -> None:
-    from .parse.recover_deleted_entries import recover_deleted, Approved
+    from .parse.recover_deleted_entries import recover_deleted as rec_del, Approved
 
     for acc in data_dir.iterdir():
         username = acc.name
         zips = sorted(acc.glob("*.zip"), key=lambda x: x.name)
 
-        rec_anime, rec_manga = recover_deleted(
+        rec_anime, rec_manga = rec_del(
             approved=Approved.parse_from_git_dir(), username=username, backups=zips
         )
 
-        for recovered in rec_anime:
-            click.echo(f"Anime: {recovered}")
+        for reca in rec_anime:
+            click.echo(f"Anime: {reca}")
 
-        for recovered in rec_manga:
-            click.echo(f"Manga: {recovered}")
+        for recm in rec_manga:
+            click.echo(f"Manga: {recm}")
 
 
 if __name__ == "__main__":
