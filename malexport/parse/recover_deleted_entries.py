@@ -2,8 +2,8 @@ import json
 from typing import List, Set, NamedTuple
 from pathlib import Path
 
-from git.repo.base import Repo
-from git.cmd import Git
+from git.repo.base import Repo  # type: ignore[import]
+from git.cmd import Git  # type: ignore[import]
 
 from .combine import combine, CombineResults
 from ..paths import mal_id_cache_dir
