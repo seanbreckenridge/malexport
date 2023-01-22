@@ -41,20 +41,20 @@ If you want to hide the chromedriver, you can run this like `MALEXPORT_CHROMEDRI
 
 For the `update lists` command, this uses the unauthenticated `load.json` endpoint, which is what is used on modern lists as MAL. Therefore, its contents might be slightly different depending on your settings. To get the most info out of it, I'd recommend going to your [list preferences](https://myanimelist.net/editprofile.php?go=listpreferences) and enabling all of the columns so that metadata is returned. Also, this assumes the [European date format](https://myanimelist.net/editprofile.php?go=listpreferences) for lists.
 
-Credentials are asked for the first time they're needed, and then stored in `~/.config/malexport`. Data by default is stored in `~/.local/share/malexport`, but like lots of other things here are configurable with environment variables:
+Credentials are asked for the first time they're needed, and then stored in `~/.config/malexport` (overwrite with `MALEXPORT_CFG`). Data by default is stored in `~/.local/share/malexport` (overwrite with `MALEXPORT_DIR`). Lots of other things here are configurable with environment variables:
 
 ```
-malexport/common.py:REQUEST_WAIT_TIME: int = int(os.environ.get("MALEXPORT_REQUEST_WAIT_TIME", 10))
-malexport/exporter/driver.py:HIDDEN_CHROMEDRIVER = bool(int(os.environ.get("MALEXPORT_CHROMEDRIVER_HIDDEN", 0)))
-malexport/exporter/driver.py:CHROME_LOCATION: Optional[str] = os.environ.get("MALEXPORT_CHROMEDRIVER_LOCATION")
-malexport/exporter/driver.py:TEMP_DOWNLOAD_BASE = os.environ.get("MALEXPORT_TEMPDIR", tempfile.gettempdir())
-malexport/exporter/history.py:TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_EPISODE_LIMIT", 10))
-malexport/exporter/mal_session.py:MALEXPORT_REDIRECT_URI = os.environ.get("MALEXPORT_REDIRECT_URI", "http://localhost")
-malexport/exporter/messages.py:TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_THREAD_LIMIT", 10))
-malexport/log.py:    chosen_level = level or int(os.environ.get("MALEXPORT_LOGS", DEFAULT_LEVEL))
-malexport/parse/common.py:CUTOFF_DATE = int(os.environ.get("MALEXPORT_CUTOFF_DATE", date.today().year + 5))
-malexport/paths.py:    default_data_dir = Path(os.environ["MALEXPORT_DIR"])
-malexport/paths.py:    default_conf_dir = Path(os.environ["MALEXPORT_CFG"])
+malexport/common.py:18:REQUEST_WAIT_TIME: int = int(os.environ.get("MALEXPORT_REQUEST_WAIT_TIME", 10))
+malexport/exporter/messages.py:27:TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_THREAD_LIMIT", 10))
+malexport/exporter/driver.py:26:HIDDEN_CHROMEDRIVER = bool(int(os.environ.get("MALEXPORT_CHROMEDRIVER_HIDDEN", 0)))
+malexport/exporter/driver.py:27:CHROME_LOCATION: Optional[str] = os.environ.get("MALEXPORT_CHROMEDRIVER_LOCATION")
+malexport/exporter/driver.py:30:TEMP_DOWNLOAD_BASE = os.environ.get("MALEXPORT_TEMPDIR", tempfile.gettempdir())
+malexport/exporter/history.py:47:TILL_SAME_LIMIT = int(os.environ.get("MALEXPORT_EPISODE_LIMIT", 5))
+malexport/exporter/export_downloader.py:21:TRY_EXPORT_TIMES = int(os.environ.get("MALEXPORT_EXPORT_TRIES", 3))
+malexport/exporter/mal_session.py:31:MALEXPORT_REDIRECT_URI = os.environ.get("MALEXPORT_REDIRECT_URI", "http://localhost")
+malexport/paths.py:24:mal_id_cache_dir = os.environ.get("MAL_ID_CACHE_DIR", os.path.join(cache_dir, "mal-id-cache"))
+malexport/paths.py:29:    os.environ.get("MALEXPORT_ZIP_BACKUPS", os.path.join(local_directory, "malexport_zips"))
+malexport/parse/common.py:30:CUTOFF_DATE = int(os.environ.get("MALEXPORT_CUTOFF_DATE", date.today().year + 5))
 ```
 
 To show debug logs set `export MALEXPORT_LOGS=10` (uses [logging levels](https://docs.python.org/3/library/logging.html#logging-levels)).
@@ -194,3 +194,54 @@ $ malexport parse list ./animelist.json | jq '.[] | select(.status == "Completed
 9 : ▇▇ 47.00
 10: ▏ 5.00
 ```
+
+### recover_deleted
+
+This includes a command to recover deleted MAL entries (in other words, a MAL moderator completely deleted the entry from the site, which automatically removes it from your list) which you previously had on your list, by recovering deleted items from zipfiles. 
+
+This requires [`hpi`](https://pypi.org/project/HPI/) to automatically unzip files, install with `python3 -m pip install hpi`
+
+I backup my list every 2 months with: `malexport recover-deleted backup`, which saves to `~/.local/share/malexport_zips` (overwrite default location with `MALEXPORT_ZIP_BACKUPS`)
+
+To figure out which entries are deleted, this uses [mal-id-cache](https://github.com/seanbreckenridge/mal-id-cache). To update the local cache of IDs, run:
+
+```bash
+$ malexport recover-deleted approved-update
+Updated mal-id-cache to commit 9c0cbdeac567671c0970c79ee99531edc2d89b0b
+$ malexport recover-deleted approved-ids-stats
+Approved Anime: 23930
+Approved Manga: 62212
+```
+
+Then, you can run `malexport recover-deleted recover` to find deleted entries:
+
+```
+malexport recover-deleted recover
+```
+
+For example, mine look like:
+
+```bash
+python3 -m malexport recover-deleted recover -F \
+    | jq 'values[].anime | .[].XMLData | "\(.anime_id) \(.title) \(.score)/10 \(.start_date)"' -r
+```
+
+```
+6852 Ahiru no Otegara 3/10 2016-09-08
+42142 X-Men Openings 4/10 2020-06-04
+37879 Benghuai 3: Reburn 4/10 2018-09-14
+38411 Eiga Daisuki Pompo-san 2/10 2018-09-27
+29293 Isu 6/10 2016-09-10
+38426 Koutetsujou no Kabaneri: Ran - Hajimaru Michiato 4/10 2019-02-13
+10584 Mononoke Dance 4/10 2017-01-15
+29949 Nami 1/10 2016-08-12
+13675 Taisei Kensetsu: Bosporus Kaikyou Tunnel 4/10 2016-09-02
+38065 Taisei Kensetsu: Singapore 4/10 2018-07-31
+21441 Taisei Kensetsu: Sri Lanka Kousokudouro 3/10 2016-10-24
+25883 Taisei Kensetsu: Vietnam Noi Bai Kuukou 4/10 2016-09-02
+33234 Kaibutsu-kun: Suna Majin wo Yattsukero no Maki / Kaibutsu-kun to Haniwa Kaishin no Maki 4/10 2018-09-27
+30245 Kamaishi no "Kiseki": Inochi wo Mamoru Tokubetsu Jugyou 2/10 2016-12-21
+23399 Minami no Shima no Dera-chan 3/10 2016-04-26
+```
+
+None of those IDs exist anymore on MAL, so these backups are the only way to get metadata or my history/data for them

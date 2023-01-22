@@ -391,7 +391,16 @@ def approved_ids_stats() -> None:
     click.echo(f"Approved Manga: {len(apr.manga)}")
 
 
-@recover_deleted.command()
+@recover_deleted.command(short_help="update approved ids")
+def approved_update() -> None:
+    from .parse.recover_deleted_entries import Approved
+
+    commit_id = Approved.git_pull()
+
+    click.echo(f"Updated mal-id-cache to commit {commit_id}")
+
+
+@recover_deleted.command(short_help="recover deleted MAL entries from your zip backups")
 @click.option(
     "--data-dir",
     type=click.Path(exists=True, file_okay=False, path_type=Path),

@@ -42,13 +42,14 @@ class Approved(NamedTuple):
             )
 
     @classmethod
-    def git_pull(cls) -> None:
+    def git_pull(cls) -> str:
         cls.git_clone()
         gg = Git(repo_dir)
         # TODO: add try/except incase theres no internet
         gg.pull()
-        commit_id = gg.log().splitlines()[0].split()[-1]
+        commit_id = str(gg.log().splitlines()[0].split()[-1])
         logger.debug(f"mal-id-cache Commit ID: {commit_id}")
+        return commit_id
 
     @classmethod
     def create_if_doesnt_exist(cls) -> None:
