@@ -4,13 +4,14 @@ export and history modules into data I find useful
 """
 
 import os
-from typing import Any, Dict, List, NamedTuple, Optional, TypeVar, Tuple, Union, Set
+from typing import Dict, List, NamedTuple, Optional, TypeVar, Tuple, Union, Set
+from pathlib import Path
 
 from ..list_type import ListType
 from ..log import logger
 from ..paths import LocalDir
 from .common import split_tags
-from .history import History, HistoryEntry, iter_user_history
+from .history import History, HistoryEntry, iter_history_from_dir
 from .mal_list import (
     AnimeEntry,
     MangaEntry,
@@ -61,21 +62,18 @@ class MangaData(NamedTuple):
         return []
 
 
-# helper to extract optional data from json data
-def _extract(json: Dict[str, Any], key: str, default: Optional[T]) -> Optional[T]:
-    d = json.get(key)
-    if d:
-        return d  # type: ignore
-    else:
-        return default
+CombineResults = Tuple[List[AnimeData], List[MangaData]]
 
 
-def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
-    acc = LocalDir.from_username(username)
-    d = acc.data_dir
+def combine(username: str, data_dir: Optional[Path] = None) -> CombineResults:
+    if data_dir is None:
+        acc = LocalDir.from_username(username)
+        data_dir = acc.data_dir
+
+    assert data_dir is not None
 
     # read history
-    history = list(iter_user_history(username=username))
+    history = list(iter_history_from_dir(data_dir))
     anime_history: Dict[int, History] = {}
     manga_history: Dict[int, History] = {}
     for h in history:
@@ -91,46 +89,46 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
     # exist, because of private lists
     animelist_json_data: Dict[int, AnimeEntry] = {}
     mangalist_json_data: Dict[int, MangaEntry] = {}
-    if (d / "animelist.json").exists():
+    if (data_dir / "animelist.json").exists():
         animelist_json_data = {
             el.id: el  # type: ignore[union-attr,misc]
             for el in parse_user_history(
-                str(d / "animelist.json"), list_type=ListType.ANIME
+                str(data_dir / "animelist.json"), list_type=ListType.ANIME
             )
         }
-    if (d / "mangalist.json").exists():
+    if (data_dir / "mangalist.json").exists():
         mangalist_json_data = {
             el.id: el  # type: ignore[union-attr,misc]
             for el in parse_user_history(
-                str(d / "mangalist.json"), list_type=ListType.MANGA
+                str(data_dir / "mangalist.json"), list_type=ListType.MANGA
             )
         }
 
     # xml exports should always exist
     animelist_xml_data: Dict[int, AnimeXML] = {
         el.id: el  # type: ignore[union-attr,misc]
-        for el in parse_xml(str(d / "animelist.xml")).entries
+        for el in parse_xml(str(data_dir / "animelist.xml")).entries
     }
     mangalist_xml_data: Dict[int, MangaXML] = {
         el.id: el  # type: ignore[union-attr,misc]
-        for el in parse_xml(str(d / "mangalist.xml")).entries
+        for el in parse_xml(str(data_dir / "mangalist.xml")).entries
     }
 
     # list using the API
     animelist_api_json_data: Dict[int, Entry] = {}
     mangalist_api_json_data: Dict[int, Entry] = {}
-    if (d / "animelist_api.json").exists():
+    if (data_dir / "animelist_api.json").exists():
         animelist_api_json_data = {
             el.id: el
             for el in iter_api_list(
-                str(d / "animelist_api.json"), list_type=ListType.ANIME
+                str(data_dir / "animelist_api.json"), list_type=ListType.ANIME
             )
         }
-    if (d / "mangalist_api.json").exists():
+    if (data_dir / "mangalist_api.json").exists():
         mangalist_api_json_data = {
             el.id: el
             for el in iter_api_list(
-                str(d / "mangalist_api.json"), list_type=ListType.MANGA
+                str(data_dir / "mangalist_api.json"), list_type=ListType.MANGA
             )
         }
 
@@ -171,9 +169,13 @@ def combine(username: str) -> Tuple[List[AnimeData], List[MangaData]]:
     # while parsing, items were removed when they were merged into
     # the combined data. if anything still exists here, then warn
     if len(animelist_json_data) > 0:
-        logger.warning(f"animelist_json_data entries left over: {animelist_json_data}")
+        logger.warning(
+            f"animelist_json_data entries left over (likely different parts of export are out of sync or entries on your list were deleted by MAL): {animelist_json_data}"
+        )
     if len(mangalist_json_data) > 0:
-        logger.warning(f"mangalist_json_data entries left over: {mangalist_json_data}")
+        logger.warning(
+            f"mangalist_json_data entries left over (likely different parts of export are out of sync or entries on your list were deleted by MAL): {mangalist_json_data}"
+        )
     # shouldn't be warned for -- if you delete something off your list the
     # local history files still remain -- not sure if the should be deleted
     #

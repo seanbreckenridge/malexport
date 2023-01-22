@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 from typing import Callable, Optional, Any
 
 import click
@@ -332,6 +333,61 @@ def _friends_parse(username: str) -> None:
     from .parse import iter_friends
 
     click.echo(serialize(list(iter_friends(username))))
+
+
+@main.group(short_help="recover data for deleted MAL entries")
+def recover_deleted() -> None:
+    """
+    lets you recover data from zip backups of your malexport dir
+    """
+
+
+_ISO_FORMAT = "%Y-%m-%dT%H-%M-%SZ"
+
+
+def utcnow() -> str:
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).strftime(_ISO_FORMAT)
+
+
+@recover_deleted.command(short_help="zips your current malexport dir")
+@apply_shared(USERNAME)
+def backup(username: str) -> None:
+    import shutil
+
+    from .paths import default_zip_base
+    from .exporter import Account
+
+    backup_to_dir = default_zip_base / username
+    backup_to_dir.mkdir(parents=True, exist_ok=True)
+    from_dir = Account.from_username(username).localdir.data_dir
+
+    backup_zip_base = str(backup_to_dir / f"{utcnow()}")
+    backup_zip_full = f"{backup_zip_base}.zip"
+
+    # shutil doesnt want the '.zip' at the end of the file
+    # automatically compresses if possible
+    shutil.make_archive(backup_zip_base, "zip", root_dir=from_dir, base_dir=".")
+
+    click.echo(f"Backed up {from_dir} to {backup_zip_full}", err=True)
+    click.echo(
+        "Backup Size: {:.2f} MB".format(
+            Path(backup_zip_full).stat().st_size / 1024**2
+        ),
+        err=True,
+    )
+
+
+@recover_deleted.command(short_help="stats about mal-id-cache git dir")
+def approved_ids_stats() -> None:
+    from .parse.recover_deleted_entries import Approved
+
+    Approved.git_pull()
+    apr = Approved.parse_from_git_dir()
+
+    click.echo(f"Approved Anime: {len(apr.anime)}")
+    click.echo(f"Approved Manga: {len(apr.manga)}")
 
 
 if __name__ == "__main__":

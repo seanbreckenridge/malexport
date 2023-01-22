@@ -18,6 +18,21 @@ local_directory: str = os.environ.get("XDG_DATA_HOME", default_local_dir)
 default_config_dir = os.path.join(Path.home(), ".config")
 config_directory: str = os.environ.get("XDG_CONFIG_HOME", default_config_dir)
 
+default_cache_dir = os.path.join(Path.home(), ".cache")
+cache_dir: str = os.environ.get("XDG_CACHE_DIR", default_cache_dir)
+
+mal_id_cache_dir = os.environ.get(
+    "MAL_ID_CACHE_DIR", os.path.join(cache_dir, "mal-id-cache")
+)
+
+default_zip_base = Path(
+    os.environ.get(
+        "MALEXPORT_ZIP_BACKUPS", os.path.join(local_directory, "malexport_zips")
+    )
+)
+
+default_zip_base.mkdir(exist_ok=True, parents=True)
+
 default_data_dir = Path(local_directory) / "malexport"
 default_conf_dir = Path(config_directory) / "malexport"
 

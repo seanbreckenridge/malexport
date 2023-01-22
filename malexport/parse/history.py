@@ -25,12 +25,17 @@ class History(NamedTuple):
 
 def iter_user_history(username: str) -> Iterator[History]:
     localdir = LocalDir.from_username(username)
-    history_dir = localdir.data_dir / "history"
+    yield from iter_history_from_dir(localdir.data_dir)
+
+
+def iter_history_from_dir(data_dir: Path) -> Iterator[History]:
     # i.e. for anime / manga
     for _type in map(str.lower, ListType.__members__):
-        merged_history_file = localdir.data_dir / f"{_type}_history.json"
+        merged_history_file = data_dir / f"{_type}_history.json"
+        # parse from both merged history and individual history files,
+        # incase either one is missing
         yield from _parse_merged_history(merged_history_file, _type)
-        yield from parse_history_dir(history_dir / _type, _type)
+        yield from parse_history_dir(data_dir / "history" / _type, _type)
 
 
 def _parse_merged_history(
@@ -55,6 +60,8 @@ def _parse_merged_history(
 def parse_history_dir(
     history_dir: Path, list_type: Union[str, ListType]
 ) -> Iterator[History]:
+    if not history_dir.exists():
+        return
     lt: str = list_type.value.lower() if isinstance(list_type, ListType) else list_type
     for history_path in history_dir.glob("*.json"):
         assert (
