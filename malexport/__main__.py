@@ -397,22 +397,43 @@ def approved_ids_stats() -> None:
     type=click.Path(exists=True, file_okay=False, path_type=Path),
     default=str(default_zip_base),
 )
-def recover(data_dir: Path) -> None:
+@click.option(
+    "-F",
+    "--filter-with-activity",
+    is_flag=True,
+    help="only return items which have some activity (read/watched)",
+)
+@apply_shared(ONLY)
+def recover(data_dir: Path, filter_with_activity: bool, only: str) -> None:
     from .parse.recover_deleted_entries import recover_deleted as rec_del, Approved
+    from .common import serialize
+
+    full_resp = {}
 
     for acc in data_dir.iterdir():
         username = acc.name
         zips = sorted(acc.glob("*.zip"), key=lambda x: x.name)
 
         rec_anime, rec_manga = rec_del(
-            approved=Approved.parse_from_git_dir(), username=username, backups=zips
+            approved=Approved.parse_from_git_dir(),
+            username=username,
+            backups=zips,
+            filter_with_activity=filter_with_activity,
         )
 
-        for reca in rec_anime:
-            click.echo(f"Anime: {reca}")
+        resp: Any = {
+            "anime": rec_anime,
+            "manga": rec_manga,
+        }
 
-        for recm in rec_manga:
-            click.echo(f"Manga: {recm}")
+        # if user specified only, only return that type
+        if only:
+            assert only in resp
+            resp = resp[only]
+            assert isinstance(resp, list)
+
+        full_resp[username] = resp
+    click.echo(serialize(full_resp))
 
 
 if __name__ == "__main__":

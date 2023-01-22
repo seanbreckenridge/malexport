@@ -1,6 +1,6 @@
 import sys
 import json
-from typing import List, Set, NamedTuple, Callable, Tuple
+from typing import List, Set, NamedTuple, Callable, Tuple, Optional
 from pathlib import Path
 
 from git.repo.base import Repo  # type: ignore[import]
@@ -77,20 +77,28 @@ def recover_deleted_single(
     approved: Approved,
     from_backup_dir: Path,
     username: str,
-    parse_func: Callable[[Path, str], CombineResults] = _default_parse_func,
+    filter_with_activity: bool = False,
+    parse_func: Optional[Callable[[Path, str], CombineResults]] = None,
 ) -> CombineResults:
     """
     returns any data from a backup that is not in the approved list
     """
 
+    if parse_func is None:
+        parse_func = _default_parse_func
+
     assert from_backup_dir.exists(), f"Backup dir {from_backup_dir} does not exist"
 
     new_anime, new_manga = parse_func(from_backup_dir, username)
 
-    return (
-        [new for new in new_anime if new.id not in approved.anime],
-        [new for new in new_manga if new.id not in approved.manga],
-    )
+    deleted_anime = [new for new in new_anime if new.id not in approved.anime]
+    deleted_manga = [new for new in new_manga if new.id not in approved.manga]
+
+    if filter_with_activity:
+        deleted_anime = [a for a in deleted_anime if len(a.history) > 0]
+        deleted_manga = [m for m in deleted_manga if len(m.history) > 0]
+
+    return deleted_anime, deleted_manga
 
 
 def recover_deleted(
@@ -98,44 +106,50 @@ def recover_deleted(
     approved: Approved,
     backups: List[Path],
     username: str,
-    parse_func: Callable[[Path, str], CombineResults] = _default_parse_func,
+    filter_with_activity: bool = False,
+    parse_func: Optional[Callable[[Path, str], CombineResults]] = None,
 ) -> CombineResults:
     """
     parses each backup in reverse order using parse_func, and returns the
     most recent data for each deleted entry
+
+    if filter_with_activity is True, this only returns items which
+    have some history activity (watched/read episodes/chapters)
     """
 
-    try:
-        import my.core.structure
-    except ImportError as e:
-        logger.error(
-            f"my.core.structure not found, cannot parse backups, install by running `{sys.executable} -m pip install hpi`",
-            exc_info=e,
-        )
-        sys.exit(1)
-    else:
+    if parse_func is None:
+        try:
+            import my.core.structure
+        except ImportError:
+            logger.error(
+                f"my.core.structure module not found, cannot parse backups, install by running `{sys.executable} -m pip install hpi`",
+            )
+            sys.exit(1)
+        else:
 
-        def _parse_func(backup_dir: Path, username: str) -> CombineResults:
-            with my.core.structure.match_structure(
-                backup_dir,
-                (
-                    "forum",
-                    "messages",
-                    "friends.json",
-                    "animelist.json",
-                    "mangalist.json",
-                    "animelist.xml",
-                    "mangalist.xml",
-                    "animelist_api.json",
-                    "mangalist_api.json",
-                ),
-                partial=True,
-            ) as res:
-                assert len(res) == 1, f"Expected 1 match, got {len(res)}: {res}"
-                return combine(username, data_dir=res[0])
+            def _parse_func(backup_dir: Path, username: str) -> CombineResults:
+                with my.core.structure.match_structure(
+                    backup_dir,
+                    (
+                        "forum",
+                        "messages",
+                        "friends.json",
+                        "animelist.json",
+                        "mangalist.json",
+                        "animelist.xml",
+                        "mangalist.xml",
+                        "animelist_api.json",
+                        "mangalist_api.json",
+                    ),
+                    partial=True,
+                ) as res:
+                    assert len(res) == 1, f"Expected 1 match, got {len(res)}: {res}"
+                    return combine(username, data_dir=res[0])
 
-        assert _parse_func is not None
-        parse_func = _parse_func
+            assert _parse_func is not None
+            parse_func = _parse_func
+
+    assert parse_func is not None
 
     emitted_entries: Set[Tuple[int, str]] = set()
     emit_anime: List[AnimeData] = []
@@ -148,6 +162,7 @@ def recover_deleted(
             from_backup_dir=backup,
             username=username,
             parse_func=parse_func,
+            filter_with_activity=filter_with_activity,
         )
         for a in anime:
             if (a.id, "anime") not in emitted_entries:

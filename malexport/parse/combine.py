@@ -169,11 +169,11 @@ def combine(username: str, data_dir: Optional[Path] = None) -> CombineResults:
     # while parsing, items were removed when they were merged into
     # the combined data. if anything still exists here, then warn
     if len(animelist_json_data) > 0:
-        logger.warning(
+        logger.debug(
             f"animelist_json_data entries left over (likely different parts of export are out of sync or entries on your list were deleted by MAL): {animelist_json_data}"
         )
     if len(mangalist_json_data) > 0:
-        logger.warning(
+        logger.debug(
             f"mangalist_json_data entries left over (likely different parts of export are out of sync or entries on your list were deleted by MAL): {mangalist_json_data}"
         )
     # shouldn't be warned for -- if you delete something off your list the
