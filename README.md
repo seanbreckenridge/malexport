@@ -199,7 +199,7 @@ $ malexport parse list ./animelist.json | jq '.[] | select(.status == "Completed
 
 ### recover_deleted
 
-This includes a command to recover deleted MAL entries (in other words, a MAL moderator completely deleted the entry from the site, which automatically removes it from your list) which you previously had on your list, by recovering deleted items from zipfiles. 
+This includes a command to recover deleted MAL entries (in other words, a MAL moderator completely deleted the entry from the site, which automatically removes it from your list) which you previously had on your list, by recovering deleted items from zipfiles.
 
 This requires [`hpi`](https://pypi.org/project/HPI/) to automatically unzip files, install with `python3 -m pip install malexport[recover]` or directly with `pip install hpi`
 
