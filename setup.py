@@ -24,7 +24,8 @@ setup(
     extras_require={
         "testing": [
             "mypy",
-        ]
+        ],
+        "recover": ["hpi"],
     },
     classifiers=[
         "License :: OSI Approved :: MIT License",

@@ -6,6 +6,7 @@ from typing import Callable, Optional, Any
 import click
 
 from .list_type import ListType
+from .paths import default_zip_base
 
 
 @click.group()
@@ -388,6 +389,30 @@ def approved_ids_stats() -> None:
 
     click.echo(f"Approved Anime: {len(apr.anime)}")
     click.echo(f"Approved Manga: {len(apr.manga)}")
+
+
+@recover_deleted.command()
+@click.option(
+    "--data-dir",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=str(default_zip_base),
+)
+def recover(data_dir: Path) -> None:
+    from .parse.recover_deleted_entries import recover_deleted, Approved
+
+    for acc in data_dir.iterdir():
+        username = acc.name
+        zips = sorted(acc.glob("*.zip"), key=lambda x: x.name)
+
+        rec_anime, rec_manga = recover_deleted(
+            approved=Approved.parse_from_git_dir(), username=username, backups=zips
+        )
+
+        for recovered in rec_anime:
+            click.echo(f"Anime: {recovered}")
+
+        for recovered in rec_manga:
+            click.echo(f"Manga: {recovered}")
 
 
 if __name__ == "__main__":
