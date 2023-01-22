@@ -79,6 +79,6 @@ def recover_deleted_single(
 
 
 def recover_deleted(
-    *, current_state, backups: List[Path], username: str
+    *, current_state: CombineResults, backups: List[Path], username: str
 ) -> CombineResults:
     raise NotImplementedError("TODO: implement this")
