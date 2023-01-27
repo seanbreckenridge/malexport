@@ -1,5 +1,6 @@
 import sys
 import json
+import logging
 from typing import List, Set, NamedTuple, Callable, Tuple, Optional
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from git.cmd import Git  # type: ignore[import]
 
 from .combine import combine, CombineResults, AnimeData, MangaData
 from ..paths import mal_id_cache_dir
-from ..log import logger
+from ..log import logger as mlog
 
 repo_dir = Path(mal_id_cache_dir)
 
@@ -48,7 +49,7 @@ class Approved(NamedTuple):
         # TODO: add try/except incase theres no internet
         gg.pull()
         commit_id = str(gg.log().splitlines()[0].split()[-1])
-        logger.debug(f"mal-id-cache Commit ID: {commit_id}")
+        mlog.debug(f"mal-id-cache Commit ID: {commit_id}")
         return commit_id
 
     @classmethod
@@ -109,6 +110,7 @@ def recover_deleted(
     username: str,
     filter_with_activity: bool = False,
     parse_func: Optional[Callable[[Path, str], CombineResults]] = None,
+    logger: Optional[logging.Logger] = None,
 ) -> CombineResults:
     """
     parses each backup in reverse order using parse_func, and returns the
@@ -118,11 +120,13 @@ def recover_deleted(
     have some history activity (watched/read episodes/chapters)
     """
 
+    uselogger = logger or mlog
+
     if parse_func is None:
         try:
             import my.core.structure
         except ImportError:
-            logger.error(
+            uselogger.error(
                 f"my.core.structure module not found, cannot parse backups, install by running `{sys.executable} -m pip install hpi`",
             )
             sys.exit(1)
@@ -157,7 +161,7 @@ def recover_deleted(
     emit_manga: List[MangaData] = []
 
     for backup in reversed(backups):
-        logger.debug(f"Recovering deleted entries from {backup}")
+        uselogger.debug(f"Recovering deleted entries from {backup}")
         anime, manga = recover_deleted_single(
             approved=approved,
             from_backup_dir=backup,
