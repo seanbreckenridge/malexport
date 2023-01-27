@@ -103,6 +103,19 @@ def recover_deleted_single(
     return deleted_anime, deleted_manga
 
 
+EXPECTED_FILES = (
+    "forum",
+    "messages",
+    "friends.json",
+    "animelist.json",
+    "mangalist.json",
+    "animelist.xml",
+    "mangalist.xml",
+    "animelist_api.json",
+    "mangalist_api.json",
+)
+
+
 def recover_deleted(
     *,
     approved: Approved,
@@ -135,17 +148,7 @@ def recover_deleted(
             def _parse_func(backup_dir: Path, username: str) -> CombineResults:
                 with my.core.structure.match_structure(
                     backup_dir,
-                    (
-                        "forum",
-                        "messages",
-                        "friends.json",
-                        "animelist.json",
-                        "mangalist.json",
-                        "animelist.xml",
-                        "mangalist.xml",
-                        "animelist_api.json",
-                        "mangalist_api.json",
-                    ),
+                    EXPECTED_FILES,
                     partial=True,
                 ) as res:
                     assert len(res) == 1, f"Expected 1 match, got {len(res)}: {res}"
