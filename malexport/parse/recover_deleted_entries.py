@@ -43,14 +43,28 @@ class Approved(NamedTuple):
             )
 
     @classmethod
-    def git_pull(cls) -> str:
+    def git(cls) -> Git:
+        return Git(repo_dir)
+
+    @classmethod
+    def git_hash(cls) -> str:
+        return str(cls.git().log().splitlines()[0].split()[-1])
+
+    @classmethod
+    def git_pull(cls) -> Tuple[str, str]:
         cls.git_clone()
-        gg = Git(repo_dir)
-        # TODO: add try/except incase theres no internet
-        gg.pull()
-        commit_id = str(gg.log().splitlines()[0].split()[-1])
-        mlog.debug(f"mal-id-cache Commit ID: {commit_id}")
-        return commit_id
+        gg = cls.git()
+
+        commit_id = cls.git_hash()
+        mlog.debug(f"mal-id-cache Commit ID before: {commit_id}")
+        try:
+            gg.pull()
+        except Exception as e:
+            mlog.warning(f"Error pulling mal-id-cache: {e}")
+            return commit_id, commit_id
+        commit_id_after = cls.git_hash()
+        mlog.debug(f"mal-id-cache Commit ID after: {commit_id_after}")
+        return commit_id, commit_id_after
 
     @classmethod
     def create_if_doesnt_exist(cls) -> None:

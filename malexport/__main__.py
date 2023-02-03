@@ -395,9 +395,14 @@ def approved_ids_stats() -> None:
 def approved_update() -> None:
     from .parse.recover_deleted_entries import Approved
 
-    commit_id = Approved.git_pull()
+    commit_id_before, commit_id_after = Approved.git_pull()
 
-    click.echo(f"Updated mal-id-cache to commit {commit_id}")
+    if commit_id_before == commit_id_after:
+        click.echo("Git repo is up to date", err=True)
+    else:
+        click.echo(
+            f"Updated git repo from {commit_id_before} to {commit_id_after}", err=True
+        )
 
 
 @recover_deleted.command(short_help="recover deleted MAL entries from your zip backups")
