@@ -149,7 +149,7 @@ class ExportDownloader:
             )
             time.sleep(0.5)
 
-        for (archive_name, target) in zip(
+        for archive_name, target in zip(
             [
                 self._list_files(list_type=ListType.ANIME)[0],
                 self._list_files(list_type=ListType.MANGA)[0],

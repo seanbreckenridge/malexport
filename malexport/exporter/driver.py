@@ -53,14 +53,14 @@ def webdriver(browser_type: str) -> Union[sel.Chrome, sel.Firefox]:
             options.add_argument("headless")  # type: ignore[no-untyped-call]
             options.add_argument("window-size=1920x1080")  # type: ignore[no-untyped-call]
             options.add_argument("disable-gpu")  # type: ignore[no-untyped-call]
-        if CHROME_LOCATION is not None:
-            CHROME_KWARGS["executable_path"] = CHROME_LOCATION
-        else:
-            CHROME_KWARGS["executable_path"] = "chromedriver"
         options.add_experimental_option(
             "prefs", {"download.default_directory": str(TEMP_DOWNLOAD_DIR)}
         )
-        driver = sel.Chrome(chrome_options=options, **CHROME_KWARGS)
+        driver = sel.Chrome(
+            chrome_options=options,
+            executable_path=CHROME_LOCATION or "chromedriver",
+            **CHROME_KWARGS,
+        )
         # quit when python exits to avoid hanging browsers
         atexit.register(lambda: driver.quit())  # type: ignore[no-any-return]
         return driver

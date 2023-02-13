@@ -136,7 +136,6 @@ def combine(username: str, data_dir: Optional[Path] = None) -> CombineResults:
 
     # combine anime data
     for mal_id, anime_xml in animelist_xml_data.items():
-
         anime_hist: List[HistoryEntry] = []
         if mal_id in anime_history:
             anime_hist = anime_history[mal_id].entries
@@ -152,7 +151,6 @@ def combine(username: str, data_dir: Optional[Path] = None) -> CombineResults:
 
     manga_combined_data: Dict[int, MangaData] = {}
     for mal_id, manga_xml in mangalist_xml_data.items():
-
         manga_hist: List[HistoryEntry] = []
         if mal_id in manga_history:
             manga_hist = manga_history[mal_id].entries
