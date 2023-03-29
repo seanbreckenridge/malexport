@@ -6,12 +6,6 @@ import click
 
 from ..parse.mal_list import parse_file, PathIsh, Entry, ListType
 
-try:
-    from typing import Literal
-
-except ImportError:
-    from typing_extensions import Literal  # type: ignore[import,assignment]
-
 
 def compare_lists(
     animelist1: PathIsh,
@@ -21,7 +15,7 @@ def compare_lists(
     func1: Callable[[Entry], bool],
     func2: Callable[[Entry], bool],
     # todo: add more operations (difference, union, etc.)
-    operation: Literal["intersection"],
+    operation: str,
 ) -> List[Entry]:
     """
     Pass in two animelists and a function to filter the lists with.
