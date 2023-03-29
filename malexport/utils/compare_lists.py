@@ -28,8 +28,8 @@ def compare_lists(
     list1 = list(filter(func1, list1))
     list2 = list(filter(func2, list2))
 
-    click.echo(f"List 1: {len(list1)}", err=True)
-    click.echo(f"List 2: {len(list2)}", err=True)
+    click.echo(f"List 1 filtered length: {len(list1)}", err=True)
+    click.echo(f"List 2 filtered length: {len(list2)}", err=True)
 
     if operation == "intersection":
         intersection_ids = {e.id for e in list1} & {e.id for e in list2}
