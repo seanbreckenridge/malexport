@@ -11,7 +11,7 @@ try:
 
     Operation = Literal["intersection"]
 except ImportError:
-    Operation = str
+    Operation = str  # type: ignore
 
 
 def compare_lists(
