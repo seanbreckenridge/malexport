@@ -9,9 +9,8 @@ from ..parse.mal_list import parse_file, PathIsh, Entry, ListType
 try:
     from typing import Literal
 
-    Operation = Literal["intersection"]
 except ImportError:
-    Operation = str  # type: ignore
+    from typing_extensions import Literal  # type: ignore[import,assignment]
 
 
 def compare_lists(
@@ -21,8 +20,8 @@ def compare_lists(
     list_type: ListType,
     func1: Callable[[Entry], bool],
     func2: Callable[[Entry], bool],
-    # todo: add more operations (union, intersection, etc.)
-    operation: Operation,
+    # todo: add more operations (difference, union, etc.)
+    operation: Literal["intersection"],
 ) -> List[Entry]:
     """
     Pass in two animelists and a function to filter the lists with.

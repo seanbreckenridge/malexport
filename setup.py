@@ -26,6 +26,7 @@ setup(
             "mypy",
         ],
         "recover": ["hpi"],
+        ":python_version<=3.7": ["typing_extensions"],
     },
     classifiers=[
         "License :: OSI Approved :: MIT License",
