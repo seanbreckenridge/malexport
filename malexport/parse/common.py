@@ -66,4 +66,6 @@ def strtobool(val: Union[str, int, bool]) -> bool:
         return val
     if isinstance(val, int):
         val = str(val)
+    if isinstance(val, str) and val == "":
+        return False
     return bool(strtoint(val.lower()))
