@@ -19,6 +19,7 @@ from ..paths import LocalDir
 from ..log import logger
 
 TRY_EXPORT_TIMES = int(os.environ.get("MALEXPORT_EXPORT_TRIES", 3))
+UNLINK_TEMP_GZ_FILES = bool(os.environ.get("MALEXPORT_UNLINK_TEMP_GZ_FILES", False))
 
 EXPORT_PAGE = "https://myanimelist.net/panel.php?go=export"
 EXPORT_BUTTON_CSS = "input[value='Export My List']"
@@ -30,11 +31,14 @@ class ExportDownloader:
     Downloads the XML exports for your account
     """
 
-    def __init__(self, localdir: LocalDir) -> None:
+    def __init__(
+        self, localdir: LocalDir, unlink_temp_gz_files: bool = UNLINK_TEMP_GZ_FILES
+    ):
         self.localdir = localdir
         self.animelist_path = self.localdir.data_dir / "animelist.xml"
         self.mangalist_path = self.localdir.data_dir / "mangalist.xml"
         self._driver: Optional[Browser] = None
+        self._unlink_temp_gz_files = unlink_temp_gz_files
 
     @property
     def driver(self) -> Browser:
@@ -116,10 +120,7 @@ class ExportDownloader:
     def _list_files(
         self, path: str = TEMP_DOWNLOAD_DIR, list_type: Optional[ListType] = None
     ) -> List[str]:
-        """
-        List files in the temporary download directory, warn if there
-        are multiple files/partially downloaded files
-        """
+        """List files in the temporary download directory"""
         files = os.listdir(path)
         animelist_gzs = [
             f for f in files if f.startswith("animelist_") and f.endswith(".gz")
@@ -161,3 +162,10 @@ class ExportDownloader:
             with gzip.open(archive_path, "rb") as gz_in:
                 with target.open("wb") as f:
                     shutil.copyfileobj(gz_in, f)
+
+        if self._unlink_temp_gz_files:
+            for f in self._list_files():
+                gz_file = os.path.join(TEMP_DOWNLOAD_DIR, f)
+                if os.path.isfile(gz_file):  # acts as an os.path.exists check
+                    logger.debug(f"Unlinking {gz_file}")
+                    os.unlink(gz_file)
