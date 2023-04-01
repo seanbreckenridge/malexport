@@ -164,8 +164,8 @@ class ExportDownloader:
                     shutil.copyfileobj(gz_in, f)
 
         if self._unlink_temp_gz_files:
-            for f in self._list_files():
-                gz_file = os.path.join(TEMP_DOWNLOAD_DIR, f)
+            for gzf in self._list_files():
+                gz_file = os.path.join(TEMP_DOWNLOAD_DIR, gzf)
                 if os.path.isfile(gz_file):  # acts as an os.path.exists check
                     logger.debug(f"Unlinking {gz_file}")
                     os.unlink(gz_file)
