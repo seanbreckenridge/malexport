@@ -57,6 +57,7 @@ class ExportDownloader:
         self.export_with_retry(ListType.ANIME)
         self.export_with_retry(ListType.MANGA)
         self.extract_gz_files()
+        self.cleanup_gz_files()
 
     def export_with_retry(self, list_type: ListType, *, times: int = 0) -> None:
         """
@@ -163,9 +164,12 @@ class ExportDownloader:
                 with target.open("wb") as f:
                     shutil.copyfileobj(gz_in, f)
 
-        if self._unlink_temp_gz_files:
-            for gzf in self._list_files():
-                gz_file = os.path.join(TEMP_DOWNLOAD_DIR, gzf)
-                if os.path.isfile(gz_file):  # acts as an os.path.exists check
-                    logger.debug(f"Unlinking {gz_file}")
-                    os.unlink(gz_file)
+    def cleanup_gz_files(self) -> None:
+        if self._unlink_temp_gz_files is False:
+            return
+
+        for gzf in self._list_files():
+            gz_file = os.path.join(TEMP_DOWNLOAD_DIR, gzf)
+            if os.path.isfile(gz_file):  # acts as an os.path.exists check
+                logger.debug(f"Unlinking {gz_file}")
+                os.unlink(gz_file)
