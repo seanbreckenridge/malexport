@@ -148,7 +148,7 @@ Otherwise, this acts on the data files (Reminder that data by default is stored 
 }
 ```
 
-If you want exact dates, I'd recommend using the `xml` export, as theres some estimation that has to done for the `list` export since the dates aren't absolute (e.g. `04-09-20` could be `2020` or `1920`
+If you want exact dates, I'd recommend using the `xml` export, as theres some estimation that has to done for the `list` export since the dates aren't absolute (e.g. `04-09-20` could be `2020` or `1920`)
 
 `malexport parse forum -u malUsername` extracts posts made by your user to JSON
 

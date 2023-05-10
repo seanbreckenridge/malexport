@@ -6,6 +6,7 @@ export and history modules into data I find useful
 import os
 from typing import Dict, List, NamedTuple, Optional, TypeVar, Tuple, Union, Set
 from pathlib import Path
+from datetime import date
 
 from ..list_type import ListType
 from ..log import logger
@@ -32,6 +33,18 @@ class AnimeData(NamedTuple):
     JSONList: Optional[AnimeEntry]
     APIList: Optional[Entry]
     username: str
+
+    @property
+    def start_date(self) -> Optional[date]:
+        if self.JSONList:
+            return self.JSONList.start_date
+        return None
+
+    @property
+    def finish_date(self) -> Optional[date]:
+        if self.JSONList:
+            return self.JSONList.finish_date
+        return None
 
     @property
     def id(self) -> int:
@@ -61,6 +74,17 @@ class MangaData(NamedTuple):
             return split_tags(self.JSONList.tags)
         return []
 
+    @property
+    def start_date(self) -> Optional[date]:
+        if self.JSONList:
+            return self.JSONList.start_date
+        return None
+
+    @property
+    def finish_date(self) -> Optional[date]:
+        if self.JSONList:
+            return self.JSONList.finish_date
+        return None
 
 CombineResults = Tuple[List[AnimeData], List[MangaData]]
 
