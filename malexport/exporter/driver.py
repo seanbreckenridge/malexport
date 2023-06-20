@@ -7,6 +7,7 @@ import time
 import tempfile
 import random
 import atexit
+import shutil
 from pathlib import Path
 from functools import lru_cache
 from typing import Optional, Dict, Any, Union
@@ -56,9 +57,10 @@ def webdriver(browser_type: str) -> Union[sel.Chrome, sel.Firefox]:
         options.add_experimental_option(
             "prefs", {"download.default_directory": str(TEMP_DOWNLOAD_DIR)}
         )
+        if CHROME_LOCATION is not None:
+            options.binary_location = CHROME_LOCATION
         driver = sel.Chrome(
-            chrome_options=options,
-            executable_path=CHROME_LOCATION or "chromedriver",
+            options=options,
             **CHROME_KWARGS,
         )
         # quit when python exits to avoid hanging browsers

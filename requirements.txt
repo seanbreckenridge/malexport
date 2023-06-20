@@ -3,7 +3,7 @@ logzero
 requests
 backoff>=2.0.0
 PyYaml
-selenium>=4.3.0
+selenium>=4.10.0
 lxml
 cssselect
 simplejson

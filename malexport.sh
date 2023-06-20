@@ -44,7 +44,7 @@ mal_xml_status_ids() {
 	malexport parse xml "${MALEXPORT_DIR}/${MAL_USERNAME}"/"${mtype}"list.xml | jq "$(printf '.entries | .[] | select(.status == "%s")' "$st")" -r | jq ".${mtype}_id" | sort
 }
 
-# e.g. mal_list 'Dropped' | mal_filter_unscored | mal_describe
+# e.g. mal_status Dropped | mal_filter_unscored | mal_describe
 mal_filter_unscored() {
 	jq 'select(.score != 0)'
 }
