@@ -2,7 +2,7 @@ import os
 import time
 import warnings
 import datetime
-from typing import Any, Generator, Optional, Callable, Type, cast, Sequence
+from typing import Any, Generator, Optional, Callable, Type, cast, Sequence, Union
 from urllib.parse import urlparse, parse_qs
 
 import requests
@@ -110,7 +110,7 @@ def serialize(data: Any) -> str:
         )
 
 
-def extract_query_value(url: str | None, param: str | None) -> str:
+def extract_query_value(url: Union[str, None], param: Union[str, None]) -> str:
     assert url is not None, "missing URL to extract query value from"
     assert param is not None, "missing parameter to extract from URL"
     query_list = parse_qs(urlparse(url).query)[param]

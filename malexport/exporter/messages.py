@@ -9,7 +9,7 @@ import os
 import json
 import time
 from pathlib import Path
-from typing import List, Optional, Dict, Iterator, Any, Tuple
+from typing import List, Optional, Dict, Iterator, Any, Tuple, Union
 
 import dateparser
 import more_itertools
@@ -66,7 +66,7 @@ class MessageDownloader:
             s = s[len("re:") :]
         return s.strip()
 
-    def _extract_details(self, html_details: str | None) -> Json:
+    def _extract_details(self, html_details: Union[str, None]) -> Json:
         """
         Given the HTML div which contains the container for messages,
         parse it into JSON

@@ -12,7 +12,7 @@ import time
 import atexit
 from itertools import islice
 from pathlib import Path
-from typing import Tuple, List, Set, Optional, Iterable, Dict, Any
+from typing import Tuple, List, Set, Optional, Iterable, Dict, Any, Union
 from datetime import datetime
 
 from lxml import html as ht  # type: ignore[import]
@@ -55,7 +55,7 @@ CHAPTER_COL_REGEX = re.compile(
 )
 
 
-def _extract_column_data(col_html: str | None | Any, list_type: ListType) -> Tuple[int, int]:
+def _extract_column_data(col_html: Union[str, None, Any], list_type: ListType) -> Tuple[int, int]:
     """
     Returns the episode/chapter number and the date as epoch time
     """
