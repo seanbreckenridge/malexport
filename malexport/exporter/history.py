@@ -55,10 +55,11 @@ CHAPTER_COL_REGEX = re.compile(
 )
 
 
-def _extract_column_data(col_html: str, list_type: ListType) -> Tuple[int, int]:
+def _extract_column_data(col_html: str | None | Any, list_type: ListType) -> Tuple[int, int]:
     """
     Returns the episode/chapter number and the date as epoch time
     """
+    assert isinstance(col_html, str), f"Expected string, got {type(col_html)}"
     chosen_regex = (
         EPISODE_COL_REGEX if list_type == ListType.ANIME else CHAPTER_COL_REGEX
     )
@@ -197,17 +198,20 @@ class HistoryManager:
         x = ht.fromstring(html_details)
         # parse the header
         header = x.xpath('.//div[contains(text(), "Details")]')
+        assert isinstance(header, list)
         assert (
             len(header) == 1
         ), f"Found {len(header)} elements while searching for header, expected 1"
         # split tokens and remove last two (Chapter Details or Episode Details)
-        title = header[0].text.strip()
+        assert isinstance(header[0].text, str)  # type: ignore[union-attr]
+        title = header[0].text.strip()  # type: ignore[union-attr]
         title = " ".join(title.split(" ")[:-2]).strip()
         data: Dict[str, Any] = {"title": title}
         # parse episodes/chapters; fine even if there are no episode/chapter elements
         episode_elements = x.xpath(f'.//div[starts-with(@id, "{self.idprefix}")]')
+        assert isinstance(episode_elements, list)
         episodes = [
-            list(_extract_column_data(ep.text, self.list_type))
+            list(_extract_column_data(ep.text, self.list_type))  # type: ignore[union-attr]
             for ep in episode_elements
         ]
         # sort by date, most recent first
@@ -230,11 +234,16 @@ class HistoryManager:
         self.driver.get(history_url)
         wait()
         content_div = self.driver.find_element(By.CSS_SELECTOR, "div#content")
-        x = ht.fromstring(content_div.get_attribute("innerHTML"))
+        content_div_html = content_div.get_attribute("innerHTML")
+        assert isinstance(content_div_html, str)
+        x = ht.fromstring(content_div_html)
         found_ids: List[int] = []
-        for el in x.xpath(
+        hist_items = x.xpath(
             f'.//a[starts-with(@href, "/{self.list_type.value}.php?id=")]'
-        ):
+        )
+        assert isinstance(hist_items, list)
+        for el in hist_items:
+            assert isinstance(el, ht.HtmlElement)
             new_id = int(extract_query_value(el.attrib["href"], "id"))
             if new_id not in found_ids:
                 found_ids.append(new_id)
@@ -263,7 +272,9 @@ class HistoryManager:
         assert (
             details is not None
         ), f"Couldn't find details (header) div for {self.list_type.value} {entry_id} {url}"
-        new_data = self._extract_details(details.get_attribute("innerHTML"))
+        innerHtml = details.get_attribute("innerHTML")
+        assert innerHtml is not None, "Couldn't get innerHTML for details div"
+        new_data = self._extract_details(innerHtml)
         return new_data
 
     def update_entry_data(self, entry_id: int) -> bool:

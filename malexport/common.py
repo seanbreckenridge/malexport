@@ -110,6 +110,8 @@ def serialize(data: Any) -> str:
         )
 
 
-def extract_query_value(url: str, param: str) -> str:
+def extract_query_value(url: str | None, param: str | None) -> str:
+    assert url is not None, "missing URL to extract query value from"
+    assert param is not None, "missing parameter to extract from URL"
     query_list = parse_qs(urlparse(url).query)[param]
     return query_list[0]

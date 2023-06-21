@@ -92,7 +92,7 @@ class ExportDownloader:
             self.driver.get(EXPORT_PAGE)
         export_button_selector = tuple([By.CSS_SELECTOR, EXPORT_BUTTON_CSS])
         WebDriverWait(self.driver, 15).until(  # type: ignore[no-untyped-call]
-            EC.visibility_of_element_located(export_button_selector)  # type: ignore[no-untyped-call]
+            EC.visibility_of_element_located(export_button_selector)  # type: ignore[no-untyped-call,arg-type]
         )
         if list_type == ListType.MANGA:
             self.driver.execute_script("""$("#dialog select.inputtext").val(2)""")  # type: ignore[no-untyped-call]
@@ -110,7 +110,7 @@ class ExportDownloader:
         try:
             # hmm -- this page seems to be there sometimes, but not others?
             WebDriverWait(self.driver, 5).until(  # type: ignore[no-untyped-call]
-                EC.element_to_be_clickable(download_button_selector)  # type: ignore[no-untyped-call]
+                EC.element_to_be_clickable(download_button_selector)  # type: ignore[no-untyped-call,arg-type]
             )
             self.driver.find_element(By.CSS_SELECTOR, DOWNLOAD_BUTTON).click()
         except TimeoutException:

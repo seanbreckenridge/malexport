@@ -66,27 +66,31 @@ class MessageDownloader:
             s = s[len("re:") :]
         return s.strip()
 
-    def _extract_details(self, html_details: str) -> Json:
+    def _extract_details(self, html_details: str | None) -> Json:
         """
         Given the HTML div which contains the container for messages,
         parse it into JSON
 
         """
+        assert html_details is not None, "html_details for thread is None"
         hx = ht.fromstring(html_details)
         table = hx.cssselect("table.pmessage-message-history")[0]
         subject = hx.cssselect(".dialog-text .mb4")[-1]
         data: Dict[str, Any] = {
             "messages": [],
-            "subject": self._fix_subject(subject.text_content()),
+            "subject": self._fix_subject(subject.text_content()),  # type: ignore[attr-defined]
         }
         for row in table.cssselect("tr"):
             date_td = row.cssselect("td.date")[0]
             username_td = row.cssselect("td.name")[0]
             content_td = row.cssselect("td.subject")[0]
+            assert date_td is not None, "date_td is None"
+            assert username_td is not None, "username_td is None"
+            assert content_td is not None, "content_td is None"
             data["messages"].append(
                 {
-                    "username": username_td.text_content().strip(),
-                    "dt": dateparse_to_epoch(date_td.text_content()),
+                    "username": username_td.text_content().strip(),  # type: ignore[attr-defined]
+                    "dt": dateparse_to_epoch(date_td.text_content()),  # type: ignore[attr-defined]
                     "content": etree.tostring(content_td).decode("utf-8").strip(),
                 }
             )
@@ -146,6 +150,8 @@ class MessageDownloader:
             By.PARTIAL_LINK_TEXT, "View Message History"
         )
         thread_url = thread_link.get_attribute("href")
+        logger.debug(f"Thread URL is {thread_url}")
+        assert thread_url is not None, "Could not find thread URL"
         self.driver.get(thread_url)
         wait()
         return int(str(extract_query_value(thread_url, "threadid")))
@@ -161,8 +167,10 @@ class MessageDownloader:
             return False
         p = self.entry_path(thread_id)
         # at this point, we're already on the thread page
+        thread_content = self.driver.find_element(By.ID, "content")
+        assert thread_content is not None, "Could not find thread div with ID 'content'"
         new_data = self._extract_details(
-            self.driver.find_element(By.ID, "content").get_attribute("innerHTML")
+            thread_content.get_attribute("innerHTML")
         )
         # assume this is new data
         has_new_data = True
