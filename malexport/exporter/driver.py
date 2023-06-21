@@ -15,6 +15,7 @@ from typing import Optional, Dict, Any, Union
 import click
 from selenium import webdriver as sel
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.webdriver import WebDriver as Firefox  # type: ignore[import]
 
 from ..paths import LocalDir, _expand_path
@@ -69,9 +70,11 @@ def webdriver(browser_type: str) -> Union[sel.Chrome, sel.Firefox]:
     else:
         # mostly added to get around this bug https://github.com/SeleniumHQ/selenium/issues/10799
         # which seems to happen on chromedriver 103 while fetching history
-        # hmm -- why is mypy complaining untyped? LSP seems to take me to webdriver definition
-        ff = Firefox(  # type: ignore[no-untyped-call]
-            service_log_path=os.path.join(tempfile.gettempdir(), "geckodriver.log")
+        service = Service(
+            log_path=os.path.join(tempfile.gettempdir(), "geckodriver.log")
+        )
+        ff = Firefox(
+            service=service,
         )
         atexit.register(lambda: ff.quit())
         return ff
