@@ -22,7 +22,7 @@ from selenium.webdriver.support import expected_conditions as EC  # type: ignore
 
 from ..list_type import ListType
 from .mal_list import MalList
-from .driver import webdriver, driver_login, wait
+from .driver import webdriver, driver_login, wait, Browser
 from .export_downloader import ExportDownloader
 from ..log import logger
 from ..paths import LocalDir, _expand_path
@@ -132,10 +132,10 @@ class HistoryManager:
         )
         self.idprefix = "chaprow" if self.list_type == ListType.MANGA else "eprow"
         self.driver_type = driver_type
-        self._driver = None
+        self._driver: Optional[Browser] = None
 
     @property
-    def driver(self):
+    def driver(self) -> Browser:
         if self._driver is None:
             self._driver = webdriver(self.driver_type)
         return self._driver
