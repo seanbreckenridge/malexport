@@ -86,6 +86,7 @@ class MangaData(NamedTuple):
             return self.JSONList.finish_date
         return None
 
+
 CombineResults = Tuple[List[AnimeData], List[MangaData]]
 
 

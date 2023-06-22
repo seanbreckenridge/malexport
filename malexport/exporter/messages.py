@@ -169,9 +169,7 @@ class MessageDownloader:
         # at this point, we're already on the thread page
         thread_content = self.driver.find_element(By.ID, "content")
         assert thread_content is not None, "Could not find thread div with ID 'content'"
-        new_data = self._extract_details(
-            thread_content.get_attribute("innerHTML")
-        )
+        new_data = self._extract_details(thread_content.get_attribute("innerHTML"))
         # assume this is new data
         has_new_data = True
         if p.exists():
