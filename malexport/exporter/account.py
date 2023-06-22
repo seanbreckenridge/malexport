@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from ..paths import LocalDir
 from ..list_type import ListType
@@ -34,13 +34,13 @@ class Account:
         self._shared_driver: Optional[Browser] = None
 
     @property
-    def shared_driver(self) -> Browser | None:
+    def shared_driver(self) -> Union[Browser, None]:
         if self._shared_driver is None:
             return None
         return self._shared_driver
 
     @shared_driver.setter
-    def shared_driver(self, driver: Browser | None) -> None:
+    def shared_driver(self, driver: Union[Browser, None]) -> None:
         # dont overwrite if already set
         if driver is None or self._shared_driver is not None:
             return
