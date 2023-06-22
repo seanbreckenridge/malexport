@@ -55,7 +55,9 @@ CHAPTER_COL_REGEX = re.compile(
 )
 
 
-def _extract_column_data(col_html: Union[str, None, Any], list_type: ListType) -> Tuple[int, int]:
+def _extract_column_data(
+    col_html: Union[str, None, Any], list_type: ListType
+) -> Tuple[int, int]:
     """
     Returns the episode/chapter number and the date as epoch time
     """
@@ -130,7 +132,13 @@ class HistoryManager:
         )
         self.idprefix = "chaprow" if self.list_type == ListType.MANGA else "eprow"
         self.driver_type = driver_type
-        self.driver = webdriver(self.driver_type)
+        self._driver = None
+
+    @property
+    def driver(self):
+        if self._driver is None:
+            self._driver = webdriver(self.driver_type)
+        return self._driver
 
     def authenticate(self) -> None:
         """Logs in to MAL using your MAL username/password"""

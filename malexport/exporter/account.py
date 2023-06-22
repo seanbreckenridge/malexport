@@ -10,6 +10,7 @@ from .forum import ForumManager
 from .export_downloader import ExportDownloader
 from .friends import FriendDownloader
 from .messages import MessageDownloader
+from .driver import Browser
 
 
 class Account:
@@ -30,6 +31,20 @@ class Account:
         self.export_downloader: Optional[ExportDownloader] = None
         self.friend_downloader: Optional[FriendDownloader] = None
         self.message_manager: Optional[MessageDownloader] = None
+        self._shared_driver: Optional[Browser] = None
+
+    @property
+    def shared_driver(self) -> Browser | None:
+        if self._shared_driver is None:
+            return None
+        return self._shared_driver
+
+    @shared_driver.setter
+    def shared_driver(self, driver: Browser | None) -> None:
+        # dont overwrite if already set
+        if driver is None or self._shared_driver is not None:
+            return
+        self._shared_driver = driver
 
     def mal_api_authenticate(self) -> MalSession:
         """
@@ -94,7 +109,12 @@ class Account:
         Requires authentication (MAL Username/Password)
         """
         self.export_downloader = ExportDownloader(self.localdir)
+        # if driver is already set, use it
+        if self.shared_driver is not None:
+            self.export_downloader._driver = self.shared_driver
         self.export_downloader.export_lists()
+        # run setter to save the authd driver if not already set
+        self.shared_driver = self.export_downloader._driver
 
     def update_history(
         self,
@@ -121,10 +141,17 @@ class Account:
             driver_type=driver_type,
             use_merged_file=use_merged_file,
         )
+        # if we have an authenticated driver already, use it
+        if self.shared_driver is not None:
+            self.anime_episode_history._driver = self.shared_driver
+            self.manga_chapter_history._driver = self.shared_driver
         if only == ListType.ANIME or only is None:
             self.anime_episode_history.update_history(count=count)
         if only == ListType.MANGA or only is None:
             self.manga_chapter_history.update_history(count=count)
+        # if driver was set here, save it
+        self.shared_driver = self.anime_episode_history._driver
+        self.shared_driver = self.manga_chapter_history._driver
 
     def update_messages(
         self, start_page: int = 1, thread_count: Optional[int] = None
