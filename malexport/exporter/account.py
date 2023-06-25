@@ -108,7 +108,8 @@ class Account:
         Uses selenium to export/extract the XML files from MAL.
         Requires authentication (MAL Username/Password)
         """
-        self.export_downloader = ExportDownloader(self.localdir)
+        if self.export_downloader is None:
+            self.export_downloader = ExportDownloader(self.localdir)
         # if driver is already set, use it
         if self.shared_driver is not None:
             self.export_downloader._driver = self.shared_driver
@@ -129,18 +130,20 @@ class Account:
         This takes quite a while, and requires authentication (MAL Username/Password)
         If count is specified, only requests the first 'count' IDs found in your history
         """
-        self.anime_episode_history = HistoryManager(
-            list_type=ListType.ANIME,
-            localdir=self.localdir,
-            driver_type=driver_type,
-            use_merged_file=use_merged_file,
-        )
-        self.manga_chapter_history = HistoryManager(
-            list_type=ListType.MANGA,
-            localdir=self.localdir,
-            driver_type=driver_type,
-            use_merged_file=use_merged_file,
-        )
+        if self.anime_episode_history is None:
+            self.anime_episode_history = HistoryManager(
+                list_type=ListType.ANIME,
+                localdir=self.localdir,
+                driver_type=driver_type,
+                use_merged_file=use_merged_file,
+            )
+        if self.manga_chapter_history is None:
+            self.manga_chapter_history = HistoryManager(
+                list_type=ListType.MANGA,
+                localdir=self.localdir,
+                driver_type=driver_type,
+                use_merged_file=use_merged_file,
+            )
         # if we have an authenticated driver already, use it
         if self.shared_driver is not None:
             self.anime_episode_history._driver = self.shared_driver
@@ -159,10 +162,11 @@ class Account:
         """
         Download/Update DMs for your account
         """
-        self.message_manager = MessageDownloader(
-            self.localdir,
-            till_same_limit=thread_count,
-        )
+        if self.message_manager is None:
+            self.message_manager = MessageDownloader(
+                self.localdir,
+                till_same_limit=thread_count,
+            )
         self.message_manager.update_messages(start_page=start_page)
 
     def update_forum_posts(self) -> None:
@@ -176,9 +180,10 @@ class Account:
         """
         self.mal_api_authenticate()
         assert self.mal_session is not None
-        self.forum_manager = ForumManager(
-            localdir=self.localdir, mal_session=self.mal_session
-        )
+        if self.forum_manager is None:
+            self.forum_manager = ForumManager(
+                localdir=self.localdir, mal_session=self.mal_session
+            )
         self.forum_manager.update_forum_index()
         self.forum_manager.update_changed_forum_posts()
 
@@ -186,5 +191,6 @@ class Account:
         """
         Uses Jikan to download your friends from MAL
         """
-        self.friend_downloader = FriendDownloader(localdir=self.localdir)
+        if self.friend_downloader is None:
+            self.friend_downloader = FriendDownloader(localdir=self.localdir)
         self.friend_downloader.update_friend_index()

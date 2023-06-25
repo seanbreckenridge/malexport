@@ -11,8 +11,9 @@ import json
 import time
 import atexit
 from itertools import islice
+from functools import lru_cache
 from pathlib import Path
-from typing import Tuple, List, Set, Optional, Iterable, Dict, Any, Union
+from typing import Tuple, List, Set, Optional, Iterable, Dict, Any, Union, Set
 from datetime import datetime
 
 from lxml import html as ht  # type: ignore[import]
@@ -116,7 +117,7 @@ class HistoryManager:
                 self.merged_data = json.loads(self.history_path.read_text())
             else:
                 self.merged_data = {}
-            self._register_atexit()
+            _register_atexit(self.history_path, self)
         else:
             logger.debug("Using individual history files...")
             self.history_path = _expand_path(
@@ -188,11 +189,12 @@ class HistoryManager:
 
     def _save_merged_file(self) -> None:
         data = serialize(self.merged_data)
-        logger.debug(f"Writing merged JSON file: {self.history_path}")
+        assert self.merged_data is not None
+        total_eps = sum(len(v.get("episodes", [])) for v in self.merged_data.values())
+        logger.debug(
+            f"Writing merged JSON file: {self.history_path}, total {'episode' if self.list_type == ListType.ANIME else 'chapter'} count: {total_eps}"
+        )
         self.history_path.write_text(data)
-
-    def _register_atexit(self) -> None:
-        atexit.register(lambda: self._save_merged_file())
 
     def _extract_details(self, html_details: str) -> Json:
         """
@@ -379,3 +381,15 @@ class HistoryManager:
         for mal_id in recent_history:
             self.update_entry_data(mal_id)
         self._save_merged_file()
+
+
+REGSITERED: Set[Path] = set()
+
+
+def _register_atexit(path: Path, manager: HistoryManager) -> None:
+    if path in REGSITERED:
+        logger.debug(f"Already registered {path} to write when exiting")
+        return
+    REGSITERED.add(path)
+    logger.debug(f"Registering {path} for atexit")
+    atexit.register(lambda: manager._save_merged_file())
