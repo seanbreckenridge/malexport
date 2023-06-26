@@ -11,9 +11,8 @@ import json
 import time
 import atexit
 from itertools import islice
-from functools import lru_cache
 from pathlib import Path
-from typing import Tuple, List, Set, Optional, Iterable, Dict, Any, Union, Set
+from typing import Tuple, List, Optional, Iterable, Dict, Any, Union, Set
 from datetime import datetime
 
 from lxml import html as ht  # type: ignore[import]

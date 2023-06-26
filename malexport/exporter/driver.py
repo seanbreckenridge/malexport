@@ -7,7 +7,6 @@ import time
 import tempfile
 import random
 import atexit
-import shutil
 from pathlib import Path
 from functools import lru_cache
 from typing import Optional, Dict, Any, Union
