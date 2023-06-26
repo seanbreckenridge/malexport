@@ -52,6 +52,23 @@ class AnimeData(NamedTuple):
         return seconds
 
     @property
+    def watched_seconds(self) -> int:
+        if (
+            self.XMLData is None
+            or self.APIList is None
+            or self.APIList.average_episode_duration is None
+            or self.XMLData.watched_episodes is None
+        ):
+            return 0
+        watched_time = (
+            self.XMLData.watched_episodes * self.APIList.average_episode_duration
+        )
+        # if Ive rewatched, add time for that
+        if self.XMLData.times_watched > 0 and self.runtime is not None:
+            watched_time += self.XMLData.times_watched * self.runtime
+        return watched_time
+
+    @property
     def start_date(self) -> Optional[date]:
         if self.JSONList:
             return self.JSONList.start_date
