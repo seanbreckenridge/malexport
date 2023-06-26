@@ -35,6 +35,23 @@ class AnimeData(NamedTuple):
     username: str
 
     @property
+    def runtime(self) -> Optional[int]:
+        """
+        Returns the total runtime of the anime in seconds, or None if couldnt be computed
+        """
+        if (
+            self.APIList is None
+            or self.XMLData is None
+            or self.XMLData.episodes is None
+            or self.APIList.average_episode_duration is None
+        ):
+            return None
+        seconds = self.XMLData.episodes * self.APIList.average_episode_duration
+        if seconds == 0:
+            return None
+        return seconds
+
+    @property
     def start_date(self) -> Optional[date]:
         if self.JSONList:
             return self.JSONList.start_date
