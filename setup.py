@@ -26,6 +26,7 @@ setup(
             "mypy",
         ],
         "recover": ["hpi"],
+        "extras": ["autotui", "pyfzf_iter"],
     },
     classifiers=[
         "License :: OSI Approved :: MIT License",

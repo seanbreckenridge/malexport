@@ -144,6 +144,23 @@ def combine(username: str, data_dir: Optional[Path] = None) -> CombineResults:
             assert h.mal_id not in manga_history
             manga_history[h.mal_id] = h
 
+    manual_anime_history: Dict[int, History] = {}
+    manual_manga_history: Dict[int, History] = {}
+
+    # read manual history
+    manual_history_file = data_dir / "manual_history.yaml"
+    if manual_history_file.exists():
+        from .history import parse_manual_history
+
+        for h in parse_manual_history(manual_history_file):
+            if h.list_type == "anime":
+                # make sure groupby worked
+                assert h.mal_id not in manual_anime_history
+                manual_anime_history[h.mal_id] = h
+            else:
+                assert h.mal_id not in manual_manga_history
+                manual_manga_history[h.mal_id] = h
+
     # theres a possibility that the JSON exports don't
     # exist, because of private lists
     animelist_json_data: Dict[int, AnimeEntry] = {}
@@ -199,6 +216,9 @@ def combine(username: str, data_dir: Optional[Path] = None) -> CombineResults:
         if mal_id in anime_history:
             anime_hist = anime_history[mal_id].entries
             anime_history.pop(mal_id)  # remove from anime history dict
+        if mal_id in manual_anime_history:
+            anime_hist += manual_anime_history[mal_id].entries
+            manual_anime_history.pop(mal_id)
 
         anime_combined_data[mal_id] = AnimeData(
             username=username,
@@ -214,6 +234,9 @@ def combine(username: str, data_dir: Optional[Path] = None) -> CombineResults:
         if mal_id in manga_history:
             manga_hist = manga_history[mal_id].entries
             manga_history.pop(mal_id)  # remove from manga history dict
+        if mal_id in manual_manga_history:
+            manga_hist += manual_manga_history[mal_id].entries
+            manual_manga_history.pop(mal_id)
 
         manga_combined_data[mal_id] = MangaData(
             username=username,

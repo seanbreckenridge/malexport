@@ -247,3 +247,20 @@ python3 -m malexport recover-deleted recover -F \
 ```
 
 None of those IDs exist anymore on MAL, so these backups are the only way to get metadata or my history/data for them
+
+### manual-history
+
+The `manual-history` command lets you locally save episode/chapter (history) data for anime or manga.
+
+Since its not trivial to mark a single episode as watched on MAL; you have to:
+
+- go to the anime page
+- update the entry to the episode you watched
+- then, reset the episode count to completed
+- then, go to advanced edit, click the 'History' button and remove the latest entry created by you resetting the episode count
+
+Sometimes I just rewatch particular episodes and not an entire show, this lets me do that and save that to a file.
+
+That requires `autotui` and `pyfzf`, which can be installed with `malexport[extras]`
+
+There is a `parse` command to parse the manual history file, and its combined into the `history` data when using `combine`

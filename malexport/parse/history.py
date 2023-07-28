@@ -80,6 +80,34 @@ def parse_history_dir(
         )
 
 
+def parse_manual_history(history_file: Path) -> Iterator[History]:
+    import itertools
+    import autotui.shortcuts
+    from ..manual_episode import Data
+
+    if not history_file.exists():
+        return
+
+    data = autotui.shortcuts.load_from(Data, history_file)
+    data.sort(key=lambda x: x.id)
+    # group by episode number
+    for mal_id, entries in itertools.groupby(data, lambda x: x.id):
+        entries = list(entries)
+        first = entries[0]
+        yield History(
+            list_type=first.entry_type.value,
+            mal_id=mal_id,
+            title=first.title,
+            entries=[
+                HistoryEntry(
+                    at=entry.at,
+                    number=entry.number,
+                )
+                for entry in entries
+            ],
+        )
+
+
 def _parse_history_data(history_data: Any) -> Tuple[str, List[HistoryEntry]]:
     entries: List[HistoryEntry] = []
     for entry_data in history_data["episodes"]:

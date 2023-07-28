@@ -1,7 +1,7 @@
 import os
 import sys
 from pathlib import Path
-from typing import Callable, Optional, Any
+from typing import Callable, Optional, Any, Sequence
 
 import click
 
@@ -286,6 +286,18 @@ def _forum_parse(username: str) -> None:
     click.echo(serialize(list(iter_forum_posts(username))))
 
 
+@parse.command(name="manual-history", short_help="parse manually entered user history")
+@apply_shared(USERNAME)
+def _manual_history_parse(username: str) -> None:
+    from .parse.history import parse_manual_history
+    from .paths import LocalDir
+    from .common import serialize
+
+    localdir = LocalDir.from_username(username)
+    data = list(parse_manual_history(localdir.data_dir / "manual_history.yaml"))
+    click.echo(serialize(data))
+
+
 @parse.command(
     name="combine", short_help="combines lists, api-lists, xml and history data"
 )
@@ -448,6 +460,77 @@ def recover(data_dir: Path, filter_with_activity: bool, only: str) -> None:
 
         full_resp[username] = resp
     click.echo(serialize(full_resp))
+
+
+@main.command(short_help="add a history episode manually")
+@apply_shared(USERNAME)
+@click.option(
+    "-t",
+    "--type",
+    "type_",
+    type=click.Choice(["anime", "manga"]),
+    default="anime",
+    help="type of entry to add",
+)
+@click.option(
+    "--at",
+    type=int,
+    default=None,
+    help="unix timestamp of when you watched/read this episode/chapter",
+)
+@click.option(
+    "-i",
+    "--id",
+    type=int,
+    required=False,
+    help="ID to add",
+    default=None,
+)
+@click.option(
+    "-l",
+    "--loop",
+    is_flag=True,
+    default=False,
+    help="Add multiple episodes/chapters",
+)
+@click.option(
+    "-n", "--number", type=int, default=None, help="Which episode/chapter to add"
+)
+@click.argument("ARGS", nargs=-1)
+def manual_history(
+    username: str,
+    type_: str,
+    at: int,
+    id: Optional[int],
+    args: Sequence[str],
+    loop: bool,
+    number: Optional[int],
+) -> None:
+    """
+    This lets you add to your user history manually, for example if you
+    watched one episode but dont want to mess with MAL to mark just that
+    one episode as watched.
+    """
+    from datetime import datetime, timezone
+    from .manual_episode import add_to_history
+
+    entry_type = ListType.ANIME if type_ == "anime" else ListType.MANGA
+    while True:
+        item = add_to_history(
+            username=username,
+            entry_type=entry_type,
+            at=datetime.fromtimestamp(at, tz=timezone.utc) if at else None,
+            id=id,
+            query_args=args,
+            number=number,
+        )
+        if item:
+            click.echo(f"Added: {item}", err=True)
+        if loop:
+            if not click.confirm("Add another episode?", default=True):
+                break
+        else:
+            break
 
 
 if __name__ == "__main__":
