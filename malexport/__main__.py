@@ -1,7 +1,7 @@
 import os
 import sys
 from pathlib import Path
-from typing import Callable, Optional, Any, Sequence
+from typing import Callable, Optional, Any, Sequence, Literal, List
 
 import click
 
@@ -288,14 +288,37 @@ def _forum_parse(username: str) -> None:
 
 @parse.command(name="manual-history", short_help="parse manually entered user history")
 @apply_shared(USERNAME)
-def _manual_history_parse(username: str) -> None:
-    from .parse.history import parse_manual_history
+@click.option(
+    "-o",
+    "--output",
+    type=click.Choice(["json", "markdown"]),
+    help="output format. Defaults to json",
+    default="json",
+)
+def _manual_history_parse(username: str, output: Literal["json", "markdown"]) -> None:
+    from .parse.history import parse_manual_history, History
     from .paths import LocalDir
     from .common import serialize
 
     localdir = LocalDir.from_username(username)
-    data = list(parse_manual_history(localdir.data_dir / "manual_history.yaml"))
-    click.echo(serialize(data))
+    data: List[History] = list(
+        parse_manual_history(localdir.data_dir / "manual_history.yaml")
+    )
+
+    if output == "json":
+        click.echo(serialize(data))
+    else:
+        items = []
+        for hist in data:
+            for ent in hist.entries:
+                items.append((hist.title, hist.list_type, ent.number, ent.at))
+
+        items.sort(key=lambda x: x[3])
+
+        for title, list_type, number, at in items:
+            click.echo(
+                f"# {title}\n{'Episode' if list_type == 'anime' else 'Chapter'} {number} - {at}"
+            )
 
 
 @parse.command(
