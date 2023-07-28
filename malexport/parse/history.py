@@ -91,8 +91,8 @@ def parse_manual_history(history_file: Path) -> Iterator[History]:
     data = autotui.shortcuts.load_from(Data, history_file)
     data.sort(key=lambda x: x.id)
     # group by episode number
-    for mal_id, entries in itertools.groupby(data, lambda x: x.id):
-        entries = list(entries)
+    for mal_id, entries_gen in itertools.groupby(data, lambda x: x.id):
+        entries = list(entries_gen)
         first = entries[0]
         yield History(
             list_type=first.entry_type.value,
