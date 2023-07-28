@@ -19,7 +19,7 @@ For most people, this'll take a few hours to populate the initial cache, and the
 
 ## Installation
 
-Requires `python3.7+`
+Requires `python3.8+`
 
 To install with pip, run:
 
@@ -261,6 +261,6 @@ Since its not trivial to mark a single episode as watched on MAL; you have to:
 
 Sometimes I just rewatch particular episodes and not an entire show, this lets me do that and save that to a file.
 
-That requires `autotui` and `pyfzf`, which can be installed with `malexport[extras]`
+That requires `autotui` and `pyfzf`, which can be installed with `malexport[manual]`
 
 There is a `parse` command to parse the manual history file, and its combined into the `history` data when using `combine`
