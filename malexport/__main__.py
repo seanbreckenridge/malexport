@@ -308,6 +308,8 @@ def _manual_history_parse(username: str, output: Literal["json", "markdown"]) ->
     if output == "json":
         click.echo(serialize(data))
     else:
+        from datetime import datetime
+
         items = []
         for hist in data:
             for ent in hist.entries:
@@ -316,8 +318,9 @@ def _manual_history_parse(username: str, output: Literal["json", "markdown"]) ->
         items.sort(key=lambda x: x[3])
 
         for title, list_type, number, at in items:
+            ldt = datetime.fromtimestamp(at.timestamp())
             click.echo(
-                f"# {title}\n{'Episode' if list_type == 'anime' else 'Chapter'} {number} - {at}"
+                f"# {title}\n{'Episode' if list_type == 'anime' else 'Chapter'} {number} - {ldt}"
             )
 
 
