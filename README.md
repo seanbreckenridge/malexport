@@ -261,6 +261,6 @@ Since its not trivial to mark a single episode as watched on MAL; you have to:
 
 Sometimes I just rewatch particular episodes and not an entire show, this lets me do that and save that to a file.
 
-That requires `autotui` and `pyfzf`, which can be installed with `malexport[manual]`
+That requires `autotui` and `pyfzf-iter`, which can be installed with `malexport[manual]`
 
 There is a `parse` command to parse the manual history file, and its combined into the `history` data when using `combine`
