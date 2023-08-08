@@ -2,7 +2,7 @@
 
 import datetime
 from pathlib import Path
-from typing import NamedTuple, Iterator, Union, Sequence, List, Optional
+from typing import NamedTuple, Iterator, Sequence, List, Optional
 from functools import lru_cache
 
 import click
