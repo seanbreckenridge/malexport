@@ -2,7 +2,7 @@
 
 import datetime
 from pathlib import Path
-from typing import NamedTuple, Iterator, Sequence, List, Optional
+from typing import NamedTuple, Iterator, List, Optional
 from functools import lru_cache
 
 import click
@@ -38,12 +38,14 @@ class Picked(NamedTuple):
     title: str
 
 
-def pick_id(query_args: Sequence[str], xml_file: Path) -> Optional[Picked]:
+def pick_id(xml_file: Path) -> Optional[Picked]:
+    # If you want to set options for FZF, you can set the FZF_DEFAULT_OPTS environment variable like
+    # export FZF_DEFAULT_OPTS="--height 40% --reverse --border"
+    # or
+    # os.environ["FZF_DEFAULT_OPTS"] = "--height 40% --reverse --border"
     fzf = FzfPrompt()
     try:
-        query = " ".join(query_args)
-        fzf_args = ["--no-multi", f"--query='{query}'"] if query else ["--no-multi"]
-        resp = fzf.prompt(parse_ids(xml_file), *fzf_args)
+        resp = fzf.prompt(parse_ids(xml_file), "--no-multi")
         anime_id, name = first(resp).split(":", maxsplit=1)
         return Picked(int(anime_id), name.strip())
     except ValueError:
@@ -56,7 +58,6 @@ def add_to_history(
     username: str,
     id: Optional[int] = None,
     at: Optional[datetime.datetime] = None,
-    query_args: Sequence[str] = (),
     number: Optional[int] = None,
 ) -> Optional[Data]:
     data_dir = LocalDir.from_username(username).data_dir
@@ -67,7 +68,7 @@ def add_to_history(
         else data_dir / "mangalist.xml"
     )
     if not id:
-        picked = pick_id(query_args, xml_file=xml_file)
+        picked = pick_id(xml_file=xml_file)
         if not picked:
             return None
         id = picked.id

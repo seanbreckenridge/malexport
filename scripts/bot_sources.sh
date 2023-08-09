@@ -11,8 +11,16 @@ mal_sources_copy_vultr() {
 	evry 5 minutes -mal_sources_copy_vultr && scp vultr:~/'code/mal-notify-bot/export.json' "${HOME}/.cache/source_cache.json"
 }
 
-mal_aired_anime_ids() {
+_mal_aired_anime_ids_raw() {
+	# just get the IDs of the anime that have aired, out of the load.json JSON
 	mal_status 'Plan to Watch' | jq -r 'select(.airing_status != "Not Yet Aired") | .id'
+}
+
+mal_aired_anime_ids() {
+	# find the intersection between my PTW and the aired anime
+	# this way, I can update the XML file and things I drop from my PTW
+	# will no longer appear in the output here
+	comm -1 -2 <(mal_xml_status_ids 'Plan to Watch' | sort) <(_mal_aired_anime_ids_raw | sort)
 }
 
 # I use my PTW to track items that haven't aired yet

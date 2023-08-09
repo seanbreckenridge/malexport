@@ -522,13 +522,11 @@ def recover(data_dir: Path, filter_with_activity: bool, only: str) -> None:
 @click.option(
     "-n", "--number", type=int, default=None, help="Which episode/chapter to add"
 )
-@click.argument("ARGS", nargs=-1)
 def manual_history(
     username: str,
     type_: str,
     at: int,
     id: Optional[int],
-    args: Sequence[str],
     loop: bool,
     number: Optional[int],
 ) -> None:
@@ -547,7 +545,6 @@ def manual_history(
             entry_type=entry_type,
             at=datetime.fromtimestamp(at, tz=timezone.utc) if at else None,
             id=id,
-            query_args=args,
             number=number,
         )
         if item:
