@@ -291,11 +291,11 @@ def _forum_parse(username: str) -> None:
 @click.option(
     "-o",
     "--output",
-    type=click.Choice(["json", "markdown"]),
+    type=click.Choice(["json", "jsonl", "markdown"]),
     help="output format. Defaults to json",
     default="json",
 )
-def _manual_history_parse(username: str, output: Literal["json", "markdown"]) -> None:
+def _manual_history_parse(username: str, output: Literal["json", "jsonl", "markdown"]) -> None:
     from .parse.history import parse_manual_history, History
     from .paths import LocalDir
     from .common import serialize
@@ -307,6 +307,20 @@ def _manual_history_parse(username: str, output: Literal["json", "markdown"]) ->
 
     if output == "json":
         click.echo(serialize(data))
+    elif output == "jsonl":
+        for hist in data:
+            for ent in hist.entries:
+                click.echo(
+                    serialize(
+                        {
+                            "title": hist.title,
+                            "list_type": hist.list_type,
+                            "number": ent.number,
+                            "at": ent.at,
+                        }
+                    )
+                )
+
     else:
         from datetime import datetime
 
