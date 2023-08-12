@@ -295,7 +295,9 @@ def _forum_parse(username: str) -> None:
     help="output format. Defaults to json",
     default="json",
 )
-def _manual_history_parse(username: str, output: Literal["json", "jsonl", "markdown"]) -> None:
+def _manual_history_parse(
+    username: str, output: Literal["json", "jsonl", "markdown"]
+) -> None:
     from .parse.history import parse_manual_history, History
     from .paths import LocalDir
     from .common import serialize
@@ -534,7 +536,12 @@ def recover(data_dir: Path, filter_with_activity: bool, only: str) -> None:
     help="Add multiple episodes/chapters",
 )
 @click.option(
-    "-n", "--number", type=int, default=None, help="Which episode/chapter to add"
+    "-n",
+    "--number",
+    prompt=True,
+    required=True,
+    type=int,
+    help="Which episode/chapter to add",
 )
 def manual_history(
     username: str,
@@ -542,7 +549,7 @@ def manual_history(
     at: int,
     id: Optional[int],
     loop: bool,
-    number: Optional[int],
+    number: int,
 ) -> None:
     """
     This lets you add to your user history manually, for example if you

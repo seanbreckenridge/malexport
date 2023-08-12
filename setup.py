@@ -22,9 +22,7 @@ setup(
     keywords="",
     entry_points={"console_scripts": ["malexport = malexport.__main__:main"]},
     extras_require={
-        "testing": [
-            "mypy",
-        ],
+        "testing": ["mypy"],
         "recover": ["hpi"],
         "manual": ["autotui", "pyfzf_iter"],
     },
