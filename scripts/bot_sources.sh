@@ -98,10 +98,16 @@ mal_anime_links() {
 mal_sources_watch_next() {
 	mal_sources_copy_vultr
 	local RANDOM_NEXT_ID DATA
-	if [[ -n "$1" ]]; then
+	if [[ -n "$RANDOM_NEXT_ID" ]]; then
+		: # do nothing
+	elif [[ -n "$1" ]]; then
 		RANDOM_NEXT_ID="$1"
 	else
 		RANDOM_NEXT_ID="$(mal_sources_shared_ids | shuf -n1)"
+	fi
+	if [[ -z "$RANDOM_NEXT_ID" ]]; then
+		echo 'No ID found' >&2
+		return 1
 	fi
 	DATA="$(mal_list | jq "select(.id == $RANDOM_NEXT_ID)")"
 	echo "$DATA" | mal_describe
@@ -123,6 +129,8 @@ mal_sources_watch_next() {
 		else
 			CLIPBOARD_CONTENTS="${url}" stream-corner-1080
 			epoch >>~/.cache/mal_sources_watched_at
+			# open url in by browser
+			openurl "https://myanimelist.net/anime/${RANDOM_NEXT_ID}"
 		fi
 	done <<<"$urls"
 }
