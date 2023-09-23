@@ -174,7 +174,7 @@ class MessageDownloader:
         has_new_data = True
         if p.exists():
             old_data = json.loads(p.read_text())
-            # if these arent the same, the data has changed,
+            # if these aren't the same, the data has changed,
             # we should keep searching for more threads
             has_new_data = old_data != new_data
         new_data_json = serialize(new_data)

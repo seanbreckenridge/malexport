@@ -123,7 +123,7 @@ mal_sources_watch_next() {
 		echo "Source for ${RANDOM_NEXT_ID}: ${url}"
 		if [[ -n "$MAL_SOURCES_DOWNLOAD" ]]; then
 			youtube-dl "$url" -o "${RANDOM_NEXT_ID}_%(title)s.%(ext)s" --write-sub --sub-lang en || {
-				# if it fails, try again without the title incase it was too long
+				# if it fails, try again without the title in case it was too long
 				youtube-dl "$url" -o "${RANDOM_NEXT_ID}.%(ext)s" --write-sub --sub-lang en
 			}
 		else

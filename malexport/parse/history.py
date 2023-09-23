@@ -33,7 +33,7 @@ def iter_history_from_dir(data_dir: Path) -> Iterator[History]:
     for _type in map(str.lower, ListType.__members__):
         merged_history_file = data_dir / f"{_type}_history.json"
         # parse from both merged history and individual history files,
-        # incase either one is missing
+        # in case either one is missing
         yield from _parse_merged_history(merged_history_file, _type)
         yield from parse_history_dir(data_dir / "history" / _type, _type)
 

@@ -1,7 +1,7 @@
 import os
 import sys
 from pathlib import Path
-from typing import Callable, Optional, Any, Sequence, Literal, List
+from typing import Callable, Optional, Any, Literal, List
 
 import click
 
@@ -421,7 +421,7 @@ def backup(username: str) -> None:
     backup_zip_base = str(backup_to_dir / f"{utcnow()}")
     backup_zip_full = f"{backup_zip_base}.zip"
 
-    # shutil doesnt want the '.zip' at the end of the file
+    # shutil doesn't want the '.zip' at the end of the file
     # automatically compresses if possible
     shutil.make_archive(backup_zip_base, "zip", root_dir=from_dir, base_dir=".")
 

@@ -46,7 +46,7 @@ class ForumManager:
         """
         Assuming the forum index exists, load the JSON file
         """
-        assert self.forum_index_path.exists(), "Forum index doesnt exist!"
+        assert self.forum_index_path.exists(), "Forum index doesn't exist!"
         return json.loads(self.forum_index_path.read_text())
 
     def update_forum_index(self) -> None:
@@ -103,10 +103,10 @@ class ForumPost:
                 # if these aren't the same, the data has changed, should update
                 return str(data["last_post_created_at"]) != self.last_post_created_at
             else:
-                # hmm? didnt save last_post_created_at for some reason?
+                # hmm? didn't save last_post_created_at for some reason?
                 return True
         else:
-            # doesnt exist, need to download
+            # doesn't exist, need to download
             return True
 
     def download_forum_post(self) -> Json:

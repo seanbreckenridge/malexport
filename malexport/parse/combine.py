@@ -37,7 +37,7 @@ class AnimeData(NamedTuple):
     @property
     def runtime(self) -> Optional[int]:
         """
-        Returns the total runtime of the anime in seconds, or None if couldnt be computed
+        Returns the total runtime of the anime in seconds, or None if couldn't be computed
         """
         if (
             self.APIList is None
@@ -161,7 +161,7 @@ def combine(username: str, data_dir: Optional[Path] = None) -> CombineResults:
                 assert h.mal_id not in manual_manga_history
                 manual_manga_history[h.mal_id] = h
 
-    # theres a possibility that the JSON exports don't
+    # there's a possibility that the JSON exports don't
     # exist, because of private lists
     animelist_json_data: Dict[int, AnimeEntry] = {}
     mangalist_json_data: Dict[int, MangaEntry] = {}

@@ -178,7 +178,7 @@ class HistoryManager:
             logger.debug(f"Saving {entry_id} to {p}...")
             if p.exists():
                 old_data = json.loads(p.read_text())
-                # if these arent the same, the data has changed,
+                # if these aren't the same, the data has changed,
                 # we should keep searching for new episode information
                 has_new_data = old_data != new_data
             new_data_json = serialize(new_data)
@@ -382,13 +382,13 @@ class HistoryManager:
         self._save_merged_file()
 
 
-REGSITERED: Set[Path] = set()
+REGISTERED: Set[Path] = set()
 
 
 def _register_atexit(path: Path, manager: HistoryManager) -> None:
-    if path in REGSITERED:
+    if path in REGISTERED:
         logger.debug(f"Already registered {path} to write when exiting")
         return
-    REGSITERED.add(path)
+    REGISTERED.add(path)
     logger.debug(f"Registering {path} for atexit")
     atexit.register(lambda: manager._save_merged_file())

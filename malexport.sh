@@ -36,7 +36,7 @@ mal_status() {
 	mal_list "${2:-anime}" | jq "select(.status == \"${1:-Completed}\")"
 }
 
-# uses xml since thats easier to update
+# uses xml since that's easier to update
 mal_xml_status_ids() {
 	local st mtype
 	st="${1:-Watching}"

@@ -54,7 +54,7 @@ def safe_request(
 ) -> requests.Response:
     """
     Sleep for a while, make a request, and retry 3 times if the request fails
-    Can supply an on_error function to do some custom behaviour if theres an HTTP error
+    Can supply an on_error function to do some custom behaviour if there's an HTTP error
     """
     time.sleep(wait_time)
     sess: requests.Session

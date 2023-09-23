@@ -23,7 +23,7 @@ from ..common import REQUEST_WAIT_TIME
 
 # environment variables to overwrite the location of the chromedriver
 # typically this just uses the 'chromedriver' binary,
-# as long as thats on your $PATH
+# as long as that's on your $PATH
 HIDDEN_CHROMEDRIVER = bool(int(os.environ.get("MALEXPORT_CHROMEDRIVER_HIDDEN", 0)))
 CHROME_LOCATION: Optional[str] = os.environ.get("MALEXPORT_CHROMEDRIVER_LOCATION")
 
@@ -101,7 +101,7 @@ def driver_login(webdriver: Browser, localdir: LocalDir) -> None:
     time.sleep(1)
     webdriver.find_element(By.ID, PASSWORD_ID).send_keys(creds["password"])
     time.sleep(1)
-    # use script to login incase window is too small to be clickable
+    # use script to login in case window is too small to be clickable
     webdriver.execute_script(f"""document.querySelector("{LOGIN_BUTTON_CSS}").click()""")  # type: ignore[no-untyped-call]
     # set marker value on this instance to confirm user has logged in
     if "MALEXPORT_2FA" in os.environ:

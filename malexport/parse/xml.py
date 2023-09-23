@@ -8,7 +8,7 @@ from ..paths import _expand_file, PathIsh
 from ..list_type import ListType
 from .common import parse_date_safe, strtobool
 
-# hmm.. cant figure out the types for this
+# hmm.. can't figure out the types for this
 XMLElement = Any
 
 Info = Dict[str, Union[int, str]]

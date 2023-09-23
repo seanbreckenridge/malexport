@@ -4,7 +4,7 @@ This uses multiple methods to save your personal data from a MAL (MyAnimeList) a
 
 I wanted to use the API whenever possible here, but the information returned by the API is so scarce, or endpoints don't really exist at all, so you can't really get a lot of info out of it. As far as I could figure out, it doesn't have a history endpoint, or any way to retrieve how many times you've rewatched a show, so this uses:
 
-- `malexport update lists` - The `load.json` endpoint (unauthenticated) to backup my `anime`/`manga` list (by most recently updated, as thats useful in many contexts)
+- `malexport update lists` - The `load.json` endpoint (unauthenticated) to backup my `anime`/`manga` list (by most recently updated, as that's useful in many contexts)
 - `malexport update api-lists` - The MAL API endpoint (authenticated) to backup my `anime`/`manga` list. This includes a lot of metadata for each entry, and also works for private lists (assuming you go through the OAuth flow with the private account logged in your browser)
 - Selenium (so requires your MAL Username/Password; stored locally) to:
   - `malexport update history` - Individually grab episode/chapter history data (i.e., [this](https://i.imgur.com/2h5ZFng.png)). Note: the datetimes on these depend on what timezone you have set in your MAL settings
@@ -29,7 +29,7 @@ pip install malexport
 
 For your MyAnimeList [API Info](https://myanimelist.net/apiconfig), you can use 'other' as the 'App Type', 'hobbyist' as 'Purpose of Use', and `http://localhost` as the redirect URI. This only requires a Client ID, not both a Client ID and a Secret
 
-Since this uses selenium, that requires a `chromedriver` binary somewhere on your system. Thats typically available in package repositories, else see [here](https://gist.github.com/seanbreckenridge/709a824b8c56ea22dbf4e86a7804287d). If this isn't able to find the file, set the `MALEXPORT_CHROMEDRIVER_LOCATION` environment variable, like: `MALEXPORT_CHROMEDRIVER_LOCATION=C:\\Downloads\\chromedriver.exe malexport ...`
+Since this uses selenium, that requires a `chromedriver` binary somewhere on your system. That's typically available in package repositories, else see [here](https://gist.github.com/seanbreckenridge/709a824b8c56ea22dbf4e86a7804287d). If this isn't able to find the file, set the `MALEXPORT_CHROMEDRIVER_LOCATION` environment variable, like: `MALEXPORT_CHROMEDRIVER_LOCATION=C:\\Downloads\\chromedriver.exe malexport ...`
 
 I left some shell functions I commonly use to query my data in `malexport.sh`, to use that set the `MAL_USERNAME` variable to your account name, and then `source malexport.sh` in your shell startup. Should work on both `bash`/`zsh`
 
@@ -148,7 +148,7 @@ Otherwise, this acts on the data files (Reminder that data by default is stored 
 }
 ```
 
-If you want exact dates, I'd recommend using the `xml` export, as theres some estimation that has to done for the `list` export since the dates aren't absolute (e.g. `04-09-20` could be `2020` or `1920`)
+If you want exact dates, I'd recommend using the `xml` export, as there's some estimation that has to done for the `list` export since the dates aren't absolute (e.g. `04-09-20` could be `2020` or `1920`)
 
 `malexport parse forum -u malUsername` extracts posts made by your user to JSON
 

@@ -50,7 +50,7 @@ def _expand_path(pathish: PathIsh, is_dir: bool = True) -> Path:
     """
     given some path-like input, expand the path
     if is_dir:
-        make that directory if it doesnt exist
+        make that directory if it doesn't exist
     else:
         make the parent directory, assuming this is a file
     """
