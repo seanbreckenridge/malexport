@@ -203,7 +203,7 @@ This includes a command to recover deleted MAL entries (in other words, a MAL mo
 
 This requires [`hpi`](https://pypi.org/project/HPI/) to automatically unzip files, install with `python3 -m pip install malexport[recover]` or directly with `pip install hpi`
 
-I backup my list every 2 months with: `malexport recover-deleted backup`, which saves to `~/.local/share/malexport_zips` (overwrite default location with `MALEXPORT_ZIP_BACKUPS`)
+`malexport recover-deleted backup`, saves to `~/.local/share/malexport_zips` (can overwrite default location with `MALEXPORT_ZIP_BACKUPS`)
 
 To figure out which entries are deleted, this uses [mal-id-cache](https://github.com/seanbreckenridge/mal-id-cache). To update the local cache of IDs, run:
 
@@ -248,6 +248,8 @@ python3 -m malexport recover-deleted recover -F \
 
 None of those IDs exist anymore on MAL, so these backups are the only way to get metadata or my history/data for them
 
+I backup my list once every 3 days, and have a corresponding [`bleanser`](https://github.com/seanbreckenridge/bleanser/blob/master/src/bleanser_sean/modules/mal_zips.py) (backup cleanser) file to remove redundant backups (ones that don't introduce 'new deleted' entries).
+
 ### manual-history
 
 The `manual-history` command lets you locally save episode/chapter (history) data for anime or manga.
@@ -261,6 +263,6 @@ Since its not trivial to mark a single episode as watched on MAL; you have to:
 
 Sometimes I just rewatch particular episodes and not an entire show, this lets me do that and save that to a file.
 
-That requires `autotui` and `pyfzf-iter`, which can be installed with `malexport[manual]`
+That requires `autotui` and `pyfzf-iter`, which can be installed with `pip install malexport[manual]`
 
 There is a `parse` command to parse the manual history file, and its combined into the `history` data when using `combine`
