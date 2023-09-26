@@ -220,6 +220,8 @@ def combine(username: str, data_dir: Optional[Path] = None) -> CombineResults:
             anime_hist += manual_anime_history[mal_id].entries
             manual_anime_history.pop(mal_id)
 
+        anime_hist.sort(key=lambda x: x.at)
+
         anime_combined_data[mal_id] = AnimeData(
             username=username,
             XMLData=anime_xml,
@@ -237,6 +239,8 @@ def combine(username: str, data_dir: Optional[Path] = None) -> CombineResults:
         if mal_id in manual_manga_history:
             manga_hist += manual_manga_history[mal_id].entries
             manual_manga_history.pop(mal_id)
+
+        manga_hist.sort(key=lambda x: x.at)
 
         manga_combined_data[mal_id] = MangaData(
             username=username,
