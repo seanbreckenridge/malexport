@@ -63,6 +63,10 @@ class ExportDownloader:
         """
         If exporting a list fails, resets the browser and tries again
         """
+        # if we failed once, try refreshing the page first
+        if times == 1:
+            logger.info("Failed once, refreshing page (sometimes theres a 500 error...)")
+            self.driver.refresh()
         try:
             self.export_list(list_type)
         except WebDriverException as e:
