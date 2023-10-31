@@ -65,7 +65,9 @@ class ExportDownloader:
         """
         # if we failed once, try refreshing the page first
         if times == 1:
-            logger.info("Failed once, refreshing page (sometimes theres a 500 error...)")
+            logger.info(
+                "Failed once, refreshing page (sometimes theres a 500 error...)"
+            )
             self.driver.refresh()
             time.sleep(2)
         try:
