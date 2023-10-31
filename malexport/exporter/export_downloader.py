@@ -67,6 +67,7 @@ class ExportDownloader:
         if times == 1:
             logger.info("Failed once, refreshing page (sometimes theres a 500 error...)")
             self.driver.refresh()
+            time.sleep(2)
         try:
             self.export_list(list_type)
         except WebDriverException as e:
