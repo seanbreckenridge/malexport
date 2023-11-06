@@ -239,6 +239,7 @@ def _list_parse(_type: Optional[str], list_file: str, stream: bool) -> None:
     if stream:
         for i in idata:
             sys.stdout.write(serialize(i))
+            sys.stdout.write("\n")
         sys.stdout.flush()
     else:
         click.echo(serialize(list(idata)))
@@ -272,6 +273,7 @@ def _api_list_file(_type: Optional[str], api_list_file: str, stream: bool) -> No
     if stream:
         for i in idata:
             sys.stdout.write(serialize(i))
+            sys.stdout.write("\n")
         sys.stdout.flush()
     else:
         click.echo(serialize(list(idata)))
