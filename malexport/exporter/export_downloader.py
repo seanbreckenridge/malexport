@@ -72,7 +72,7 @@ class ExportDownloader:
             time.sleep(2)
         try:
             self.export_list(list_type)
-        except WebDriverException as e:
+        except (WebDriverException, RuntimeError) as e:
             times += 1
             logger.exception(
                 f"Failed to export {list_type.value}, retrying ({times} of {TRY_EXPORT_TIMES})",
@@ -124,6 +124,8 @@ class ExportDownloader:
             pass
         logger.debug("Waiting for download...")
         wait()
+        if "500 internal server error" in self.driver.title.lower():
+            raise RuntimeError("Found 500 error, retrying...")
 
     def _list_files(
         self, path: str = TEMP_DOWNLOAD_DIR, list_type: Optional[ListType] = None
@@ -158,10 +160,18 @@ class ExportDownloader:
             )
             time.sleep(0.5)
 
+        anime_files = self._list_files(list_type=ListType.ANIME)
+        manga_files = self._list_files(list_type=ListType.MANGA)
+
+        if len(anime_files) < 1 or len(manga_files) < 1:
+            raise RuntimeError(
+                f"Failed to find anime/manga list export files, currently {os.listdir(TEMP_DOWNLOAD_DIR)}"
+            )
+
         for archive_name, target in zip(
             [
-                self._list_files(list_type=ListType.ANIME)[0],
-                self._list_files(list_type=ListType.MANGA)[0],
+                anime_files[0],
+                manga_files[0],
             ],
             [self.animelist_path, self.mangalist_path],
         ):
