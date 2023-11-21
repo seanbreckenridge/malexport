@@ -5,17 +5,39 @@
 # recommend getting a bit familiar with that
 
 mal_list() {
+	local -a args=()
 	if [ -z "${MAL_USERNAME}" ]; then
 		echo "Set the 'MAL_USERNAME' environment variable to your account name" >&2
 		return 1
 	fi
 	TYPE="${1:-anime}"
 	DIR="${MALEXPORT_DIR:-${HOME}/.local/share/malexport}"
-	python3 -m malexport parse list -s "${DIR}/${MAL_USERNAME}/${TYPE}list.json" | jq -r
+	if [ ! -d "${DIR}/${MAL_USERNAME}" ]; then
+		echo "No data found for user '${MAL_USERNAME}'" >&2
+		return 1
+	fi
+	if [ ! -f "${DIR}/${MAL_USERNAME}/${TYPE}list.json" ]; then
+		echo "No ${TYPE}list.json found for user '${MAL_USERNAME}'" >&2
+		return 1
+	fi
+	args+=("python" -m malexport parse list -s "${DIR}/${MAL_USERNAME}/${TYPE}list.json")
+	# optional line-based caching using https://github.com/seanbreckenridge/fzfcache
+	if [[ -n "$LISTCACHED" ]]; then
+		args=(fzfcache "${args[@]}")
+	fi
+	"${args[@]}"
+}
+
+mal_list_cached() {
+	LISTCACHED=1 mal_list "${@}"
 }
 
 openentry() {
-	CHOSEN="$(mal_list "${1}" | jq -r '"\(.id)|\(.title)"' | fzf)"
+	cmd='mal_list'
+	if command -v fzfcache >/dev/null; then
+		cmd='mal_list_cached'
+	fi
+	CHOSEN="$("$cmd" "${1}" | jq -r '"\(.id)|\(.title)"' | fzf)"
 	[ -z "${CHOSEN}" ] && return 1
 	ID="$(echo "${CHOSEN}" | cut -d'|' -f1)"
 	python3 -m webbrowser -t "https://myanimelist.net/${1}/${ID}"
@@ -33,7 +55,7 @@ mangafzf() {
 # mal_status 'Plan to Watch'
 # mal_status 'Plan to Read' manga
 mal_status() {
-	mal_list "${2:-anime}" | jq "select(.status == \"${1:-Completed}\")"
+	MAL_USERNAME="$MAL_USERNAME" mal_list "${2:-anime}" | jq "select(.status == \"${1:-Completed}\")"
 }
 
 # uses xml since that's easier to update

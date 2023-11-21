@@ -151,6 +151,13 @@ mal_sources_download() {
 	done < <(mal_sources_shared_ids)
 }
 
+mal_sources_list() {
+	while read -r mid; do
+		echo "https://myanimelist.net/anime/${mid}"
+		mal_sources_extract_id "$mid" | extracturls
+	done < <(mal_sources_shared_ids)
+}
+
 # for items downloaded with mal_sources_watch_next,
 # open the corresponding MAL page by extracting it from
 # the filename
