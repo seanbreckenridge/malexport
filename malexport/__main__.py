@@ -204,7 +204,7 @@ def parse() -> None:
 
 
 @parse.command(name="xml", short_help="parse the XML export files")
-@click.argument("XML_FILE")
+@click.argument("XML_FILE", type=click.Path(exists=True))
 def _xml(xml_file: str) -> None:
     from .parse import parse_xml
     from .common import serialize
@@ -222,7 +222,7 @@ def _xml(xml_file: str) -> None:
     help="Specify type of list. If not supplied, this tries to guess based on the filename",
 )
 @apply_shared(STREAM)
-@click.argument("LIST_FILE")
+@click.argument("LIST_FILE", type=click.Path(exists=True))
 def _list_parse(_type: Optional[str], list_file: str, stream: bool) -> None:
     from .parse import parse_list
     from .common import serialize
@@ -254,7 +254,7 @@ def _list_parse(_type: Optional[str], list_file: str, stream: bool) -> None:
     help="Specify type of list. If not supplied, this tries to guess based on the filename",
 )
 @apply_shared(STREAM)
-@click.argument("API_LIST_FILE")
+@click.argument("API_LIST_FILE", type=click.Path(exists=True))
 def _api_list_file(_type: Optional[str], api_list_file: str, stream: bool) -> None:
     from .parse import iter_api_list
     from .common import serialize
