@@ -23,7 +23,7 @@ class DurationInfo(NamedTuple):
     title: str
     number_of_episodes: int
     duration_per_episode: int
-    total_duration: Optional[int]  # if there is no episode count, this will be None
+    total_duration: int  # if there is no episode count, this will be None
 
 
 OutputFormat = Literal["pprint", "csv", "json"]
@@ -55,16 +55,16 @@ def main(
     durations: List[DurationInfo] = []
 
     for anime in anime_data:
-        assert anime.APIList is not None
-        assert anime.XMLData is not None
+        assert (
+            anime.APIList is not None
+        ), f"missing apilist data for id {anime.XMLData.anime_id}, update with `malexport update api-lists -u {username}`"
         assert anime.APIList.average_episode_duration is not None
 
-        if anime.XMLData.episodes is not None:
-            total_duration = (
-                anime.XMLData.episodes * anime.APIList.average_episode_duration
-            )
-        else:
-            total_duration = None
+        # default to 0 if theres no data
+        # this makes sorting easier and can just remove rows later if needed
+        total_duration = (anime.XMLData.episodes or 0) * (
+            anime.APIList.average_episode_duration or 0
+        )
 
         durations.append(
             DurationInfo(
