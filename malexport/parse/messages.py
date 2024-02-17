@@ -44,9 +44,11 @@ def _parse_thread(thread_file: Path) -> Thread:
 def _parse_messages(message_data: List[Dict[str, Any]]) -> Iterator[Message]:
     for msg_data in message_data:
         yield Message(
-            at=datetime.fromtimestamp(msg_data["dt"], tz=timezone.utc)
-            if msg_data["dt"] is not None
-            else None,
+            at=(
+                datetime.fromtimestamp(msg_data["dt"], tz=timezone.utc)
+                if msg_data["dt"] is not None
+                else None
+            ),
             username=msg_data["username"],
             content=msg_data["content"],
         )

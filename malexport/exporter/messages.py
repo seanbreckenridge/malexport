@@ -141,7 +141,9 @@ class MessageDownloader:
         returns the thread ID this corresponds to
         """
         time.sleep(1)
-        url: str = f"https://myanimelist.net/mymessages.php?go=read&id={message_id}{'&f=1' if sent else ''}"
+        url: str = (
+            f"https://myanimelist.net/mymessages.php?go=read&id={message_id}{'&f=1' if sent else ''}"
+        )
         logger.debug(f"Resolving message ID {message_id} to thread...")
         logger.debug(f"Navigating to '{url}'")
         self.driver.get(url)

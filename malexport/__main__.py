@@ -429,9 +429,7 @@ def backup(username: str) -> None:
 
     click.echo(f"Backed up {from_dir} to {backup_zip_full}", err=True)
     click.echo(
-        "Backup Size: {:.2f} MB".format(
-            Path(backup_zip_full).stat().st_size / 1024**2
-        ),
+        "Backup Size: {:.2f} MB".format(Path(backup_zip_full).stat().st_size / 1024**2),
         err=True,
     )
 
