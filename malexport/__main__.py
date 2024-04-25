@@ -129,10 +129,17 @@ def _api_lists(only: str, username: str) -> None:
 
 @update.command(name="export", short_help="export xml lists")
 @apply_shared(USERNAME)
-def _export(username: str) -> None:
+@click.option(
+    "--driver-type",
+    default="chrome",
+    type=click.Choice(["chrome", "firefox"]),
+    help="whether to use chromedriver/geckodriver as the selenium browser",
+)
+def _export(username: str, driver_type: Literal["chrome", "firefox"]) -> None:
     from .exporter import Account
 
     acc = Account.from_username(username)
+    acc.driver_type = driver_type
     acc.update_exports()
 
 
