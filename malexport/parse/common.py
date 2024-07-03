@@ -76,7 +76,9 @@ def parse_short_date(d: Optional[str]) -> Optional[date]:
         return None
 
 
-def strtobool(val: Union[str, int, bool]) -> bool:
+def strtobool(val: Union[str, int, bool, None]) -> bool:
+    if val is None:
+        return False
     if isinstance(val, bool):
         return val
     if isinstance(val, int):

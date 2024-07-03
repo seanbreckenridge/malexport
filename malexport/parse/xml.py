@@ -65,9 +65,9 @@ class AnimeXML(NamedTuple):
             rewatch_value=anime_el.find("my_rewatch_value").text,
             priority=anime_el.find("my_priority").text,
             tags=anime_el.find("my_tags").text,
-            rewatching=strtobool(anime_el.find("my_rewatching").text.lower()),
+            rewatching=strtobool(anime_el.find("my_rewatching").text),
             rewatching_ep=int(anime_el.find("my_rewatching_ep").text),
-            discuss=strtobool(anime_el.find("my_discuss").text.lower()),
+            discuss=strtobool(anime_el.find("my_discuss").text),
             sns=anime_el.find("my_sns").text,
             update_on_import=strtobool(anime_el.find("update_on_import").text),
         )
@@ -124,8 +124,8 @@ class MangaXML(NamedTuple):
             tags=manga_el.find("my_tags").text,
             priority=manga_el.find("my_priority").text,
             reread_value=manga_el.find("my_reread_value").text,
-            rereading=strtobool(manga_el.find("my_rereading").text.lower()),
-            discuss=strtobool(manga_el.find("my_discuss").text.lower()),
+            rereading=strtobool(manga_el.find("my_rereading").text),
+            discuss=strtobool(manga_el.find("my_discuss").text),
             sns=manga_el.find("my_sns").text,
             update_on_import=strtobool(manga_el.find("update_on_import").text),
         )
