@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Literal
 
 from ..paths import LocalDir
 from ..list_type import ListType
@@ -18,7 +18,11 @@ class Account:
     This encapsulates everything with regards to exporting data from MAL
     """
 
-    def __init__(self, localdir: LocalDir):
+    def __init__(
+        self,
+        localdir: LocalDir,
+        driver_type: Optional[Literal["chrome", "firefox"]] = None,
+    ):
         self.localdir = localdir
         self.animelist = MalList(list_type=ListType.ANIME, localdir=self.localdir)
         self.mangalist = MalList(list_type=ListType.MANGA, localdir=self.localdir)
@@ -31,6 +35,7 @@ class Account:
         self.export_downloader: Optional[ExportDownloader] = None
         self.friend_downloader: Optional[FriendDownloader] = None
         self.message_manager: Optional[MessageDownloader] = None
+        self.driver_type: Literal["chrome", "firefox"] = driver_type or "chrome"
         self._shared_driver: Optional[Browser] = None
 
     @property
@@ -109,7 +114,10 @@ class Account:
         Requires authentication (MAL Username/Password)
         """
         if self.export_downloader is None:
-            self.export_downloader = ExportDownloader(self.localdir)
+            self.export_downloader = ExportDownloader(
+                self.localdir, driver_type=self.driver_type
+            )
+            breakpoint()
         # if driver is already set, use it
         if self.shared_driver is not None:
             self.export_downloader._driver = self.shared_driver
@@ -121,7 +129,7 @@ class Account:
         self,
         only: Optional[ListType] = None,
         count: Optional[int] = None,
-        driver_type: str = "chrome",
+        driver_type: Optional[str] = None,
         use_merged_file: bool = False,
     ) -> None:
         """
@@ -134,14 +142,14 @@ class Account:
             self.anime_episode_history = HistoryManager(
                 list_type=ListType.ANIME,
                 localdir=self.localdir,
-                driver_type=driver_type,
+                driver_type=driver_type or self.driver_type,
                 use_merged_file=use_merged_file,
             )
         if self.manga_chapter_history is None:
             self.manga_chapter_history = HistoryManager(
                 list_type=ListType.MANGA,
                 localdir=self.localdir,
-                driver_type=driver_type,
+                driver_type=driver_type or self.driver_type,
                 use_merged_file=use_merged_file,
             )
         # if we have an authenticated driver already, use it

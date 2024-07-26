@@ -6,7 +6,7 @@ import os
 import time
 import shutil
 import gzip
-from typing import List, Optional
+from typing import List, Optional, Literal
 
 from selenium.webdriver.support.ui import WebDriverWait  # type: ignore[import]
 from selenium.webdriver.common.by import By  # type: ignore[import]
@@ -32,18 +32,22 @@ class ExportDownloader:
     """
 
     def __init__(
-        self, localdir: LocalDir, unlink_temp_gz_files: bool = UNLINK_TEMP_GZ_FILES
+        self,
+        localdir: LocalDir,
+        unlink_temp_gz_files: bool = UNLINK_TEMP_GZ_FILES,
+        driver_type: Optional[Literal["chrome", "firefox"]] = None,
     ):
         self.localdir = localdir
         self.animelist_path = self.localdir.data_dir / "animelist.xml"
         self.mangalist_path = self.localdir.data_dir / "mangalist.xml"
         self._driver: Optional[Browser] = None
         self._unlink_temp_gz_files = unlink_temp_gz_files
+        self._driver_type = driver_type
 
     @property
     def driver(self) -> Browser:
         if self._driver is None:
-            self._driver = webdriver(browser_type="chrome")
+            self._driver = webdriver(browser_type=self._driver_type)
         return self._driver
 
     def authenticate(self) -> None:
